@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Machine Learning Assessment - Form B</title>
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #10b981;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
+        
+        body { background-color: var(--bg); color: var(--text); line-height: 1.6; }
+        
+        .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 1rem 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); border-bottom: 3px solid var(--primary); }
+        
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        
+        .timer { font-size: 1.5rem; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+        .timer.warning { color: var(--danger); }
+
+        .card { background: var(--surface); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); margin-bottom: 2rem; }
+        
+        .progress-text { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem; display: block; }
+        
+        .question-text { font-size: 1.125rem; font-weight: 500; margin-bottom: 1.5rem; }
+        
+        .options-grid { display: grid; gap: 1rem; margin-bottom: 2rem; }
+        
+        .option-label { display: flex; align-items: flex-start; padding: 1rem; background: #38bdf80a; border: 1px solid #334155; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+        .option-label:hover { border-color: var(--primary); background: rgba(2, 132, 199, 0.1); }
+        
+        input[type="radio"] { margin-right: 1rem; margin-top: 0.25rem; transform: scale(1.2); accent-color: var(--primary); flex-shrink: 0; }
+
+        .btn { background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center; width: 100%; }
+        .btn:hover { background: var(--primary-hover); }
+        .btn:disabled { background: #475569; cursor: not-allowed; }
+
+        #result-screen { display: none; }
+        .score-display { text-align: center; font-size: 3rem; font-weight: bold; color: var(--accent); margin: 2rem 0; }
+        
+        .review-item { background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border-left: 4px solid var(--danger); }
+        .review-item.correct { border-left-color: var(--accent); }
+        .theory-box { background: #0b1120; padding: 1rem; border-radius: 8px; margin-top: 1rem; font-size: 0.9rem; border-left: 3px solid var(--primary); color: #cbd5e1;}
+        .status-badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.5rem; }
+        .status-badge.correct { background: #05966933; color: #10b981; }
+        .status-badge.incorrect { background: #e11d4833; color: #ef4444; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Machine Learning Algorithms - Form B</h1>
+        <div class="timer" id="timer">60:00</div>
+    </header>
+
+    <div id="quiz-screen">
+        <div class="card">
+            <span class="progress-text" id="progress-text">Question 1 of 40</span>
+            <div class="question-text" id="question-text"></div>
+            
+            <div class="options-grid" id="options-container">
+            </div>
+
+            <button class="btn" id="next-btn" onclick="handleNext()">Next Question</button>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <div class="card">
+            <h2>Assessment Complete</h2>
+            <div class="score-display" id="score-display">0 / 40</div>
+            <p style="text-align: center; margin-bottom: 2rem;">Review your answers and the theoretical rationales below.</p>
+            <div id="review-container">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const questions = [
+    {
+        q: "What happens if you apply Principal Component Analysis (PCA) to raw, unscaled data where Feature A is measured in millions and Feature B is measured in decimals?",
+        options: [
+            "PCA will automatically normalize the variances to ensure equal weighting.",
+            "Feature A will dominate the first principal component regardless of the actual underlying data structure.",
+            "The covariance matrix will fail to invert, causing a mathematical error.",
+            "Feature B will be completely dropped from the resulting components."
+        ],
+        answer: 1,
+        theory: "PCA seeks directions of maximum variance. If features are not standardized, the feature with the largest numerical scale (millions) will possess mathematically massive variance, dominating the principal components and masking true patterns."
+    },
+    {
+        q: "In the t-SNE algorithm, what is the specific role of the 'perplexity' hyperparameter?",
+        options: [
+            "It sets the maximum number of iterations for gradient descent.",
+            "It defines the minimum distance allowed between two points in the lower-dimensional space.",
+            "It balances attention between local and global aspects of the data, roughly interpretable as the target number of nearest neighbors.",
+            "It controls the learning rate of the Kullback-Leibler divergence minimization."
+        ],
+        answer: 2,
+        theory: "Perplexity determines the variance of the Gaussian distribution used to measure similarities in the high-dimensional space. It effectively acts as a smooth measure of the effective number of neighbors for each point."
+    },
+    {
+        q: "How does the K-means++ initialization algorithm improve upon the standard K-means algorithm?",
+        options: [
+            "It applies an L1 penalty to force sparse cluster assignments.",
+            "It selects initial cluster centers sequentially, preferring points that are farthest away from already chosen centers based on a probability distribution.",
+            "It automatically determines the optimal value of K using the elbow method.",
+            "It utilizes a multi-threaded parallel processing approach to update centroids."
+        ],
+        answer: 1,
+        theory: "Standard K-means uses random initialization, which can lead to poor local optima. K-means++ mathematically spreads out the initial centroids, drastically reducing convergence time and improving final cluster quality."
+    },
+    {
+        q: "In Agglomerative Hierarchical Clustering, what is the distinct behavior of 'Ward's linkage' when determining which clusters to merge?",
+        options: [
+            "It merges clusters based on the shortest distance between any two points in the clusters.",
+            "It merges clusters that result in the minimum possible increase in total within-cluster variance.",
+            "It merges clusters based on the centroid distances.",
+            "It merges the clusters with the largest number of data points first."
+        ],
+        answer: 1,
+        theory: "Ward's method focuses on variance rather than raw distance. At each step, it seeks the pair of clusters that, when combined, produce the smallest increase in the Error Sum of Squares (ESS)."
+    },
+    {
+        q: "In DBSCAN, what strictly defines a 'border point'?",
+        options: [
+            "A point that has exactly zero neighbors within its epsilon radius.",
+            "A point that has more than 'min_samples' neighbors but is at the edge of the dataset.",
+            "A point that has fewer than 'min_samples' within its epsilon radius, but is reachable from a core point.",
+            "A point that bridges two distinct clusters."
+        ],
+        answer: 2,
+        theory: "Core points have dense neighborhoods. Border points do not have enough neighbors to be core points themselves, but they fall within the epsilon radius of a core point, making them part of the cluster."
+    },
+    {
+        q: "What does the assumption of 'homoscedasticity' strictly imply in the context of Ordinary Least Squares (OLS) linear regression?",
+        options: [
+            "The independent variables are completely uncorrelated with each other.",
+            "The error terms (residuals) are normally distributed.",
+            "The variance of the error terms is constant across all levels of the independent variables.",
+            "There is a strict linear relationship between the predictors and the target."
+        ],
+        answer: 2,
+        theory: "Homoscedasticity means 'same variance'. If the variance of the errors increases or decreases as the predictor values change (a cone shape in residual plots), the model is heteroscedastic, which invalidates confidence intervals."
+    },
+    {
+        q: "Why is Maximum Likelihood Estimation (MLE) used instead of Ordinary Least Squares (OLS) to fit a logistic regression model?",
+        options: [
+            "OLS cannot mathematically process non-continuous features.",
+            "OLS on a binary outcome severely violates the assumptions of normally distributed residuals and homoscedasticity.",
+            "MLE is computationally much faster for gradient descent.",
+            "MLE allows the model to output classes rather than probabilities."
+        ],
+        answer: 1,
+        theory: "OLS assumes continuous outcomes and normally distributed errors. For binary outcomes (0 or 1), the errors are binary, making OLS highly inefficient and uninterpretable. MLE finds the parameters that maximize the probability of observing the given data."
+    },
+    {
+        q: "When fitting a highly degreed polynomial regression model to a small dataset, what mathematical phenomenon is most likely to occur?",
+        options: [
+            "The model will severely underfit due to high bias.",
+            "The model will experience Runge's phenomenon, oscillating wildly at the edges of the data interval and severely overfitting.",
+            "The algorithm will naturally collapse back into a simple linear model.",
+            "The R-squared value will drop to exactly zero."
+        ],
+        answer: 1,
+        theory: "High-degree polynomials forced through sparse data points produce extreme curves that swing wildly between points, especially at the boundaries. This is classical overfitting."
+    },
+    {
+        q: "How does Ridge regression (L2 regularization) conceptually handle a dataset containing perfectly collinear (identical) independent variables?",
+        options: [
+            "It raises a singular matrix error and crashes.",
+            "It drops one of the collinear features entirely, setting its coefficient to zero.",
+            "It distributes the coefficient weights equally among the perfectly collinear features.",
+            "It combines the collinear features into a single principal component."
+        ],
+        answer: 2,
+        theory: "Unlike Lasso (which would arbitrarily drop one), Ridge regression's L2 penalty strictly penalizes large individual weights. Distributing the weight evenly between identical features minimizes the sum of squared weights, keeping both in the model."
+    },
+    {
+        q: "In a linear Support Vector Machine (SVM), what is the direct mathematical relationship between the margin width and the weight vector 'w'?",
+        options: [
+            "The margin is exactly equal to the magnitude of w (||w||).",
+            "The margin is exactly equal to 2 / ||w||.",
+            "The margin is exactly equal to the dot product of w and the support vectors.",
+            "The margin is equal to 1 / ||w||^2."
+        ],
+        answer: 1,
+        theory: "The distance from the hyperplane to the closest positive point is 1 / ||w||. The distance to the closest negative point is also 1 / ||w||. Therefore, the total margin width separating the classes is 2 / ||w||."
+    },
+    {
+        q: "The 'kernel trick' in SVM allows for non-linear classification without explicitly mapping data to higher dimensions. How is this achieved computationally?",
+        options: [
+            "By training a small neural network to pre-process the features.",
+            "By replacing the standard dot product with a kernel function that computes the inner product in the transformed space directly.",
+            "By applying a logarithmic transformation to all inputs before the algorithm starts.",
+            "By projecting the data onto the 2D plane and using a polynomial solver."
+        ],
+        answer: 1,
+        theory: "The SVM optimization problem only requires the dot products of data points. A valid kernel function computes the dot product of the data in a high-dimensional space without ever calculating the coordinates in that space, saving massive computational overhead."
+    },
+    {
+        q: "Linear Discriminant Analysis (LDA) can be used as a dimensionality reduction technique. What is the maximum number of components you can extract using LDA?",
+        options: [
+            "The number of original features (N).",
+            "The number of original features minus 1 (N - 1).",
+            "The number of distinct target classes minus 1 (K - 1).",
+            "Exactly 2 components, allowing for 2D visualization."
+        ],
+        answer: 2,
+        theory: "LDA projects data to maximize class separability. Because it relies on the between-class scatter matrix constructed from the means of K classes, the rank of this matrix is at most K - 1. Thus, you can only extract K - 1 meaningful components."
+    },
+    {
+        q: "When using K-Nearest Neighbors (KNN) for classification with an even number for K, tie-breaking is a common issue. Aside from choosing an odd K, what is a standard algorithmic solution to mitigate ties?",
+        options: [
+            "Dropping the furthest neighbor arbitrarily.",
+            "Weighting the votes of the neighbors by the inverse of their distance to the query point.",
+            "Predicting the majority class of the entire dataset instead.",
+            "Running a logistic regression model on the neighbors."
+        ],
+        answer: 1,
+        theory: "By applying distance weighting (e.g., `weights='distance'` in scikit-learn), closer neighbors have a mathematically stronger vote than farther neighbors, practically eliminating ties even with an even K."
+    },
+    {
+        q: "In a CART decision tree, how is 'Information Gain' mathematically defined when evaluating a potential split?",
+        options: [
+            "The Gini impurity of the parent node minus the Gini impurity of the largest child node.",
+            "The entropy of the parent node minus the weighted average entropy of the child nodes.",
+            "The ratio of correctly classified samples to incorrectly classified samples.",
+            "The sum of the variances of the leaf nodes."
+        ],
+        answer: 1,
+        theory: "Information Gain measures the reduction in uncertainty (entropy). It calculates how much entropy existed before the split, and subtracts the new, weighted entropy of the sub-populations created by the split."
+    },
+    {
+        q: "What is a primary architectural advantage of a Tree-based model over a Linear model when dealing with tabular data containing missing values?",
+        options: [
+            "Trees automatically impute the missing values with the dataset's global mean.",
+            "Trees can inherently handle missing data using surrogate splits or by treating 'missing' as a distinct path direction without requiring explicit imputation.",
+            "Trees use gradient descent to ignore missing values.",
+            "Linear models completely fail to compile if a single value is missing, whereas trees just raise a warning."
+        ],
+        answer: 1,
+        theory: "Advanced tree algorithms (like XGBoost or specific CART implementations) don't require imputation. They learn a default direction for missing values during training based on which path minimizes the loss."
+    },
+    {
+        q: "In the context of the Naive Bayes algorithm, what does the 'evidence' term (the denominator) represent in Bayes' Theorem?",
+        options: [
+            "The prior probability of the target class.",
+            "The likelihood of the features given the class.",
+            "The marginal probability of observing those specific predictor features across all classes.",
+            "The posterior probability."
+        ],
+        answer: 2,
+        theory: "In P(A|B) = [P(B|A) * P(A)] / P(B), the P(B) term is the evidence. It represents the total probability of seeing the observed feature set. Because it is the same for all classes being compared, it is often ignored during the argmax classification step."
+    },
+    {
+        q: "Multinomial Naive Bayes is heavily used for text classification. What underlying assumption does it make about the input features?",
+        options: [
+            "The features follow a continuous Gaussian bell curve.",
+            "The features represent boolean values indicating the presence or absence of a word.",
+            "The features represent frequencies or integer counts of events (like word occurrences) generated from a multinomial distribution.",
+            "The features are strictly independent principal components."
+        ],
+        answer: 2,
+        theory: "Multinomial NB is designed for integer counts. It calculates the probability of observing a specific count of a feature (like the word 'free' appearing 3 times) within a class."
+    },
+    {
+        q: "What is the 'Out-Of-Bag' (OOB) error in a Random Forest?",
+        options: [
+            "The error calculated on a dedicated, completely separate holdout test set.",
+            "An unbiased estimate of the test error calculated for each tree using only the observations that were NOT selected in that tree's bootstrap sample.",
+            "The error caused by features that were dropped during the random feature selection process.",
+            "The sum of residuals across all leaf nodes."
+        ],
+        answer: 1,
+        theory: "Because each tree in a Random Forest is trained on a bootstrap sample (with replacement), about 33% of the data is left out per tree. Evaluating the tree on this unseen 'out-of-bag' data acts as a free, built-in cross-validation metric."
+    },
+    {
+        q: "In Gradient Boosting for regression using a squared error loss function, what exactly are the subsequent trees fitting to?",
+        options: [
+            "The original target variable, but with updated observation weights.",
+            "The negative gradient of the loss function, which in the case of squared error, perfectly equates to the residual (y - ŷ).",
+            "The absolute difference between the median and the predicted value.",
+            "The principal components of the previous tree's leaf outputs."
+        ],
+        answer: 1,
+        theory: "Gradient Boosting formulates ensembling as an optimization problem. Each new tree fits to the pseudo-residuals (the negative gradient). For Mean Squared Error (MSE), the derivative simplifies perfectly to just the residual: actual minus predicted."
+    },
+    {
+        q: "Stacking and Blending are both meta-ensembling techniques. What is the primary operational difference between Blending and standard Stacking?",
+        options: [
+            "Blending requires all base models to be of the exact same algorithm family.",
+            "Blending typically uses a simple, separate holdout validation set to train the meta-learner, whereas Stacking uses cross-validated out-of-fold (OOF) predictions.",
+            "Blending only outputs probabilities, while Stacking outputs hard classes.",
+            "Blending is an unsupervised technique."
+        ],
+        answer: 1,
+        theory: "Stacking rigorously uses K-fold cross-validation to generate the training data for the meta-learner to prevent leakage. Blending takes a simpler, faster approach by just splitting the training data once and using a hold-out set to train the meta-learner."
+    },
+    {
+        q: "In the Apriori algorithm for Association Rules, what is the mathematical definition of the 'Confidence' of the rule {A} -> {B}?",
+        options: [
+            "Support(A) / Support(B)",
+            "Support(A U B) / Support(B)",
+            "Support(A U B) / Support(A)",
+            "Support(A) * Support(B)"
+        ],
+        answer: 2,
+        theory: "Confidence is conditional probability. It answers: 'Given that item A is in the basket, what is the probability that item B is also in the basket?' It is calculated as the frequency of both appearing together divided by the frequency of A appearing."
+    },
+    {
+        q: "What is the primary computational bottleneck of the Apriori algorithm that the FP-Growth algorithm successfully eliminates?",
+        options: [
+            "Apriori uses a recursive decision tree structure that causes stack overflows.",
+            "Apriori requires generating massive candidate itemsets and repeatedly scanning the entire database multiple times to check their support.",
+            "Apriori can only calculate confidence, not lift or support.",
+            "Apriori relies on Euclidean distance, which fails in high dimensions."
+        ],
+        answer: 1,
+        theory: "FP-Growth avoids the expensive 'candidate generation' phase. Instead, it compresses the database into a memory-efficient Frequent Pattern (FP) tree with just two database scans, making it vastly faster for large datasets."
+    },
+    {
+        q: "In Holt's Linear Trend Method (Double Exponential Smoothing), what specific component does the beta parameter control?",
+        options: [
+            "The smoothing factor for the base level of the series.",
+            "The smoothing factor for the trend (slope) component of the series.",
+            "The smoothing factor for the seasonal component.",
+            "The damping factor that forces the trend to flatten out over time."
+        ],
+        answer: 1,
+        theory: "In Double Exponential Smoothing, alpha smooths the level (intercept), while beta smooths the trend (slope), allowing the model to adapt to changing trajectories."
+    },
+    {
+        q: "If a time series is generated by a pure Moving Average MA(q) process, what characteristic pattern will be clearly visible in the Autocorrelation Function (ACF) plot?",
+        options: [
+            "An exponential decay pattern.",
+            "A sinusoidal oscillation.",
+            "A sharp cutoff, dropping to statistically zero after lag 'q'.",
+            "Constant, high correlation across all lags."
+        ],
+        answer: 2,
+        theory: "An MA(q) model relies on 'q' past forecast errors. Therefore, the correlation with past terms abruptly ends after exactly 'q' steps. The ACF plot captures this sharp cutoff perfectly."
+    },
+    {
+        q: "Before applying an ARIMA model, the Augmented Dickey-Fuller (ADF) test is commonly used. What is the null hypothesis of the ADF test?",
+        options: [
+            "The time series is perfectly stationary.",
+            "The time series contains a unit root, meaning it is non-stationary and requires differencing.",
+            "The time series exhibits strong seasonality.",
+            "The residuals of the series are normally distributed."
+        ],
+        answer: 1,
+        theory: "The ADF test checks for stationarity. The null hypothesis assumes a unit root exists (non-stationary). If the p-value is low (< 0.05), you reject the null hypothesis and conclude the series is stationary."
+    },
+    {
+        q: "In a highly imbalanced dataset where the positive class is only 1% of the data, why is evaluating a classifier purely on 'Accuracy' dangerously misleading?",
+        options: [
+            "Accuracy cannot be calculated if classes are not 50/50.",
+            "A naive model that simply predicts the majority negative class 100% of the time will score 99% accuracy while having a True Positive Rate of exactly 0%.",
+            "Accuracy ignores True Negatives.",
+            "Accuracy is an outdated metric replaced entirely by MSE."
+        ],
+        answer: 1,
+        theory: "The 'Accuracy Paradox' occurs when the sheer volume of true negatives inflates the score, masking the fact that the model is completely failing to identify the rare, important positive cases."
+    },
+    {
+        q: "What does the Area Under the ROC Curve (AUC) statistically represent in a binary classification problem?",
+        options: [
+            "The exact percentage of True Positives identified.",
+            "The probability that the classifier will rank a randomly chosen positive instance higher than a randomly chosen negative instance.",
+            "The harmonic mean of Precision and Recall.",
+            "The optimal threshold for making binary decisions."
+        ],
+        answer: 1,
+        theory: "AUC evaluates the model's ranking ability across all possible thresholds. An AUC of 0.8 means there is an 80% chance the model will score a true positive higher than a true negative."
+    },
+    {
+        q: "In which of the following real-world scenarios must 'Recall' (Sensitivity) be heavily prioritized over 'Precision' when tuning a machine learning model threshold?",
+        options: [
+            "A spam email filter.",
+            "A medical screening test for a fatal, but curable, type of cancer.",
+            "A content recommendation engine on YouTube.",
+            "An automated system evaluating loan applications for high-risk defaults."
+        ],
+        answer: 1,
+        theory: "Recall minimizes False Negatives. In cancer screening, telling a sick person they are healthy (False Negative) is fatal. It is better to have a lower Precision (more healthy people getting false alarms/False Positives) to ensure no sick person is missed."
+    },
+    {
+        q: "In massive e-commerce environments (like Amazon), why is Item-Based Collaborative Filtering often preferred over User-Based Collaborative Filtering?",
+        options: [
+            "Users dislike having their data compared to other users due to privacy laws.",
+            "Item-to-item similarity matrices are typically much more stable over time and computationally cheaper to maintain, as the catalog size is smaller and changes slower than the massive, highly active user base.",
+            "Item-based filtering automatically solves the cold start problem.",
+            "Item-based filtering uses deep learning, whereas user-based uses standard math."
+        ],
+        answer: 1,
+        theory: "User behavior changes rapidly, and calculating a similarity matrix for 100 million users is unscalable. Calculating similarity between 1 million static items requires less computation and can be cached effectively."
+    },
+    {
+        q: "What is the specific purpose of the 'Mean Reciprocal Rank' (MRR) metric in evaluating recommendation systems?",
+        options: [
+            "It measures the diversity of the recommended items.",
+            "It evaluates the list based solely on the rank position of the FIRST relevant item found, heavily penalizing models that don't put a good item at the very top.",
+            "It calculates the percentage of items that were relevant.",
+            "It measures the click-through rate over time."
+        ],
+        answer: 1,
+        theory: "MRR is calculated as 1/rank of the first correct answer. If the first relevant item is at position 1, score is 1. If at position 3, score is 0.33. It cares only about how quickly the user finds *something* relevant."
+    },
+    {
+        q: "How does the One-Class Support Vector Machine approach Anomaly Detection?",
+        options: [
+            "It builds a Random Forest and measures isolation depth.",
+            "It attempts to find a hyperplane in a transformed high-dimensional space that maximizes the margin separating the normal training data from the origin.",
+            "It calculates the standard deviation of all points from the centroid.",
+            "It relies on the user labeling anomalies beforehand."
+        ],
+        answer: 1,
+        theory: "One-Class SVM is an unsupervised algorithm that wraps a tight boundary around the majority of the data in feature space. Points falling outside this learned boundary (closer to the origin) are flagged as anomalies."
+    },
+    {
+        q: "Which algorithm family inherently performs best on datasets with categorical features of extreme cardinality (e.g., thousands of zip codes) without requiring massive one-hot encoding matrices?",
+        options: [
+            "Support Vector Machines",
+            "Linear Regression",
+            "Tree-based models (specifically modern implementations like LightGBM or CatBoost)",
+            "K-Nearest Neighbors"
+        ],
+        answer: 2,
+        theory: "One-hot encoding creates highly sparse, wide matrices that hurt distance-based and linear models. Modern gradient boosting trees can inherently partition categorical values into bins without explosive matrix expansion."
+    },
+    {
+        q: "What happens to a Stepwise Regression model if features are added dynamically but the p-value threshold for inclusion is set far too leniently (e.g., alpha = 0.50)?",
+        options: [
+            "The model will drop all features.",
+            "The model will include statistically insignificant, noisy variables, leading to severe overfitting.",
+            "The model becomes mathematically equivalent to Lasso.",
+            "The R-squared value will drop drastically."
+        ],
+        answer: 1,
+        theory: "A high inclusion threshold allows variables that only randomly correlate with the target to enter the model. This fits the noise in the training set, destroying out-of-sample generalization."
+    },
+    {
+        q: "What is the mechanical purpose of 'SMOTE' (Synthetic Minority Over-sampling Technique) in data pre-processing?",
+        options: [
+            "It randomly duplicates existing rows of the minority class.",
+            "It reduces the size of the majority class by randomly dropping rows.",
+            "It generates new, synthetic examples of the minority class by interpolating data points between existing minority instances.",
+            "It assigns higher mathematical weights to minority class errors."
+        ],
+        answer: 2,
+        theory: "Unlike naive oversampling (which just copies data and causes overfitting), SMOTE draws lines between nearest minority class neighbors in feature space and generates new, unique synthetic points along those lines."
+    },
+    {
+        q: "What is a fundamental mathematical advantage of the Gaussian Mixture Model (GMM) compared to strict K-Means clustering?",
+        options: [
+            "GMM guarantees finding the absolute global minimum.",
+            "GMM assumes data is generated from a mixture of normal distributions with distinct covariances, allowing for 'soft' probability assignments and elliptical cluster shapes.",
+            "GMM requires no initialization step.",
+            "GMM processes text data natively."
+        ],
+        answer: 1,
+        theory: "K-Means assumes clusters are spherical and assigns points rigidly (hard assignment). GMM utilizes covariance matrices, allowing it to stretch and rotate to fit elliptical data, outputting the probability a point belongs to a cluster."
+    },
+    {
+        q: "What role does the 'C' hyperparameter play in a Support Vector Machine?",
+        options: [
+            "It defines the degree of the polynomial kernel.",
+            "It controls the trade-off between maximizing the margin width and minimizing the classification error (slack) on the training data.",
+            "It determines the number of support vectors.",
+            "It sets the learning rate for the optimization."
+        ],
+        answer: 1,
+        theory: "A high 'C' strictly penalizes misclassifications, leading to a narrower margin (risk of overfitting). A low 'C' allows more violations in exchange for a wider, more generalized margin."
+    },
+    {
+        q: "Why do Random Forests typically use completely unpruned decision trees as base learners?",
+        options: [
+            "To reduce the computational training time.",
+            "Because unpruned trees have low variance, making the ensemble more stable.",
+            "Unpruned trees have high variance and low bias. The ensemble reduces the variance through averaging, relying on the low bias to achieve high predictive accuracy.",
+            "Because pruning requires a validation set that Random Forests cannot access."
+        ],
+        answer: 2,
+        theory: "A deep, unpruned tree perfectly memorizes its training data (low bias) but generalizes terribly (high variance). By averaging hundreds of these uniquely overfitting trees, the variance is canceled out, leaving behind a highly accurate model."
+    },
+    {
+        q: "What does the concept of 'stationarity' strictly imply in the context of time series forecasting?",
+        options: [
+            "The data only moves in one directional trend.",
+            "The statistical properties of the series, such as mean, variance, and autocorrelation, are constant and do not change over time.",
+            "The data has no seasonal components.",
+            "The time intervals between data points are exactly equal."
+        ],
+        answer: 1,
+        theory: "Models like ARIMA mathematically assume that the underlying behavior of the data in the future will be the same as in the past. If the mean or variance is shifting over time, this assumption breaks, requiring differencing."
+    },
+    {
+        q: "In multi-class classification evaluation, how does the 'Macro-F1' metric fundamentally differ from 'Micro-F1'?",
+        options: [
+            "Macro-F1 is only used for binary classification.",
+            "Macro-F1 computes the metric independently for each class and then takes the unweighted mean, treating all classes equally regardless of their support size.",
+            "Macro-F1 heavily weights the majority class.",
+            "Macro-F1 uses the arithmetic mean instead of the harmonic mean."
+        ],
+        answer: 1,
+        theory: "Micro-F1 aggregates all true positives/negatives globally (biased toward majority classes). Macro-F1 calculates F1 per class and averages them, giving a minority class with 10 samples the exact same weight as a majority class with 1,000 samples."
+    },
+    {
+        q: "When deploying a machine learning model for real-time predictions, what is the phenomenon called where the statistical relationship between the input features and the target variable fundamentally changes over time?",
+        options: [
+            "Data Leakage",
+            "Concept Drift",
+            "The Curse of Dimensionality",
+            "Heteroscedasticity"
+        ],
+        answer: 1,
+        theory: "Concept drift occurs when the underlying definition of the target changes. For example, a fraud detection model trained in 2019 might fail in 2026 because the actual methods (the 'concept') used by fraudsters have completely evolved."
+    }
+];
+
+let currentQuestionIndex = 0;
+let score = 0;
+let userAnswers = new Array(questions.length).fill(null);
+let timerLeft = 3600; 
+let timerInterval;
+
+const elements = {
+    timer: document.getElementById('timer'),
+    quizScreen: document.getElementById('quiz-screen'),
+    resultScreen: document.getElementById('result-screen'),
+    progressText: document.getElementById('progress-text'),
+    questionText: document.getElementById('question-text'),
+    optionsContainer: document.getElementById('options-container'),
+    nextBtn: document.getElementById('next-btn'),
+    scoreDisplay: document.getElementById('score-display'),
+    reviewContainer: document.getElementById('review-container')
+};
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timerLeft--;
+        updateTimerDisplay();
+        
+        if (timerLeft <= 0) {
+            clearInterval(timerInterval);
+            finishQuiz();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timerLeft / 60);
+    const seconds = timerLeft % 60;
+    elements.timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    if (timerLeft < 300) { 
+        elements.timer.classList.add('warning');
+    }
+}
+
+function loadQuestion() {
+    const q = questions[currentQuestionIndex];
+    elements.progressText.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+    elements.questionText.textContent = q.q;
+
+    elements.optionsContainer.innerHTML = '';
+    q.options.forEach((opt, index) => {
+        const label = document.createElement('label');
+        label.className = 'option-label';
+        
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'option';
+        input.value = index;
+        
+        if (userAnswers[currentQuestionIndex] === index) {
+            input.checked = true;
+        }
+
+        input.onchange = () => { elements.nextBtn.disabled = false; };
+        
+        label.appendChild(input);
+        
+        const span = document.createElement('span');
+        span.textContent = opt;
+        label.appendChild(span);
+        
+        elements.optionsContainer.appendChild(label);
+    });
+
+    elements.nextBtn.textContent = currentQuestionIndex === questions.length - 1 ? 'Submit Assessment' : 'Next Question';
+    elements.nextBtn.disabled = userAnswers[currentQuestionIndex] === null;
+}
+
+function handleNext() {
+    const selected = document.querySelector('input[name="option"]:checked');
+    if (selected) {
+        userAnswers[currentQuestionIndex] = parseInt(selected.value);
+    }
+
+    if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+    } else {
+        finishQuiz();
+    }
+}
+
+function finishQuiz() {
+    clearInterval(timerInterval);
+    elements.quizScreen.style.display = 'none';
+    elements.resultScreen.style.display = 'block';
+    
+    score = userAnswers.reduce((total, answer, index) => {
+        return total + (answer === questions[index].answer ? 1 : 0);
+    }, 0);
+
+    elements.scoreDisplay.textContent = `${score} / ${questions.length}`;
+    elements.timer.style.display = 'none';
+
+    renderReview();
+}
+
+function renderReview() {
+    elements.reviewContainer.innerHTML = '';
+    
+    questions.forEach((q, i) => {
+        const userAnswer = userAnswers[i];
+        const isCorrect = userAnswer === q.answer;
+        
+        const reviewEl = document.createElement('div');
+        reviewEl.className = `review-item ${isCorrect ? 'correct' : ''}`;
+        
+        const statusBadge = `<span class="status-badge ${isCorrect ? 'correct' : 'incorrect'}">${isCorrect ? 'Correct' : 'Incorrect'}</span>`;
+        
+        let html = `
+            ${statusBadge}
+            <div class="question-text">${i + 1}. ${q.q}</div>
+            <div style="margin-bottom: 0.5rem"><strong>Your Answer:</strong> ${userAnswer !== null ? q.options[userAnswer] : '<em>Unanswered</em>'}</div>
+            <div style="margin-bottom: 0.5rem; color: var(--accent);"><strong>Correct Answer:</strong> ${q.options[q.answer]}</div>
+            <div class="theory-box"><strong>Rationale:</strong> ${q.theory}</div>
+        `;
+        
+        reviewEl.innerHTML = html;
+        elements.reviewContainer.appendChild(reviewEl);
+    });
+}
+
+// Initialize
+startTimer();
+loadQuestion();
+
+</script>
+</body>
+</html>
