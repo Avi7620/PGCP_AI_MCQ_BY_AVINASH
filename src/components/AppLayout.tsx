@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 
 import Topbar from './Topbar';
+import Footer from '../components/Footer';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -28,6 +29,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <div className="min-h-[calc(100vh-64px)] p-4 lg:p-6 xl:p-8 max-w-screen-2xl mx-auto">
           {children}
         </div>
+        <Footer />
       </main>
     </div>
   );

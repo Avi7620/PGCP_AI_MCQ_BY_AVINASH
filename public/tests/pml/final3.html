@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Machine Learning Assessment - Form C</title>
+    <style>
+        :root {
+            --primary: #c026d3;
+            --primary-hover: #a21caf;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #10b981;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
+        
+        body { background-color: var(--bg); color: var(--text); line-height: 1.6; }
+        
+        .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 1rem 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); border-bottom: 3px solid var(--primary); }
+        
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        
+        .timer { font-size: 1.5rem; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+        .timer.warning { color: var(--danger); }
+
+        .card { background: var(--surface); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); margin-bottom: 2rem; }
+        
+        .progress-text { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem; display: block; }
+        
+        .question-text { font-size: 1.125rem; font-weight: 500; margin-bottom: 1.5rem; }
+        
+        .options-grid { display: grid; gap: 1rem; margin-bottom: 2rem; }
+        
+        .option-label { display: flex; align-items: flex-start; padding: 1rem; background: #e879f90a; border: 1px solid #334155; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+        .option-label:hover { border-color: var(--primary); background: rgba(192, 38, 211, 0.1); }
+        
+        input[type="radio"] { margin-right: 1rem; margin-top: 0.25rem; transform: scale(1.2); accent-color: var(--primary); flex-shrink: 0; }
+
+        .btn { background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center; width: 100%; }
+        .btn:hover { background: var(--primary-hover); }
+        .btn:disabled { background: #475569; cursor: not-allowed; }
+
+        #result-screen { display: none; }
+        .score-display { text-align: center; font-size: 3rem; font-weight: bold; color: var(--accent); margin: 2rem 0; }
+        
+        .review-item { background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border-left: 4px solid var(--danger); }
+        .review-item.correct { border-left-color: var(--accent); }
+        .theory-box { background: #0b1120; padding: 1rem; border-radius: 8px; margin-top: 1rem; font-size: 0.9rem; border-left: 3px solid var(--primary); color: #cbd5e1;}
+        .status-badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.5rem; }
+        .status-badge.correct { background: #05966933; color: #10b981; }
+        .status-badge.incorrect { background: #e11d4833; color: #ef4444; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>ML Architecture & Theory - Form C</h1>
+        <div class="timer" id="timer">60:00</div>
+    </header>
+
+    <div id="quiz-screen">
+        <div class="card">
+            <span class="progress-text" id="progress-text">Question 1 of 40</span>
+            <div class="question-text" id="question-text"></div>
+            <div class="options-grid" id="options-container"></div>
+            <button class="btn" id="next-btn" onclick="handleNext()">Next Question</button>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <div class="card">
+            <h2>Assessment Complete</h2>
+            <div class="score-display" id="score-display">0 / 40</div>
+            <p style="text-align: center; margin-bottom: 2rem;">Review your answers and the theoretical rationales below.</p>
+            <div id="review-container"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const questions = [
+    {
+        q: "Why is the K-Medoids algorithm (e.g., PAM) considered more robust to outliers than K-Means?",
+        options: [
+            "K-Medoids uses an L1 penalty to shrink outlier distances to zero.",
+            "K-Medoids calculates the median of the cluster rather than the geometric centroid, mitigating the quadratic effect of distant outliers.",
+            "K-Medoids strictly restricts cluster centers to be actual data points from the dataset, preventing extreme outliers from pulling a virtual centroid into empty space.",
+            "K-Medoids drops the top 5% of distant points automatically during the E-step."
+        ],
+        answer: 2,
+        theory: "Unlike K-Means which computes a virtual mathematical centroid (mean) that can be easily skewed by a single massive outlier, K-Medoids forces the cluster center to be an actual, existing data point, making it inherently resistant to extreme skew."
+    },
+    {
+        q: "In the calculation of the Silhouette Coefficient (s) for a data point, how are its components 'a' (intra-cluster distance) and 'b' (nearest-cluster distance) used?",
+        options: [
+            "s = (a - b) / max(a, b)",
+            "s = (b - a) / max(a, b)",
+            "s = (a + b) / min(a, b)",
+            "s = |a - b| / (a + b)"
+        ],
+        answer: 1,
+        theory: "The formula is s = (b - a) / max(a, b). 'a' is the mean distance to points in the SAME cluster (we want this low). 'b' is the mean distance to points in the next NEAREST cluster (we want this high). Thus, (b - a) yields a positive score up to 1 for well-clustered points."
+    },
+    {
+        q: "During the Expectation-Maximization (EM) steps of fitting a Gaussian Mixture Model (GMM), what exactly occurs during the 'E-step'?",
+        options: [
+            "The covariance matrices of the Gaussians are updated.",
+            "The algorithm calculates the posterior probability (responsibilities) that each data point belongs to each specific Gaussian cluster, given the current parameters.",
+            "The means of the Gaussian distributions are shifted toward the densest data points.",
+            "The optimal number of components (K) is determined using the BIC score."
+        ],
+        answer: 1,
+        theory: "In GMMs, the E-step estimates the latent variables (the 'responsibilities' or probabilities of cluster membership for each point). The M-step then uses these probabilities to update the actual parameters (means, covariances, weights) of the Gaussians."
+    },
+    {
+        q: "In DBSCAN, what is a 'reachability distance' and how does it relate to the OPTICS algorithm?",
+        options: [
+            "Reachability distance is strictly equal to the Euclidean distance between any two noise points.",
+            "In OPTICS, reachability distance is the maximum of the core distance of point A and the actual Euclidean distance between point A and B.",
+            "It is the distance from a point to the absolute centroid of the dataset.",
+            "Reachability distance is the number of hops required to connect two border points."
+        ],
+        answer: 1,
+        theory: "OPTICS expands on DBSCAN by ordering points to identify clustering structure at varying epsilons. Reachability distance from A to B is defined as max(core_distance(A), distance(A, B)), ensuring points within the dense core are considered 'close'."
+    },
+    {
+        q: "What does the 'Cophenetic Correlation Coefficient' evaluate in Hierarchical Clustering?",
+        options: [
+            "How closely the dendrogram preserves the pairwise distances of the original unclustered dataset.",
+            "The correlation between the independent features of the dataset before clustering.",
+            "The degree of overlap between the top two highest-level clusters.",
+            "The probability that two points drawn at random belong to the same cluster."
+        ],
+        answer: 0,
+        theory: "The Cophenetic Correlation Coefficient compares the actual Euclidean distance between points in the raw data with the 'cophenetic distance' (the height of the dendrogram where they first joined). A value near 1 indicates the dendrogram is a very faithful representation of the data."
+    },
+    {
+        q: "When diagnosing multicollinearity in Linear Regression, a Variance Inflation Factor (VIF) of 10 for a feature implies what?",
+        options: [
+            "The feature has a 10% correlation with the target variable.",
+            "The variance of the feature's estimated coefficient is 10 times larger than it would be if it were completely uncorrelated with the other predictors.",
+            "The feature should be multiplied by 10 to standardize its scale.",
+            "The model's R-squared value will increase by 10% if this feature is removed."
+        ],
+        answer: 1,
+        theory: "VIF = 1 / (1 - R^2_i), where R^2_i is the R-squared of regressing feature i against all other features. A VIF of 10 means the standard error of that feature's coefficient is severely inflated (10x variance) due to collinearity."
+    },
+    {
+        q: "How does the Coordinate Descent optimization algorithm uniquely operate when fitting an ElasticNet regression model?",
+        options: [
+            "It calculates the gradient for all features simultaneously and steps backward.",
+            "It optimizes the cost function with respect to a single feature/coefficient at a time, keeping all others fixed, and cycles through them until convergence.",
+            "It utilizes second-order derivatives (Hessian matrices) to jump directly to the minimum.",
+            "It randomly drops features at each step to prevent overfitting."
+        ],
+        answer: 1,
+        theory: "Coordinate descent does not use a global gradient vector. Instead, it minimizes along one coordinate (one feature coefficient) at a time while holding the rest constant. This is highly efficient for L1/ElasticNet penalties where coefficients frequently hit exactly zero."
+    },
+    {
+        q: "In Logistic Regression, the model outputs log-odds. If the calculated log-odds of an event is 0, what is the probability of the event occurring?",
+        options: [
+            "0%",
+            "50%",
+            "100%",
+            "Undefined"
+        ],
+        answer: 1,
+        theory: "Log-odds = ln(p / (1-p)). If log-odds = 0, then p / (1-p) = e^0 = 1. Therefore, p = 1 - p, which means p = 0.5 or 50%. It represents the exact decision boundary threshold."
+    },
+    {
+        q: "What violation of linear regression assumptions does the Durbin-Watson statistic specifically test for?",
+        options: [
+            "Heteroscedasticity of residuals.",
+            "Multicollinearity among independent variables.",
+            "Autocorrelation (serial correlation) of residuals.",
+            "Non-normality of residuals."
+        ],
+        answer: 2,
+        theory: "The Durbin-Watson test detects autocorrelation in the residuals, which is a common issue in time-series data where the error of one observation is correlated with the error of the preceding observation."
+    },
+    {
+        q: "When presented with a dataset containing two highly positively correlated features, how do Lasso (L1) and Ridge (L2) regression handle them differently?",
+        options: [
+            "Lasso keeps both and assigns them equal weights; Ridge assigns zero to both.",
+            "Lasso tends to arbitrarily select one feature and force the other to zero; Ridge shrinks both coefficients simultaneously and evenly.",
+            "Both algorithms will drop one of the features randomly.",
+            "Lasso combines them into an interaction term; Ridge ignores the correlation."
+        ],
+        answer: 1,
+        theory: "Due to the sharp corners of the L1 penalty geometry, Lasso is unstable with collinear features and will drop one. Ridge's spherical L2 penalty strictly penalizes magnitude, so halving the weight across two correlated features yields a lower penalty than keeping one large weight."
+    },
+    {
+        q: "In Support Vector Machines, what is the mathematical purpose of the 'Hinge Loss' function?",
+        options: [
+            "It penalizes predictions only when they fall on the wrong side of the margin boundary, ignoring points that are correctly classified beyond the margin.",
+            "It squares the errors of all predictions to exponentially punish large mistakes.",
+            "It converts the SVM output into a normalized probability distribution.",
+            "It calculates the Euclidean distance between support vectors."
+        ],
+        answer: 0,
+        theory: "Hinge loss is defined as max(0, 1 - y*f(x)). If the prediction f(x) has the correct sign and falls outside the margin (|f(x)| >= 1), the loss is 0. It only penalizes points inside the margin or misclassified entirely."
+    },
+    {
+        q: "Which of the following represents the mathematical formulation of a Polynomial Kernel of degree 'd' in SVM?",
+        options: [
+            "K(x, y) = exp(-gamma * ||x - y||^2)",
+            "K(x, y) = (gamma * <x, y> + r)^d",
+            "K(x, y) = tanh(gamma * <x, y> + r)",
+            "K(x, y) = ||x - y||^d"
+        ],
+        answer: 1,
+        theory: "The Polynomial kernel calculates the dot product of vectors x and y, scales it by gamma, adds a coefficient r, and raises the result to the power of d. Option A is the RBF kernel, and Option C is the Sigmoid kernel."
+    },
+    {
+        q: "Quadratic Discriminant Analysis (QDA) creates non-linear boundaries. What specifically allows QDA to generate quadratic boundaries instead of linear ones (like LDA)?",
+        options: [
+            "QDA applies a polynomial kernel trick to the input data.",
+            "QDA assumes that every distinct target class has its own separate covariance matrix, rather than a single pooled covariance matrix.",
+            "QDA squares all input features during the pre-processing phase.",
+            "QDA relies on the Hessian matrix of second derivatives."
+        ],
+        answer: 1,
+        theory: "Because LDA assumes a shared, pooled covariance matrix for all classes, the quadratic terms in the discriminant functions cancel out, leaving a linear boundary. QDA allows unique covariances per class, so the quadratic terms remain, forming parabolic/elliptical boundaries."
+    },
+    {
+        q: "In the Dual formulation of the SVM optimization problem, what do the Lagrangian multipliers (alpha) explicitly identify?",
+        options: [
+            "The learning rate for each gradient step.",
+            "The support vectors; only the support vectors will have an alpha strictly greater than zero.",
+            "The polynomial degree of the kernel.",
+            "The total number of misclassified points."
+        ],
+        answer: 1,
+        theory: "In the dual problem, every training instance gets an alpha. Because of the Karush-Kuhn-Tucker (KKT) complementary slackness conditions, alpha is 0 for all points safely outside the margin. Alpha > 0 only for the support vectors (points on the margin or violating it)."
+    },
+    {
+        q: "In a high-dimensional space (e.g., 10,000 features), why is Manhattan distance (L1) often preferred over Euclidean distance (L2) for KNN?",
+        options: [
+            "Manhattan distance is computationally faster to calculate on GPUs.",
+            "Euclidean distance exaggerates the impact of large differences in single dimensions, which in high-dimensional space makes all points appear almost equidistant (exacerbating the curse of dimensionality).",
+            "Manhattan distance automatically performs feature selection by dropping columns.",
+            "Euclidean distance cannot handle negative feature values."
+        ],
+        answer: 1,
+        theory: "L2 norms square the differences, heavily amplifying large gaps in isolated dimensions (often noise in high-D space). L1 norm (Manhattan) is less sensitive to extreme single-axis deviations, preserving slightly better contrast between near and far neighbors in high dimensions."
+    },
+    {
+        q: "Mathematically, what is the 'Naive' assumption in the Naive Bayes algorithm?",
+        options: [
+            "P(A|B) = P(B|A)",
+            "P(Feature_1, Feature_2 | Class) = P(Feature_1 | Class) * P(Feature_2 | Class)",
+            "P(Class) = 1 / Number of Classes",
+            "P(Feature_1 | Class) = P(Feature_1)"
+        ],
+        answer: 1,
+        theory: "The algorithm assumes that given the target class, all features are completely statistically independent of each other. This allows the joint probability to be calculated simply by multiplying the individual conditional probabilities."
+    },
+    {
+        q: "What is the primary computational drawback of the standard K-Nearest Neighbors (KNN) algorithm during the INFERENCE (prediction) phase?",
+        options: [
+            "It requires solving a massive matrix inversion for every prediction.",
+            "It must traverse a deep decision tree, which is cache-inefficient.",
+            "It must calculate the distance between the new query point and every single point in the training dataset (O(N) complexity per prediction).",
+            "It requires executing multiple backpropagation passes."
+        ],
+        answer: 2,
+        theory: "KNN is a 'lazy learner'. Training is essentially instant (just storing data), but inference requires calculating distances to all N training points to find the closest K, making it notoriously slow for large datasets at prediction time."
+    },
+    {
+        q: "When would you explicitly choose a Bernoulli Naive Bayes model over a Multinomial Naive Bayes model for document classification?",
+        options: [
+            "When the documents are extremely long and contain thousands of word frequency counts.",
+            "When the features are strictly binary flags indicating whether a word is present or absent in the document, ignoring its frequency.",
+            "When the text data contains continuous numerical values.",
+            "When the target variable has more than two classes."
+        ],
+        answer: 1,
+        theory: "Bernoulli NB explicitly models features as boolean (0 or 1). It penalizes the non-occurrence of a word. Multinomial NB models frequency counts (how many times a word appears) and is generally better for longer texts."
+    },
+    {
+        q: "In Decision Tree pruning, what does the 'Cost-Complexity Pruning' hyperparameter (often denoted as alpha or ccp_alpha) penalize?",
+        options: [
+            "The depth of the tree.",
+            "The number of features used in the tree.",
+            "The total number of terminal leaf nodes in the tree.",
+            "The impurity of the root node."
+        ],
+        answer: 2,
+        theory: "The cost-complexity objective function is: R_alpha(T) = R(T) + alpha * |T|, where R(T) is the total training error and |T| is the number of terminal leaves. A higher alpha places a heavier penalty on having many leaves, forcing aggressive pruning."
+    },
+    {
+        q: "In a Random Forest classifier with 'p' total features, what is the standard heuristic for the number of features randomly considered at each split?",
+        options: [
+            "p / 2",
+            "p (all features)",
+            "Square root of p",
+            "log2(p)"
+        ],
+        answer: 2,
+        theory: "The standard heuristic for classification is to consider sqrt(p) features at each node. This aggressively decorrelates the trees by preventing dominant features from being selected at the root of every tree in the ensemble."
+    },
+    {
+        q: "In Gradient Boosting for a binary classification task, what is the initial, foundational prediction (F_0) before any trees are built?",
+        options: [
+            "A random float between 0 and 1.",
+            "The mean of the target variable.",
+            "The log-odds of the positive class in the training data.",
+            "Exactly 0.5 for all instances."
+        ],
+        answer: 2,
+        theory: "To minimize the log-loss (cross-entropy), the optimal initial constant prediction is the log-odds of the target class: ln(P(y=1) / P(y=0)). Subsequent trees will model the residuals based on this initial log-odds baseline."
+    },
+    {
+        q: "How does the AdaBoost algorithm mathematically adjust the dataset weights after evaluating a base learner?",
+        options: [
+            "It drops the correctly classified instances from the dataset entirely.",
+            "It increases the weight of incorrectly classified instances exponentially using a factor based on the model's error rate (alpha).",
+            "It subtracts the predicted value from the actual value to calculate a continuous residual.",
+            "It recalculates the Gini impurity for the misclassified points."
+        ],
+        answer: 1,
+        theory: "AdaBoost calculates an 'Amount of Say' (alpha) for the current tree based on its error. Misclassified points have their weights increased by e^(alpha), making them heavily prioritized in the training of the next tree in the sequence."
+    },
+    {
+        q: "To prevent overfitting in a Stacking ensemble, how must the training data for the Level-1 meta-learner be generated?",
+        options: [
+            "By predicting the original training set with the Level-0 models after they are fully trained.",
+            "By using out-of-fold (OOF) predictions obtained via K-Fold Cross-Validation on the Level-0 models.",
+            "By predicting completely random data using the Level-0 models.",
+            "By using only the most important features from the original dataset."
+        ],
+        answer: 1,
+        theory: "If the Level-0 models predict the same data they trained on, the meta-learner will learn to trust the most overfitted models. OOF predictions ensure the meta-learner evaluates how the Level-0 models perform on unseen data."
+    },
+    {
+        q: "In Association Rules, what does a 'Leverage' score of 0 indicate?",
+        options: [
+            "The items perfectly substitute each other.",
+            "The items are statistically independent; they appear together exactly as often as would be expected by chance.",
+            "The rule is 100% confident.",
+            "The items never appear together."
+        ],
+        answer: 1,
+        theory: "Leverage computes the difference between the observed frequency of A and B appearing together and the expected frequency if they were independent: support(A U B) - support(A)*support(B). A value of 0 means exact independence."
+    },
+    {
+        q: "How does the FP-Tree data structure in the FP-Growth algorithm achieve high memory compression?",
+        options: [
+            "By hashing all item names into 8-bit integers.",
+            "By dropping infrequent items during the first pass and sharing common prefix paths for frequent itemsets in the tree structure.",
+            "By compressing the database into a zip file before processing.",
+            "By using a continuous floating-point array to represent item counts."
+        ],
+        answer: 1,
+        theory: "The FP-Tree orders items by frequency descending. Transactions with shared highly-frequent items will follow the exact same path down from the root of the tree, merging nodes and massively compressing the dataset into memory."
+    },
+    {
+        q: "In Recommender Systems using Matrix Factorization (e.g., SVD), why is an L2 Regularization term typically added to the loss function?",
+        options: [
+            "To speed up the matrix inversion process.",
+            "To prevent the latent factor vectors from growing excessively large and overfitting the sparse observed ratings.",
+            "To force the latent features to be orthogonal to each other.",
+            "To convert the continuous ratings into binary classification values."
+        ],
+        answer: 1,
+        theory: "Rating matrices are extremely sparse (often 99% empty). Without regularization, the algorithm will fit massive latent weights to perfectly memorize the few known ratings, causing terrible predictions for unseen items."
+    },
+    {
+        q: "What is a major limitation of Content-Based Filtering compared to Collaborative Filtering?",
+        options: [
+            "It suffers severely from the Cold Start problem for new items.",
+            "It cannot recommend items outside the user's established profile, creating a 'filter bubble' lacking serendipity.",
+            "It requires massive user-to-user correlation matrices.",
+            "It is mathematically impossible to scale to millions of items."
+        ],
+        answer: 1,
+        theory: "Content-based filtering relies on item metadata. If a user only watches Action movies, the system will only ever recommend Action movies. Collaborative filtering can recommend a Romance movie if users with similar tastes also liked it."
+    },
+    {
+        q: "In the context of the Ljung-Box test for Time Series, what does a high p-value (e.g., > 0.05) calculated on the residuals of an ARIMA model imply?",
+        options: [
+            "The residuals still contain strong autocorrelation patterns, meaning the model is inadequate.",
+            "The residuals are statistically indistinguishable from white noise, indicating the model has successfully captured the time series dynamics.",
+            "The original time series is non-stationary.",
+            "The model is severely overfitted."
+        ],
+        answer: 1,
+        theory: "The Ljung-Box test null hypothesis is that the data is independently distributed (white noise). A high p-value means we fail to reject the null, confirming that no significant autocorrelation remains in the residuals."
+    },
+    {
+        q: "In an ARIMA(p, d, q) model, the AR(p) component models the current value as a linear combination of past values. For the AR process to be theoretically stationary, what mathematical condition must the roots of its characteristic equation satisfy?",
+        options: [
+            "All roots must lie exactly on the unit circle.",
+            "All roots must lie inside the unit circle.",
+            "All roots must lie strictly outside the unit circle.",
+            "The roots must sum to exactly zero."
+        ],
+        answer: 2,
+        theory: "For an AR(p) process to be stationary, the roots of the characteristic polynomial (1 - phi_1*z - ... - phi_p*z^p = 0) must lie strictly outside the unit circle in the complex plane (absolute value > 1)."
+    },
+    {
+        q: "What is the explicit difference in the Null Hypothesis between the Augmented Dickey-Fuller (ADF) test and the KPSS test for time series stationarity?",
+        options: [
+            "Both tests have the exact same Null Hypothesis: the series is non-stationary.",
+            "ADF assumes the series is stationary (Null), while KPSS assumes it is non-stationary (Null).",
+            "ADF assumes the series has a unit root (non-stationary, Null), while KPSS assumes the series is trend-stationary (Null).",
+            "ADF tests for seasonality, while KPSS tests for trend."
+        ],
+        answer: 2,
+        theory: "They are opposites. To prove stationarity with ADF, you want a LOW p-value (rejecting the non-stationary null). To prove stationarity with KPSS, you want a HIGH p-value (failing to reject the stationary null)."
+    },
+    {
+        q: "In Anomaly Detection, what does a Local Outlier Factor (LOF) score significantly greater than 1 indicate?",
+        options: [
+            "The point is deep inside a dense cluster (an inlier).",
+            "The point is an outlier, as its local density is significantly lower than the local densities of its neighbors.",
+            "The point is the centroid of the entire dataset.",
+            "The algorithm failed to calculate a valid distance."
+        ],
+        answer: 1,
+        theory: "LOF compares the local density of a point to the local densities of its k-nearest neighbors. A score of ~1 means similar density. A score > 1 means the point is in a sparser region than its neighbors, marking it as a local outlier."
+    },
+    {
+        q: "What is the expected theoretical 'Average Path Length' for normal, non-anomalous points in an Isolation Forest trained on a dataset of size N?",
+        options: [
+            "O(1)",
+            "O(N)",
+            "O(log N)",
+            "O(N^2)"
+        ],
+        answer: 2,
+        theory: "Isolation Forests build random Binary Search Trees. The average depth (path length) for a standard, dense point to be isolated in a BST of N nodes converges to the harmonic number, which scales proportionally to O(log N). Anomalies are isolated much earlier than this average."
+    },
+    {
+        q: "When evaluating a classifier on a highly imbalanced dataset (e.g., 1 positive for every 1000 negatives), why is the Precision-Recall (PR) AUC heavily preferred over the ROC AUC?",
+        options: [
+            "ROC AUC cannot mathematically be computed for imbalanced data.",
+            "ROC curves use False Positive Rate (FPR). Because True Negatives are massive, FPR remains tiny even if thousands of false alarms occur, keeping ROC AUC artificially high.",
+            "PR AUC calculates the exact profit/loss of the model.",
+            "ROC AUC relies on the Gini impurity, which fails on imbalanced sets."
+        ],
+        answer: 1,
+        theory: "FPR = FP / (FP + TN). If TN is 1,000,000, having 5,000 False Positives barely nudges the FPR. Precision = FP / (FP + TP). Here, 5,000 False Positives absolutely destroys the Precision score, making PR AUC much more sensitive and truthful for rare classes."
+    },
+    {
+        q: "The F-beta score allows weighting precision vs recall. If you set Beta = 2 (the F2 score), what does this explicitly instruct the metric to do?",
+        options: [
+            "Weight Precision twice as heavily as Recall.",
+            "Weight Recall twice as heavily as Precision.",
+            "Calculate the geometric mean instead of the harmonic mean.",
+            "Ignore False Positives entirely."
+        ],
+        answer: 1,
+        theory: "The F-beta formula weights recall by beta^2. Therefore, an F2 score considers Recall to be twice as important as Precision. This is crucial for medical models where missing a positive case (Recall/False Negatives) is much worse than a false alarm."
+    },
+    {
+        q: "What specific aspect of a classification model does the 'Brier Score' evaluate?",
+        options: [
+            "The separation margin between the classes.",
+            "The calibration and accuracy of the predicted probabilities, calculating the mean squared difference between predicted probabilities and actual binary outcomes.",
+            "The execution time of the inference phase.",
+            "The optimal threshold for the ROC curve."
+        ],
+        answer: 1,
+        theory: "The Brier Score measures probabilistic calibration. If a model predicts 0.9 probability for a class, but it only belongs to that class 50% of the time, the model is poorly calibrated. Brier Score (acting like MSE for probabilities) detects this."
+    },
+    {
+        q: "In Cohen's Kappa metric for evaluating classification agreement, what exactly is the score correcting for?",
+        options: [
+            "Data leakage during cross-validation.",
+            "The probability of the model guessing the correct class purely by random chance based on the class distribution.",
+            "Missing values in the target column.",
+            "The latency of the model's predictions."
+        ],
+        answer: 1,
+        theory: "Cohen's Kappa = (Observed Accuracy - Expected Accuracy) / (1 - Expected Accuracy). It explicitly subtracts the accuracy that would be achieved by a model making random guesses weighted by the true class frequencies."
+    },
+    {
+        q: "What is the mathematical consequence of applying 'StandardScaler' (Z-score normalization) to a feature column?",
+        options: [
+            "It maps all values to a strict range between 0 and 1.",
+            "It transforms the feature to have a mean of exactly 0 and a standard deviation of exactly 1.",
+            "It guarantees the feature will follow a perfect Gaussian normal distribution.",
+            "It removes all extreme outliers from the dataset."
+        ],
+        answer: 1,
+        theory: "Z-score = (x - mean) / std. This simply shifts and scales the data. It does NOT change the underlying shape of the distribution (if it was skewed before, it remains skewed), but it enforces mean=0, std=1."
+    },
+    {
+        q: "In Collaborative Filtering, what is 'Implicit Feedback'?",
+        options: [
+            "A direct 5-star rating given by a user.",
+            "A written text review left on a product page.",
+            "Behavioral data inferred from user actions, such as clicks, view time, purchase history, or search queries, where the user does not explicitly rate the item.",
+            "The demographic data of the user."
+        ],
+        answer: 2,
+        theory: "Explicit feedback requires conscious effort (ratings). Implicit feedback is gathered passively from interactions. It is far more abundant but harder to interpret, as a 'click' does not definitively prove the user liked the item."
+    },
+    {
+        q: "Why do autoregressive models (like ARMA) struggle inherently with predicting long-term horizons accurately?",
+        options: [
+            "They run out of memory due to infinite lags.",
+            "Because predictions rely on past predictions, causing errors to compound and the forecasts to quickly regress to the mean of the series.",
+            "Because the PACF plot loses significance after 1 lag.",
+            "They cannot process decimal values."
+        ],
+        answer: 1,
+        theory: "In multi-step forecasting, an AR model must use its prediction for t+1 as the input to predict t+2. Any small error in t+1 is amplified in t+2. After a few steps, the confidence intervals explode and the forecast flatlines at the mean."
+    },
+    {
+        q: "In model evaluation, what is a 'Type II Error'?",
+        options: [
+            "A False Positive (Rejecting a true null hypothesis).",
+            "A False Negative (Failing to reject a false null hypothesis).",
+            "A True Positive.",
+            "A syntax error in the code."
+        ],
+        answer: 1,
+        theory: "In binary classification/hypothesis testing, Type I is a False Positive (crying wolf). Type II is a False Negative (failing to detect the wolf). Both represent critical metrics for evaluating model robustness."
+    }
+];
+
+let currentQuestionIndex = 0;
+let score = 0;
+let userAnswers = new Array(questions.length).fill(null);
+let timerLeft = 3600; 
+let timerInterval;
+
+const elements = {
+    timer: document.getElementById('timer'),
+    quizScreen: document.getElementById('quiz-screen'),
+    resultScreen: document.getElementById('result-screen'),
+    progressText: document.getElementById('progress-text'),
+    questionText: document.getElementById('question-text'),
+    optionsContainer: document.getElementById('options-container'),
+    nextBtn: document.getElementById('next-btn'),
+    scoreDisplay: document.getElementById('score-display'),
+    reviewContainer: document.getElementById('review-container')
+};
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timerLeft--;
+        updateTimerDisplay();
+        
+        if (timerLeft <= 0) {
+            clearInterval(timerInterval);
+            finishQuiz();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timerLeft / 60);
+    const seconds = timerLeft % 60;
+    elements.timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    if (timerLeft < 300) { 
+        elements.timer.classList.add('warning');
+    }
+}
+
+function loadQuestion() {
+    const q = questions[currentQuestionIndex];
+    elements.progressText.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+    elements.questionText.textContent = q.q;
+
+    elements.optionsContainer.innerHTML = '';
+    q.options.forEach((opt, index) => {
+        const label = document.createElement('label');
+        label.className = 'option-label';
+        
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'option';
+        input.value = index;
+        
+        if (userAnswers[currentQuestionIndex] === index) {
+            input.checked = true;
+        }
+
+        input.onchange = () => { elements.nextBtn.disabled = false; };
+        
+        label.appendChild(input);
+        
+        const span = document.createElement('span');
+        span.textContent = opt;
+        label.appendChild(span);
+        
+        elements.optionsContainer.appendChild(label);
+    });
+
+    elements.nextBtn.textContent = currentQuestionIndex === questions.length - 1 ? 'Submit Assessment' : 'Next Question';
+    elements.nextBtn.disabled = userAnswers[currentQuestionIndex] === null;
+}
+
+function handleNext() {
+    const selected = document.querySelector('input[name="option"]:checked');
+    if (selected) {
+        userAnswers[currentQuestionIndex] = parseInt(selected.value);
+    }
+
+    if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+    } else {
+        finishQuiz();
+    }
+}
+
+function finishQuiz() {
+    clearInterval(timerInterval);
+    elements.quizScreen.style.display = 'none';
+    elements.resultScreen.style.display = 'block';
+    
+    score = userAnswers.reduce((total, answer, index) => {
+        return total + (answer === questions[index].answer ? 1 : 0);
+    }, 0);
+
+    elements.scoreDisplay.textContent = `${score} / ${questions.length}`;
+    elements.timer.style.display = 'none';
+
+    renderReview();
+}
+
+function renderReview() {
+    elements.reviewContainer.innerHTML = '';
+    
+    questions.forEach((q, i) => {
+        const userAnswer = userAnswers[i];
+        const isCorrect = userAnswer === q.answer;
+        
+        const reviewEl = document.createElement('div');
+        reviewEl.className = `review-item ${isCorrect ? 'correct' : ''}`;
+        
+        const statusBadge = `<span class="status-badge ${isCorrect ? 'correct' : 'incorrect'}">${isCorrect ? 'Correct' : 'Incorrect'}</span>`;
+        
+        let html = `
+            ${statusBadge}
+            <div class="question-text">${i + 1}. ${q.q}</div>
+            <div style="margin-bottom: 0.5rem"><strong>Your Answer:</strong> ${userAnswer !== null ? q.options[userAnswer] : '<em>Unanswered</em>'}</div>
+            <div style="margin-bottom: 0.5rem; color: var(--accent);"><strong>Correct Answer:</strong> ${q.options[q.answer]}</div>
+            <div class="theory-box"><strong>Rationale:</strong> ${q.theory}</div>
+        `;
+        
+        reviewEl.innerHTML = html;
+        elements.reviewContainer.appendChild(reviewEl);
+    });
+}
+
+// Initialize
+startTimer();
+loadQuestion();
+
+</script>
+</body>
+</html>
