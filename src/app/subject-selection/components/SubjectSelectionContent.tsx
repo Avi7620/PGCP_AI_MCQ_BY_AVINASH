@@ -146,7 +146,7 @@ const subjects = [
     key: 'subj-pml',
     id: 'pml',
     name: 'PML',
-    fullName: 'Python for Machine Learning',
+    fullName: 'Practical Machine Learning',
     tagline: 'Scikit-learn, regression, classification & more',
     description:
       'Understand ML concepts and their Python implementations — linear regression, decision trees, clustering, neural networks, and model evaluation using Scikit-learn.',
