@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced OOP & File I/O Assessment</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Changed to allow scrolling for the review screen */
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .quiz-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .timer {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--danger);
+            background: #fee2e2;
+            padding: 8px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .timer.warning {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .code-snippet {
+            background-color: #1e293b;
+            color: #f8fafc;
+            padding: 15px 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+            border: 1px solid #0f172a;
+            display: none;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            background-color: #f8fafc;
+        }
+
+        .option-label:hover {
+            background-color: #e0e7ff;
+            border-color: #c7d2fe;
+        }
+
+        .option-label.selected {
+            border-color: var(--primary);
+            background-color: #eef2ff;
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .option-label input[type="radio"] {
+            margin-right: 15px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+        }
+
+        button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Results Screen */
+        .result-screen {
+            display: none;
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: #eef2ff;
+            color: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 0 auto 25px auto;
+            border: 8px solid var(--primary);
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .result-message {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn-secondary {
+            background-color: #64748b;
+        }
+        
+        .btn-secondary:hover:not(:disabled) {
+            background-color: #475569;
+        }
+
+        /* Review Screen Styles */
+        .review-screen {
+            display: none;
+        }
+
+        .review-screen h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .review-item {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .review-item h3 {
+            margin-top: 0;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+
+        .review-snippet {
+            background-color: #1e293b;
+            color: #f8fafc;
+            padding: 12px 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .review-option {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            background: #f8fafc;
+            border-left: 4px solid transparent;
+            font-size: 0.95rem;
+        }
+
+        .review-option.correct {
+            background-color: #d1fae5;
+            border-left-color: var(--success);
+            color: #065f46;
+            font-weight: 600;
+        }
+
+        .review-option.incorrect {
+            background-color: #fee2e2;
+            border-left-color: var(--danger);
+            color: #991b1b;
+        }
+
+        .review-unanswered {
+            color: #9a3412;
+            background-color: #ffedd5;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-style: italic;
+            margin-bottom: 15px;
+            border-left: 4px solid #f97316;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="quiz-container" id="quiz-container">
+    <div class="header">
+        <h1>Advanced Programming Quiz</h1>
+        <div class="timer" id="timer">⏱️ 30:00</div>
+    </div>
+    
+    <div class="progress-info">
+        <span id="question-counter">Question 1 of 20</span>
+        <span id="category-badge">Category: OOP</span>
+    </div>
+    <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-bar"></div>
+    </div>
+    
+    <div class="question-text" id="question-text">Loading question...</div>
+    
+    <pre class="code-snippet"><code id="code-snippet-text"></code></pre>
+    
+    <div class="options-grid" id="options-grid">
+        </div>
+    
+    <div class="controls">
+        <button id="next-btn" onclick="nextQuestion()" disabled>Next Question</button>
+    </div>
+</div>
+
+<div class="quiz-container result-screen" id="result-screen">
+    <div class="score-circle" id="score-display">0/20</div>
+    <div class="result-title" id="result-title">Assessment Complete</div>
+    <div class="result-message" id="result-message">You have finished the quiz. Check your score above.</div>
+    <div class="button-group">
+        <button class="btn-secondary" onclick="showReview()">Review Answers</button>
+        <button onclick="location.reload()">Retake Assessment</button>
+    </div>
+</div>
+
+<div class="quiz-container review-screen" id="review-screen">
+    </div>
+
+<script>
+    const questions = [
+        // Classes & Objects (1-4)
+        {
+            category: "Classes & Objects",
+            q: "What will be the output of the following code regarding class and instance variables?",
+            snippet: `class Employee:\n    company = "TechCorp"\n\nemp1 = Employee()\nemp2 = Employee()\nemp1.company = "DataInc"\n\nprint(emp1.company, emp2.company, Employee.company)`,
+            options: [
+                "DataInc DataInc DataInc",
+                "DataInc TechCorp TechCorp",
+                "DataInc TechCorp DataInc",
+                "TechCorp TechCorp TechCorp"
+            ],
+            answer: 1
+        },
+        {
+            category: "Classes & Objects",
+            q: "Which magic method is responsible for object creation (allocating memory) rather than object initialization?",
+            snippet: null,
+            options: ["__init__", "__new__", "__create__", "__call__"],
+            answer: 1
+        },
+        {
+            category: "Classes & Objects",
+            q: "What is the primary difference between @classmethod and @staticmethod in Python?",
+            snippet: null,
+            options: [
+                "@classmethod takes 'self' as the first argument, @staticmethod takes 'cls'.",
+                "@staticmethod can modify class state, @classmethod cannot.",
+                "@classmethod takes 'cls' as the first implicit argument, @staticmethod takes no implicit first argument.",
+                "There is no difference; they are aliases for the same decorator."
+            ],
+            answer: 2
+        },
+        {
+            category: "Encapsulation",
+            q: "How does Python enforce 'private' instance variables (e.g., __password) internally?",
+            snippet: null,
+            options: [
+                "It strictly prevents access from outside the class at the memory level.",
+                "It uses Name Mangling, changing the variable name to _ClassName__password.",
+                "It raises an AccessError automatically.",
+                "It encrypts the variable in memory."
+            ],
+            answer: 1
+        },
+
+        // Inheritance & Polymorphism (5-9)
+        {
+            category: "Inheritance",
+            q: "In the case of Multiple Inheritance (the Diamond Problem), how does Python determine the order in which base classes are searched for a method?",
+            snippet: `class A: pass\nclass B(A): pass\nclass C(A): pass\nclass D(B, C): pass`,
+            options: [
+                "Depth-First Search (DFS)",
+                "Breadth-First Search (BFS)",
+                "Method Resolution Order (MRO) using the C3 Linearization algorithm",
+                "Alphabetical order of class names"
+            ],
+            answer: 2
+        },
+        {
+            category: "Polymorphism",
+            q: "What concept does the following code snippet best demonstrate?",
+            snippet: `class Bird:\n    def fly(self): print("Flapping wings")\n\nclass Airplane:\n    def fly(self): print("Starting engines")\n\ndef make_it_fly(entity):\n    entity.fly()\n\nmake_it_fly(Bird())\nmake_it_fly(Airplane())`,
+            options: [
+                "Method Overloading",
+                "Duck Typing (Polymorphism)",
+                "Data Abstraction",
+                "Strict Inheritance"
+            ],
+            answer: 1
+        },
+        {
+            category: "Inheritance",
+            q: "What will be the output of the following inheritance code?",
+            snippet: `class Parent:\n    def __init__(self):\n        self.value = 4\n\nclass Child(Parent):\n    def __init__(self):\n        self.value = 5\n        super().__init__()\n\nc = Child()\nprint(c.value)`,
+            options: ["4", "5", "AttributeError", "0"],
+            answer: 0
+        },
+        {
+            category: "Abstraction",
+            q: "If a class inherits from Python's 'ABC' (Abstract Base Class) module and contains an @abstractmethod, what happens if you try to instantiate it directly?",
+            snippet: null,
+            options: [
+                "It creates a virtual object.",
+                "It ignores the abstract methods and creates the object.",
+                "It raises a TypeError indicating you cannot instantiate an abstract class.",
+                "It raises a NotImplementedError."
+            ],
+            answer: 2
+        },
+        {
+            category: "Polymorphism",
+            q: "How do you achieve operator overloading for the addition (+) operator in a custom Python class?",
+            snippet: null,
+            options: [
+                "By overriding the __add__(self, other) magic method.",
+                "By defining a method named add(self, other).",
+                "By overriding the __plus__(self, other) magic method.",
+                "Operator overloading is not supported in Python."
+            ],
+            answer: 0
+        },
+
+        // Exception Handling (10-15)
+        {
+            category: "Exception Handling",
+            q: "In a try-except-else-finally block, when is the 'else' block executed?",
+            snippet: null,
+            options: [
+                "Only when an exception is raised in the try block.",
+                "Regardless of whether an exception is raised or not.",
+                "Only when NO exception is raised in the try block.",
+                "If the finally block fails to execute."
+            ],
+            answer: 2
+        },
+        {
+            category: "Exception Handling",
+            q: "What will be the return value of the following function?",
+            snippet: `def test_exceptions():\n    try:\n        return 10 / 0\n    except ZeroDivisionError:\n        return "Divided by Zero"\n    finally:\n        return "Finally Block Executed"`,
+            options: [
+                "10",
+                "Divided by Zero",
+                "Finally Block Executed",
+                "It raises an unhandled ZeroDivisionError."
+            ],
+            answer: 2
+        },
+        {
+            category: "Exception Handling",
+            q: "When catching multiple exceptions, what is the correct syntax?",
+            snippet: null,
+            options: [
+                "except TypeError, ValueError:",
+                "except (TypeError, ValueError):",
+                "except TypeError or ValueError:",
+                "catch (TypeError, ValueError):"
+            ],
+            answer: 1
+        },
+        {
+            category: "Exception Handling",
+            q: "Why is it considered bad practice to use a bare 'except:' clause without specifying an exception class?",
+            snippet: `try:\n    process_data()\nexcept:\n    pass`,
+            options: [
+                "It is a syntax error in Python 3.",
+                "It will crash the program immediately.",
+                "It catches SystemExit and KeyboardInterrupt, making it difficult to terminate the program safely.",
+                "It only catches syntax errors."
+            ],
+            answer: 2
+        },
+        {
+            category: "Exception Handling",
+            q: "If you define a custom exception class, which built-in class should it inherit from by convention?",
+            snippet: null,
+            options: [
+                "BaseException",
+                "Error",
+                "Exception",
+                "CustomErrorBase"
+            ],
+            answer: 2
+        },
+        {
+            category: "Exception Handling",
+            q: "What is the output of the following nested exception handling?",
+            snippet: `try:\n    try:\n        raise ValueError("Inner")\n    except TypeError:\n        print("Caught TypeError")\nexcept ValueError:\n    print("Caught ValueError")`,
+            options: [
+                "Caught TypeError",
+                "Caught ValueError",
+                "Program crashes with Unhandled Exception",
+                "Inner"
+            ],
+            answer: 1
+        },
+
+        // File I/O (16-20)
+        {
+            category: "File I/O",
+            q: "What is the primary advantage of using the 'with' statement (Context Manager) when opening files?",
+            snippet: `with open('data.txt', 'r') as file:\n    content = file.read()`,
+            options: [
+                "It allows the file to be read faster.",
+                "It automatically encrypts the data being written.",
+                "It ensures that the file is properly closed after its suite finishes, even if an exception is raised.",
+                "It parses JSON data automatically."
+            ],
+            answer: 2
+        },
+        {
+            category: "File I/O",
+            q: "Which file mode opens a file for both reading and writing, but will TRUNCATE (overwrite) the file if it already exists?",
+            snippet: null,
+            options: ["r+", "w+", "a+", "x+"],
+            answer: 1
+        },
+        {
+            category: "File I/O",
+            q: "What does the file.seek(0, 2) method call accomplish?",
+            snippet: null,
+            options: [
+                "Moves the file pointer to the 2nd line of the file.",
+                "Moves the file pointer to the absolute end of the file.",
+                "Reads 2 bytes starting from position 0.",
+                "Returns the size of the file in bytes."
+            ],
+            answer: 1
+        },
+        {
+            category: "File I/O",
+            q: "What is the difference between file.readline() and file.readlines()?",
+            snippet: null,
+            options: [
+                "readline() reads a single line as a string; readlines() reads the entire file and returns a list of strings.",
+                "They do exactly the same thing, readlines() is just an alias.",
+                "readline() removes newline characters; readlines() keeps them.",
+                "readlines() requires a size parameter; readline() does not."
+            ],
+            answer: 0
+        },
+        {
+            category: "File I/O",
+            q: "When iterating over a file object directly, what does Python yield?",
+            snippet: `f = open('file.txt', 'r')\nfor item in f:\n    print(item)`,
+            options: [
+                "One character at a time.",
+                "One byte block (usually 4096 bytes) at a time.",
+                "One line at a time.",
+                "The entire file content as a single string."
+            ],
+            answer: 2
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let selectedOptionIndex = null;
+    let timeLeft = 1800; // 30 minutes in seconds
+    let timerInterval;
+    
+    // Track user answers here
+    let userAnswers = new Array(questions.length).fill(null);
+
+    // DOM Elements
+    const timerDisplay = document.getElementById('timer');
+    const questionCounter = document.getElementById('question-counter');
+    const categoryBadge = document.getElementById('category-badge');
+    const progressBar = document.getElementById('progress-bar');
+    const questionText = document.getElementById('question-text');
+    const snippetContainer = document.querySelector('.code-snippet');
+    const snippetText = document.getElementById('code-snippet-text');
+    const optionsGrid = document.getElementById('options-grid');
+    const nextBtn = document.getElementById('next-btn');
+    const quizContainer = document.getElementById('quiz-container');
+    const resultScreen = document.getElementById('result-screen');
+    const scoreDisplay = document.getElementById('score-display');
+    const resultTitle = document.getElementById('result-title');
+    const resultMessage = document.getElementById('result-message');
+    const reviewScreen = document.getElementById('review-screen');
+
+    function formatTime(seconds) {
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        return `⏱️ ${m}:${s}`;
+    }
+
+    function startTimer() {
+        timerDisplay.textContent = formatTime(timeLeft);
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timerDisplay.textContent = formatTime(timeLeft);
+            
+            if (timeLeft <= 300) {
+                timerDisplay.classList.add('warning');
+            }
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                finishQuiz(true); 
+            }
+        }, 1000);
+    }
+
+    function loadQuestion() {
+        const q = questions[currentQuestionIndex];
+        
+        selectedOptionIndex = null;
+        nextBtn.disabled = true;
+        optionsGrid.innerHTML = '';
+        
+        questionCounter.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+        categoryBadge.textContent = `Category: ${q.category}`;
+        const progressPercent = (currentQuestionIndex / questions.length) * 100;
+        progressBar.style.width = `${progressPercent}%`;
+        
+        questionText.textContent = `${currentQuestionIndex + 1}. ${q.q}`;
+        
+        if (q.snippet) {
+            snippetText.textContent = q.snippet;
+            snippetContainer.style.display = 'block';
+        } else {
+            snippetContainer.style.display = 'none';
+        }
+        
+        q.options.forEach((optText, index) => {
+            const label = document.createElement('label');
+            label.className = 'option-label';
+            
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.name = 'answer';
+            input.value = index;
+            
+            const span = document.createElement('span');
+            span.textContent = optText;
+            
+            label.appendChild(input);
+            label.appendChild(span);
+            
+            label.addEventListener('click', () => {
+                document.querySelectorAll('.option-label').forEach(el => el.classList.remove('selected'));
+                label.classList.add('selected');
+                input.checked = true;
+                
+                selectedOptionIndex = index;
+                nextBtn.disabled = false;
+            });
+            
+            optionsGrid.appendChild(label);
+        });
+
+        if (currentQuestionIndex === questions.length - 1) {
+            nextBtn.textContent = 'Submit Assessment';
+        }
+    }
+
+    function nextQuestion() {
+        if (selectedOptionIndex === null) return;
+
+        // Save the user's answer
+        userAnswers[currentQuestionIndex] = selectedOptionIndex;
+
+        if (selectedOptionIndex === questions[currentQuestionIndex].answer) {
+            score++;
+        }
+
+        currentQuestionIndex++;
+
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            finishQuiz(false);
+        }
+    }
+
+    function finishQuiz(timeOut) {
+        clearInterval(timerInterval);
+        
+        // If time ran out, ensure the currently selected answer (if any) is recorded
+        if (timeOut && currentQuestionIndex < questions.length && selectedOptionIndex !== null) {
+            userAnswers[currentQuestionIndex] = selectedOptionIndex;
+            if (selectedOptionIndex === questions[currentQuestionIndex].answer) {
+                score++;
+            }
+        }
+        
+        quizContainer.style.display = 'none';
+        resultScreen.style.display = 'block';
+        
+        scoreDisplay.textContent = `${score}/${questions.length}`;
+        
+        const percentage = (score / questions.length) * 100;
+        
+        if (timeOut) {
+            resultTitle.textContent = "Time's Up!";
+            resultTitle.style.color = "var(--danger)";
+        } else if (percentage >= 80) {
+            resultTitle.textContent = "Outstanding Performance!";
+            resultTitle.style.color = "var(--success)";
+            resultMessage.textContent = "You demonstrated a deep understanding of OOP, File I/O, and Exception Handling.";
+        } else if (percentage >= 60) {
+            resultTitle.textContent = "Solid Effort!";
+            resultMessage.textContent = "You passed, but a quick review of the advanced concepts would be beneficial.";
+        } else {
+            resultTitle.textContent = "Needs Review";
+            resultTitle.style.color = "var(--danger)";
+            resultMessage.textContent = "It looks like you need to review these concepts. Keep practicing!";
+        }
+    }
+
+    function showReview() {
+        resultScreen.style.display = 'none';
+        reviewScreen.style.display = 'block';
+
+        let html = '<h2>Assessment Review</h2>';
+
+        questions.forEach((q, qIndex) => {
+            const userAns = userAnswers[qIndex];
+            
+            html += `<div class="review-item">`;
+            html += `<h3>${qIndex + 1}. ${q.q}</h3>`;
+
+            if (q.snippet) {
+                html += `<pre class="review-snippet"><code>${q.snippet}</code></pre>`;
+            }
+
+            if (userAns === null) {
+                html += `<div class="review-unanswered">⚠️ You did not select an answer for this question.</div>`;
+            }
+
+            q.options.forEach((opt, oIndex) => {
+                let className = 'review-option';
+                let marker = '';
+
+                if (oIndex === q.answer) {
+                    className += ' correct';
+                    marker = ' ✓ (Correct)';
+                } else if (oIndex === userAns) {
+                    className += ' incorrect';
+                    marker = ' ✗ (Your Answer)';
+                }
+
+                html += `<div class="${className}">${opt}${marker}</div>`;
+            });
+
+            html += `</div>`;
+        });
+
+        html += `
+            <div class="controls" style="justify-content: center; border-top: none;">
+                <button onclick="location.reload()">Retake Assessment</button>
+            </div>
+        `;
+
+        reviewScreen.innerHTML = html;
+        window.scrollTo(0, 0); // Scroll back to top for review
+    }
+
+    // Init
+    window.onload = () => {
+        startTimer();
+        loadQuestion();
+    };
+
+</script>
+</body>
+</html>

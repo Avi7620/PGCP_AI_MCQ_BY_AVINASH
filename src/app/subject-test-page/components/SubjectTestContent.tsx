@@ -57,7 +57,7 @@ const subjectMap: Record<
         icon: BookOpen,
         iconGradient: 'gradient-bg-green',
         status: 'available',
-        filename: 'test1.html',
+        filename: 'unit1.html',
       },
       {
         key: 'test-python-2',
@@ -73,7 +73,7 @@ const subjectMap: Record<
         icon: Zap,
         iconGradient: 'gradient-bg-cyan',
         status: 'available',
-        filename: 'test2.html',
+        filename: 'unit2.html',
       },
       {
         key: 'test-python-3',
@@ -89,7 +89,7 @@ const subjectMap: Record<
         icon: Target,
         iconGradient: 'gradient-bg-amber',
         status: 'available',
-        filename: 'test3.html',
+        filename: 'unit3.html',
       },
       // {
       //   key: 'test-python-mock',

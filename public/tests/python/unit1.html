@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programming Concepts Quiz</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --background-color: #f3f4f6;
+            --card-background: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .quiz-container {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .timer {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #dc2626;
+            background: #fee2e2;
+            padding: 5px 15px;
+            border-radius: 5px;
+        }
+
+        .progress {
+            font-size: 1rem;
+            color: #6b7280;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .code-snippet {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+            white-space: pre-wrap;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: white;
+        }
+
+        .option-label:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .option-label.selected {
+            background-color: #eff6ff;
+            border-color: var(--primary-color);
+        }
+
+        .option-label input[type="radio"] {
+            margin-right: 15px;
+            transform: scale(1.3);
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        #prev-btn {
+            background-color: #6b7280;
+        }
+        
+        #prev-btn:hover {
+            background-color: #4b5563;
+        }
+
+        #prev-btn:disabled {
+            background-color: #d1d5db;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .result-container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 20px 0;
+        }
+
+        /* Review Section Styles */
+        .review-container {
+            margin-top: 30px;
+            text-align: left;
+            max-height: 500px;
+            overflow-y: auto;
+            border-top: 2px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .review-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9fafb;
+            border-left: 5px solid #d1d5db;
+        }
+
+        .review-item.correct {
+            border-left-color: #16a34a;
+        }
+
+        .review-item.wrong {
+            border-left-color: #dc2626;
+        }
+
+        .review-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .review-answer {
+            margin: 5px 0;
+            font-size: 0.95rem;
+        }
+
+        .correct-text {
+            color: #16a34a;
+            font-weight: bold;
+        }
+
+        .wrong-text {
+            color: #dc2626;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container" id="start-screen">
+        <div style="text-align: center;">
+            <h2>Programming Concepts Assessment</h2>
+            <p>Topics: Variables, Data Types, Operators, I/O, Strings</p>
+            <p>Questions: 20 | Time Limit: 30 Minutes</p>
+            <button class="btn" style="margin-top: 20px;" onclick="startQuiz()">Start Quiz</button>
+        </div>
+    </div>
+
+    <div class="quiz-container hidden" id="quiz-screen">
+        <div class="header">
+            <div class="progress" id="progress-text">Question 1 of 20</div>
+            <div class="timer" id="timer-display">30:00</div>
+        </div>
+
+        <div class="question-text" id="question-text"></div>
+        <div class="code-snippet hidden" id="code-snippet"></div>
+        
+        <div class="options-container" id="options-container"></div>
+
+        <div class="btn-container">
+            <button class="btn" id="prev-btn" onclick="prevQuestion()" disabled>Previous</button>
+            <button class="btn" id="next-btn" onclick="nextQuestion()" disabled>Next</button>
+        </div>
+    </div>
+
+    <div class="quiz-container hidden" id="result-screen">
+        <div class="result-container">
+            <h2>Assessment Complete</h2>
+            <p>Your final score is:</p>
+            <div class="score-display" id="final-score">0 / 20</div>
+            <p id="feedback-text"></p>
+            <button class="btn" id="toggle-review-btn" onclick="toggleReview()" style="float: none; margin-top: 20px;">Review Answers</button>
+            
+            <div class="review-container hidden" id="review-container">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { question: "What will be the output of the following I/O operations?", code: "print(type(print('Hello')))", options: ["<class 'str'>", "Hello\\n<class 'NoneType'>", "Hello\\n<class 'str'>", "TypeError"], answer: 1 },
+            { question: "Evaluate the following floor division operator string expression:", code: "print(-17 // 3)", options: ["-5", "-6", "-5.66", "-5.0"], answer: 1 },
+            { question: "What is the result of this variable swapping and assignment operation?", code: "x = 10\ny = 5\nx, y = y, x + y\nprint(x, y)", options: ["5 10", "15 5", "5 15", "10 15"], answer: 2 },
+            { question: "What evaluates to True due to Python's precision with floating-point numbers?", code: "print(0.1 + 0.2 == 0.3)", options: ["True", "False", "Error", "None"], answer: 1 },
+            { question: "How do strings handle mutability and item assignment?", code: "s = 'Algorithm'\ns[0] = 'a'\nprint(s)", options: ["algorithm", "Algorithm", "TypeError: 'str' object does not support item assignment", "aAlgorithm"], answer: 2 },
+            { question: "Evaluate the boolean representation of the following data types:", code: "print(bool(0.0), bool('False'), bool(''))", options: ["False True False", "False False False", "True True False", "False True True"], answer: 0 },
+            { question: "What is the output of the exponentiation operator precedence here?", code: "print(2 ** 3 ** 2)", options: ["64", "512", "72", "12"], answer: 1 },
+            { question: "Analyze the use of string repetition and I/O:", code: "user_input = '3' # Assume input() returned '3'\nprint(user_input * 3)", options: ["9", "333", "TypeError", "27"], answer: 1 },
+            { question: "What is the result of using bitwise XOR on a variable with itself?", code: "a = 25\na = a ^ a\nprint(a)", options: ["25", "1", "0", "TypeError"], answer: 2 },
+            { question: "How does the greater-than operator evaluate string comparisons?", code: "print('apple' > 'Apple')", options: ["True", "False", "TypeError", "None"], answer: 0 },
+            { question: "Determine the output of the string slice operations:", code: "word = 'Computation'\nprint(word[-1:-5:-1])", options: ["noit", "tion", "itua", "noita"], answer: 0 },
+            { question: "What is the type coercion result of the following expression?", code: "x = True + False + 5.0\nprint(type(x), x)", options: ["<class 'int'> 6", "<class 'float'> 6.0", "<class 'bool'> True", "TypeError"], answer: 1 },
+            { question: "What does the `.isalpha()` method return for this string object?", code: "print('HelloWorld123'.isalpha())", options: ["True", "False", "Error", "None"], answer: 1 },
+            { question: "What is the output of the chained comparison operators?", code: "print(1 < 2 < 3 == 3 > 1)", options: ["True", "False", "SyntaxError", "TypeError"], answer: 0 },
+            { question: "Evaluate the use of raw strings in variable assignment:", code: "path = r'C:\\new\\folder'\nprint(len(path))", options: ["13", "14", "12", "15"], answer: 1 },
+            { question: "What happens when multiple formatting methods are combined?", code: "x = 1.23456\nprint(f'{x:.2f}')", options: ["1.23456", "1.23", "1.24", "f'{x:.2f}'"], answer: 1 },
+            { question: "What is the result of the `max()` function applied to a string data type?", code: "print(max('artificial'))", options: ["a", "r", "t", "l"], answer: 2 },
+            { question: "Identify the output of this complex number type initialization:", code: "num = 3 + 4j\nprint(type(num.real))", options: ["<class 'int'>", "<class 'complex'>", "<class 'float'>", "<class 'real'>"], answer: 2 },
+            { question: "Evaluate the custom `sep` and `end` arguments in the standard I/O:", code: "print('A', 'B', sep='-', end='+')\nprint('C')", options: ["A-B+\\nC", "A B-+\\nC", "A-B+C", "A-B\\n+C"], answer: 2 },
+            { question: "What is the consequence of evaluating empty sequences with logical operators?", code: "a = ''\nb = 'Python'\nprint(a and b or 'C++')", options: ["Python", "'' (Empty string)", "C++", "True"], answer: 2 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let timeLeft = 1800; // 30 minutes in seconds
+        let timerInterval;
+        let userAnswers = new Array(questions.length).fill(null);
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+
+        // Helper function to safely render HTML strings
+        function escapeHtml(unsafe) {
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+
+        function startQuiz() {
+            startScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            startTimer();
+            loadQuestion();
+        }
+
+        function startTimer() {
+            const timerDisplay = document.getElementById('timer-display');
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endQuiz();
+                } else {
+                    timeLeft--;
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            const currentQ = questions[currentQuestionIndex];
+            document.getElementById('progress-text').textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+            document.getElementById('question-text').textContent = currentQ.question;
+            
+            const codeContainer = document.getElementById('code-snippet');
+            if (currentQ.code) {
+                codeContainer.textContent = currentQ.code;
+                codeContainer.classList.remove('hidden');
+            } else {
+                codeContainer.classList.add('hidden');
+            }
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            currentQ.options.forEach((option, index) => {
+                const label = document.createElement('label');
+                label.className = 'option-label';
+                
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'option';
+                radio.value = index;
+                const radioId = `q${currentQuestionIndex}_opt${index}`;
+                radio.id = radioId;
+                
+                label.htmlFor = radioId;
+                
+                if (userAnswers[currentQuestionIndex] === index) {
+                    radio.checked = true;
+                    label.classList.add('selected');
+                }
+
+                radio.addEventListener('change', () => {
+                    nextBtn.disabled = false;
+                    
+                    const allLabels = optionsContainer.querySelectorAll('.option-label');
+                    allLabels.forEach(lbl => lbl.classList.remove('selected'));
+                    
+                    label.classList.add('selected');
+                    userAnswers[currentQuestionIndex] = index;
+                });
+                
+                const span = document.createElement('span');
+                span.textContent = option;
+                
+                label.appendChild(radio);
+                label.appendChild(span);
+                optionsContainer.appendChild(label);
+            });
+
+            prevBtn.disabled = currentQuestionIndex === 0;
+            nextBtn.disabled = userAnswers[currentQuestionIndex] === null;
+
+            if (currentQuestionIndex === questions.length - 1) {
+                nextBtn.textContent = 'Submit Assessment';
+            } else {
+                nextBtn.textContent = 'Next';
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                endQuiz();
+            }
+        }
+
+        function endQuiz() {
+            clearInterval(timerInterval);
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            // Calculate final score
+            let score = 0;
+            for (let i = 0; i < questions.length; i++) {
+                if (userAnswers[i] === questions[i].answer) {
+                    score++;
+                }
+            }
+
+            document.getElementById('final-score').textContent = `${score} / ${questions.length}`;
+            
+            const percentage = (score / questions.length) * 100;
+            const feedbackBox = document.getElementById('feedback-text');
+            
+            if (percentage >= 80) {
+                feedbackBox.textContent = "Excellent work! You have a solid grasp of core programming mechanics.";
+                feedbackBox.style.color = "#16a34a";
+            } else if (percentage >= 60) {
+                feedbackBox.textContent = "Good job! Reviewing operator precedence and data mutability might help you improve further.";
+                feedbackBox.style.color = "#ca8a04";
+            } else {
+                feedbackBox.textContent = "Keep practicing! Focus on foundational behaviors of I/O, types, and strings.";
+                feedbackBox.style.color = "#dc2626";
+            }
+
+            buildReviewSection();
+        }
+
+        function buildReviewSection() {
+            const reviewContainer = document.getElementById('review-container');
+            reviewContainer.innerHTML = '<h3>Question Review</h3>';
+
+            questions.forEach((q, index) => {
+                const userAnswerIndex = userAnswers[index];
+                const isCorrect = userAnswerIndex === q.answer;
+                
+                const reviewItem = document.createElement('div');
+                reviewItem.className = `review-item ${isCorrect ? 'correct' : 'wrong'}`;
+                
+                let html = `<div class="review-question">${index + 1}. ${q.question}</div>`;
+                
+                if (q.code) {
+                    html += `<div class="code-snippet" style="margin-bottom: 10px; padding: 10px; font-size: 0.95rem;">${escapeHtml(q.code)}</div>`;
+                }
+
+                const userAnswerText = userAnswerIndex !== null ? q.options[userAnswerIndex] : "No answer selected";
+                const correctAnswerText = q.options[q.answer];
+
+                if (isCorrect) {
+                    html += `<div class="review-answer"><span class="correct-text">✓ Your Answer:</span> ${escapeHtml(userAnswerText)}</div>`;
+                } else {
+                    html += `<div class="review-answer"><span class="wrong-text">✗ Your Answer:</span> ${escapeHtml(userAnswerText)}</div>`;
+                    html += `<div class="review-answer"><span class="correct-text">✓ Correct Answer:</span> ${escapeHtml(correctAnswerText)}</div>`;
+                }
+
+                reviewItem.innerHTML = html;
+                reviewContainer.appendChild(reviewItem);
+            });
+        }
+
+        function toggleReview() {
+            const reviewContainer = document.getElementById('review-container');
+            const toggleBtn = document.getElementById('toggle-review-btn');
+            
+            if (reviewContainer.classList.contains('hidden')) {
+                reviewContainer.classList.remove('hidden');
+                toggleBtn.textContent = "Hide Review";
+            } else {
+                reviewContainer.classList.add('hidden');
+                toggleBtn.textContent = "Review Answers";
+            }
+        }
+    </script>
+</body>
+</html>

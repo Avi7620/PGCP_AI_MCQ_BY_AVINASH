@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Python Mechanics Assessment</title>
+    <style>
+        :root {
+            --primary: #2b5b84;
+            --secondary: #eef2f5;
+            --accent: #e74c3c;
+            --text-main: #2c3e50;
+            --bg-color: #f7f9fa;
+            --correct-bg: #d4edda;
+            --correct-border: #28a745;
+            --wrong-bg: #f8d7da;
+            --wrong-border: #dc3545;
+        }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; /* Changed to allow scrolling for review */
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+        #quiz-container { 
+            background: #fff; 
+            padding: 40px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+            width: 100%; 
+            max-width: 800px; 
+            position: relative; 
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 15px;
+        }
+        .header-container h1 {
+            font-size: 1.4em;
+            margin: 0;
+            color: var(--primary);
+        }
+        #timer { 
+            font-weight: 700; 
+            color: var(--accent); 
+            font-size: 1.2em; 
+            background: #fdf3f2;
+            padding: 8px 15px;
+            border-radius: 6px;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: var(--secondary);
+            border-radius: 4px;
+            height: 8px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        #progress {
+            height: 100%;
+            background-color: var(--primary);
+            width: 5%;
+            transition: width 0.3s ease;
+        }
+        .question { display: none; animation: fadeIn 0.4s ease; }
+        .question.active { display: block; }
+        h2 { font-size: 1.2em; line-height: 1.5; font-weight: 600; margin-bottom: 20px; }
+        pre { 
+            background: #282c34; 
+            color: #abb2bf; 
+            padding: 18px; 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            font-size: 0.95em; 
+            font-family: 'Consolas', 'Courier New', monospace;
+            border-left: 4px solid var(--primary);
+        }
+        code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #d35400;
+        }
+        .options { list-style: none; padding: 0; }
+        .options li { margin-bottom: 12px; }
+        .options label { 
+            display: flex;
+            align-items: center;
+            padding: 15px; 
+            background: var(--secondary); 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+        .options label:hover { 
+            background: #e1e8ed; 
+            border-color: #cbd4db;
+        }
+        .options input[type="radio"] { 
+            margin-right: 15px; 
+            transform: scale(1.2);
+            accent-color: var(--primary);
+        }
+        .btn-container { 
+            display: flex; 
+            justify-content: space-between; 
+            margin-top: 30px; 
+        }
+        button { 
+            background: var(--primary); 
+            color: #fff; 
+            border: none; 
+            padding: 12px 25px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 1.05em; 
+            font-weight: 600;
+            transition: background 0.3s; 
+        }
+        button:hover { background: #1f4363; }
+        button:disabled { background: #b0c4d6; cursor: not-allowed; }
+        
+        #result, #review-container { display: none; text-align: center; padding: 20px 0; }
+        #result h1 { color: #27ae60; font-size: 2.5em; margin-bottom: 10px; }
+        #result p { font-size: 1.2em; color: #555; }
+        .score-display {
+            font-size: 3em;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 20px 0;
+        }
+
+        /* Review Section Styles */
+        #review-container { text-align: left; }
+        #review-container h1 { text-align: center; color: var(--primary); margin-bottom: 30px; }
+        .review-q { 
+            margin-bottom: 30px; 
+            padding: 20px; 
+            background: #fff; 
+            border: 1px solid #e1e8ed;
+            border-radius: 8px; 
+        }
+        .review-q h3 { margin-top: 0; font-size: 1.1em; border-bottom: 1px solid #eee; padding-bottom: 10px;}
+        .review-opt { 
+            padding: 10px 15px; 
+            margin: 8px 0; 
+            border-radius: 6px; 
+            background: var(--secondary);
+            border-left: 4px solid transparent;
+        }
+        .correct-ans { 
+            background-color: var(--correct-bg); 
+            border-left-color: var(--correct-border); 
+            font-weight: bold;
+        }
+        .wrong-ans { 
+            background-color: var(--wrong-bg); 
+            border-left-color: var(--wrong-border); 
+            color: #721c24;
+        }
+        .unanswered {
+            font-style: italic;
+            color: #666;
+        }
+        .center-btn { display: flex; justify-content: center; margin-top: 30px; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div id="quiz-container">
+        <div class="header-container" id="quiz-header">
+            <h1>Python Evaluation</h1>
+            <div id="timer">30:00</div>
+        </div>
+        
+        <div class="progress-bar" id="quiz-progress-bar">
+            <div id="progress"></div>
+        </div>
+
+        <div id="questions-wrapper">
+            </div>
+
+        <div class="btn-container" id="quiz-nav">
+            <button id="prev-btn" onclick="prevQuestion()" disabled>Previous</button>
+            <button id="next-btn" onclick="nextQuestion()">Next</button>
+        </div>
+
+        <div id="result">
+            <h1>Assessment Complete</h1>
+            <p>Your execution run has finished. Here is your final score:</p>
+            <div class="score-display"><span id="score"></span> / 20</div>
+            <p>Review the concepts above to strengthen your understanding of Python's execution model.</p>
+            <div class="center-btn">
+                <button onclick="showReview()">Review Answers</button>
+            </div>
+        </div>
+
+        <div id="review-container">
+            </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                q: "1. What is the output of the following function regarding internal stack unwinding?<br><pre>def unwind_test():\n    try:\n        return 1\n    finally:\n        return 2\n\nprint(unwind_test())</pre>",
+                options: ["1", "2", "A SyntaxError occurs", "None"],
+                a: 1
+            },
+            {
+                q: "2. How does the <code>finally</code> block interact with an unhandled exception if it contains a <code>return</code> statement?<br><pre>def exception_swallow():\n    try:\n        1 / 0\n    finally:\n        return 'Done'\n\nprint(exception_swallow())</pre>",
+                options: [
+                    "ZeroDivisionError is raised",
+                    "Prints 'Done' and then raises ZeroDivisionError",
+                    "Prints 'Done' and the exception is silently discarded",
+                    "RuntimeError is raised due to invalid return"
+                ],
+                a: 2
+            },
+            {
+                q: "3. In a complete <code>try-except-else-finally</code> structure, when is the <code>else</code> block executed?",
+                options: [
+                    "Always, right before finally",
+                    "Only if an exception was raised and caught",
+                    "Only if no exception was raised in the try block",
+                    "If the finally block successfully executes"
+                ],
+                a: 2
+            },
+            {
+                q: "4. What is the result of the following inline <code>if-else</code> statement evaluating truthiness?<br><pre>result = 'A' if [0] else 'B'\nprint(result)</pre>",
+                options: ["'A'", "'B'", "0", "TypeError"],
+                a: 0
+            },
+            {
+                q: "5. Evaluate the short-circuiting behavior in the following assignment:<br><pre>x = (1 / 0) if False else (2 * 3)\nprint(x)</pre>",
+                options: ["ZeroDivisionError", "6", "False", "None"],
+                a: 1
+            },
+            {
+                q: "6. What is the output of the following chained comparison utilizing internal <code>if-else</code> logic?<br><pre>print(False == 0 and True == 1)</pre>",
+                options: ["False", "True", "TypeError", "0"],
+                a: 1
+            },
+            {
+                q: "7. When does the <code>else</code> clause associated with a <code>for</code> loop execute?",
+                options: [
+                    "When the loop is terminated by a break statement",
+                    "When the iterable is completely exhausted without encountering a break",
+                    "When an exception occurs inside the loop",
+                    "At the beginning of each iteration"
+                ],
+                a: 1
+            },
+            {
+                q: "8. What is the value of <code>i</code> after this loop finishes execution?<br><pre>for i in range(3):\n    pass\nprint(i)</pre>",
+                options: ["2", "3", "NameError: i is not defined", "None"],
+                a: 0
+            },
+            {
+                q: "9. Observe the behavior of the <code>while-else</code> structure:<br><pre>n = 3\nwhile n > 0:\n    n -= 1\n    if n == 1:\n        break\nelse:\n    print('End')</pre>What is printed?",
+                options: ["End", "1", "Nothing is printed", "SyntaxError"],
+                a: 2
+            },
+            {
+                q: "10. How are default mutable arguments handled in memory during function definition?<br><pre>def append_to(num, target=[]):\n    target.append(num)\n    return target\n\nprint(append_to(1))\nprint(append_to(2))</pre>",
+                options: ["[1] followed by [2]", "[1] followed by [1, 2]", "[1] followed by TypeError", "None"],
+                a: 1
+            },
+            {
+                q: "11. What syntax forces arguments to be strictly positional-only in Python 3.8+?<br><pre>def my_func(a, b, / , c):\n    pass</pre>",
+                options: ["The comma before c", "The forward slash ( / )", "The asterisk ( * )", "Positional-only arguments are not supported"],
+                a: 1
+            },
+            {
+                q: "12. What does the asterisk <code>*</code> signify when placed alone in a function signature?<br><pre>def setup_config(config, *, strict=False):\n    pass</pre>",
+                options: [
+                    "It gathers remaining positional arguments into a tuple",
+                    "It indicates all following arguments must be passed as keyword arguments",
+                    "It is a syntax error",
+                    "It unpacks a dictionary"
+                ],
+                a: 1
+            },
+            {
+                q: "13. What occurs when unpacking a dictionary using <code>**kwargs</code> if the dictionary contains non-string keys?<br><pre>args_dict = {1: 'one', 'two': 2}\ndef display(**kwargs):\n    pass\n\ndisplay(**args_dict)</pre>",
+                options: ["Executes successfully", "TypeError is raised", "KeyError is raised", "The non-string keys are converted to strings automatically"],
+                a: 1
+            },
+            {
+                q: "14. Which of the following function definitions has the correct parameter ordering according to Python's evaluation rules?",
+                options: [
+                    "def func(a, *args, b=1, **kwargs):",
+                    "def func(*args, a, **kwargs, b=1):",
+                    "def func(a, b=1, **kwargs, *args):",
+                    "def func(**kwargs, *args, a, b=1):"
+                ],
+                a: 0
+            },
+            {
+                q: "15. Is it possible to modify the elements of <code>*args</code> inside a function?",
+                options: [
+                    "Yes, args is a list and fully mutable",
+                    "No, args is a tuple, so the tuple itself cannot be changed, though mutable objects within it can be modified",
+                    "No, args enforces deep immutability on all its contents",
+                    "Yes, but only if you use the global keyword"
+                ],
+                a: 1
+            },
+            {
+                q: "16. Python functions operate using 'pass-by-object-reference'. What happens here?<br><pre>def modify(x):\n    x = [4, 5, 6]\n\nmy_list = [1, 2, 3]\nmodify(my_list)\nprint(my_list)</pre>",
+                options: ["[1, 2, 3]", "[4, 5, 6]", "None", "TypeError"],
+                a: 0
+            },
+            {
+                q: "17. What is the precise type of the return value from this function?<br><pre>def get_data():\n    return 10, 20, 30</pre>",
+                options: ["list", "tuple", "set", "Three distinct integer objects returned separately"],
+                a: 1
+            },
+            {
+                q: "18. What does the following return statement produce?<br><pre>def unpack_return():\n    a = [1, 2]\n    b = 3\n    return *a, b\n\nprint(unpack_return())</pre>",
+                options: ["([1, 2], 3)", "(1, 2, 3)", "SyntaxError", "[1, 2, 3]"],
+                a: 1
+            },
+            {
+                q: "19. How does Python bind variables in closures within a loop, and what is the output?<br><pre>funcs = [lambda: i for i in range(3)]\nprint(funcs[0]())</pre>",
+                options: ["0", "1", "2", "A list of [0, 1, 2]"],
+                a: 2
+            },
+            {
+                q: "20. Combining concepts: What is the output?<br><pre>def complex_func(*args, **kwargs):\n    try:\n        return sum(args) + kwargs.get('bonus', 0)\n    finally:\n        return 'Overridden'\n\nprint(complex_func(1, 2, 3, bonus=5))</pre>",
+                options: ["11", "6", "'Overridden'", "TypeError"],
+                a: 2
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let timeLeft = 30 * 60; // 30 minutes in seconds
+        let timerInterval;
+        let userAnswers = new Array(quizData.length).fill(null);
+
+        function initQuiz() {
+            startTimer();
+            renderQuestion(0);
+        }
+
+        function startTimer() {
+            const timerDisplay = document.getElementById('timer');
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitQuiz();
+                } else {
+                    timeLeft--;
+                    let m = Math.floor(timeLeft / 60);
+                    let s = timeLeft % 60;
+                    timerDisplay.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                    if(timeLeft < 300) {
+                        timerDisplay.style.color = '#c0392b';
+                        timerDisplay.style.background = '#fadbd8';
+                    }
+                }
+            }, 1000);
+        }
+
+        function saveAnswer() {
+            const selected = document.querySelector('input[name="q-opt"]:checked');
+            if (selected) {
+                userAnswers[currentQuestion] = parseInt(selected.value);
+            }
+        }
+
+        function renderQuestion(index) {
+            const qData = quizData[index];
+            let html = `<div class="question active"><h2>${qData.q}</h2><ul class="options">`;
+            qData.options.forEach((opt, i) => {
+                const checked = userAnswers[index] === i ? "checked" : "";
+                html += `<li><label><input type="radio" name="q-opt" value="${i}" ${checked}> <span>${opt}</span></label></li>`;
+            });
+            html += `</ul></div>`;
+            document.getElementById('questions-wrapper').innerHTML = html;
+            
+            // Update buttons
+            document.getElementById('prev-btn').disabled = index === 0;
+            if (index === quizData.length - 1) {
+                document.getElementById('next-btn').innerText = "Submit Assessment";
+                document.getElementById('next-btn').style.background = "#27ae60";
+            } else {
+                document.getElementById('next-btn').innerText = "Next Question";
+                document.getElementById('next-btn').style.background = "var(--primary)";
+            }
+
+            // Update Progress Bar
+            const progressPct = ((index + 1) / quizData.length) * 100;
+            document.getElementById('progress').style.width = `${progressPct}%`;
+        }
+
+        function nextQuestion() {
+            saveAnswer();
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                renderQuestion(currentQuestion);
+            } else {
+                submitQuiz();
+            }
+        }
+
+        function prevQuestion() {
+            saveAnswer();
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestion(currentQuestion);
+            }
+        }
+
+        function submitQuiz() {
+            saveAnswer();
+            clearInterval(timerInterval);
+            let finalScore = 0;
+            userAnswers.forEach((ans, i) => {
+                if (ans === quizData[i].a) finalScore++;
+            });
+            
+            // Hide quiz elements
+            document.getElementById('questions-wrapper').style.display = 'none';
+            document.getElementById('quiz-nav').style.display = 'none';
+            document.getElementById('quiz-header').style.display = 'none';
+            document.getElementById('quiz-progress-bar').style.display = 'none';
+            
+            // Show result
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            document.getElementById('score').innerText = finalScore;
+        }
+
+        function showReview() {
+            document.getElementById('result').style.display = 'none';
+            const reviewDiv = document.getElementById('review-container');
+            reviewDiv.style.display = 'block';
+
+            let reviewHTML = '<h1>Detailed Assessment Review</h1>';
+            
+            quizData.forEach((qData, qIndex) => {
+                const userAns = userAnswers[qIndex];
+                const correctAns = qData.a;
+                
+                reviewHTML += `<div class="review-q">`;
+                reviewHTML += `<h3>${qData.q}</h3>`;
+                
+                if (userAns === null) {
+                    reviewHTML += `<p class="unanswered">⚠️ You did not answer this question.</p>`;
+                }
+
+                qData.options.forEach((opt, oIndex) => {
+                    let cssClass = 'review-opt';
+                    let label = '';
+                    
+                    if (oIndex === correctAns) {
+                        cssClass += ' correct-ans';
+                        label = ' ✔️ (Correct Answer)';
+                    } else if (oIndex === userAns && userAns !== correctAns) {
+                        cssClass += ' wrong-ans';
+                        label = ' ❌ (Your Answer)';
+                    }
+
+                    reviewHTML += `<div class="${cssClass}">${opt}${label}</div>`;
+                });
+                reviewHTML += `</div>`;
+            });
+            
+            reviewHTML += `
+                <div class="center-btn">
+                    <button onclick="location.reload()">Restart Assessment</button>
+                </div>
+            `;
+            
+            reviewDiv.innerHTML = reviewHTML;
+            window.scrollTo(0, 0); // Scroll to top for the review
+        }
+
+        // Initialize
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
