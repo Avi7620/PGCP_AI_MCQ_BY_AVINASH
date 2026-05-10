@@ -47,7 +47,7 @@ export default function HeroSection() {
             `}
           >
             <Sparkles size={13} className="text-primary" />
-            <span className="text-xs font-600 text-primary">College MCQ Portal — 2025–26</span>
+            <span className="text-xs font-600 text-primary">======================================</span>
           </div>
 
           {/* Headline */}
@@ -115,7 +115,7 @@ export default function HeroSection() {
               ${mounted ? 'animate-slide-up stagger-5' : 'opacity-0'}
             `}
           >
-            {['DAI & Math','PML','Python', 'Java OOPs', 'Pandas & NumPy','Final Exams']?.map((tag) => (
+            {['DAI & Math','PML','Python', 'Java OOPs', 'DA','Final Exams']?.map((tag) => (
               <span
                 key={`tag-${tag}`}
                 className="text-[11px] font-500 px-2.5 py-1 rounded-full bg-muted/60 border border-border text-muted-foreground"

@@ -183,8 +183,8 @@ const subjectMap: Record<
   "ai-math": {
   id: 'ai-math',
   name: 'ai-math',
-  fullName: 'Data + AI Mathematics',
-  tagline: 'Linear algebra, probability, calculus & ML math',
+  fullName: 'DAI Mathematics',
+  tagline: '',
   icon: Calculator,
   gradient: 'gradient-bg-violet',
   accentColor: 'text-violet-400',
