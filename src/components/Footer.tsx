@@ -27,7 +27,7 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Quick Links */}
-        <div className="footer-col">
+        {/* <div className="footer-col">
           <h4 className="footer-heading">Quick Links</h4>
           <ul className="footer-links">
             <li><a href="/" data-testid="footer-link-home">Home</a></li>
@@ -35,7 +35,7 @@ const Footer: React.FC = () => {
             <li><a href="/projects" data-testid="footer-link-projects">Projects</a></li>
             <li><a href="/contact" data-testid="footer-link-contact">Contact</a></li>
           </ul>
-        </div>
+        </div> */}
 
         {/* Contact */}
         <div className="footer-col">
@@ -68,14 +68,7 @@ const Footer: React.FC = () => {
               </a>
             </li>
             <li>
-              <a
-                href="tel:7620487617"
-                className="footer-contact-link"
-                data-testid="footer-phone-link"
-              >
-                <Phone size={16} />
-                <span>7620487617</span>
-              </a>
+  
             </li>
             <li>
               <a
@@ -87,21 +80,14 @@ const Footer: React.FC = () => {
                 <span>jadhavavi7620@gmail.com</span>
               </a>
             </li>
-            <li>
-              <div className="footer-contact-link footer-contact-static">
-                <MapPin size={16} />
-                <span>Pune, Maharashtra, India</span>
-              </div>
-            </li>
+    
           </ul>
         </div>
       </div>
 
       {/* Bottom strip */}
       <div className="footer-bottom">
-        <p className="footer-copy">
-          © {year} <strong>Avinash Jadhav</strong>. All rights reserved.
-        </p>
+ 
         <p className="footer-made">
           Designed &amp; Developed with <Heart size={14} className="footer-heart" /> by{' '}
           <span className="footer-author">Avinash Jadhav</span>
