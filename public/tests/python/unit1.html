@@ -3,82 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Programming Concepts Quiz</title>
+    <title>Advanced Programming Quiz</title>
     <style>
         :root {
-            --primary-color: #2563eb;
-            --background-color: #f3f4f6;
-            --card-background: #ffffff;
-            --text-color: #1f2937;
-            --border-color: #e5e7eb;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --success: #10b981;
+            --danger: #ef4444;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
         }
 
         .quiz-container {
-            background-color: var(--card-background);
-            border-radius: 10px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            width: 100%;
+            background: var(--card-bg);
             max-width: 800px;
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 30px;
             box-sizing: border-box;
-            position: relative;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 20px;
             padding-bottom: 15px;
-            margin-bottom: 25px;
+            border-bottom: 2px solid var(--bg);
         }
 
         .timer {
             font-size: 1.25rem;
             font-weight: bold;
-            color: #dc2626;
+            color: var(--danger);
             background: #fee2e2;
             padding: 5px 15px;
-            border-radius: 5px;
+            border-radius: 20px;
         }
 
-        .progress {
-            font-size: 1rem;
-            color: #6b7280;
+        .question-progress {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-light);
         }
 
         .question-text {
             font-size: 1.2rem;
-            font-weight: 600;
             margin-bottom: 15px;
+            font-weight: 500;
         }
 
-        .code-snippet {
-            background-color: #1e1e1e;
+        pre {
+            background: #1e1e1e;
             color: #d4d4d4;
             padding: 15px;
-            border-radius: 5px;
-            font-family: 'Courier New', Courier, monospace;
+            border-radius: 8px;
             overflow-x: auto;
-            margin-bottom: 20px;
             font-size: 1.05rem;
-            white-space: pre-wrap;
+            margin-bottom: 20px;
         }
 
-        .options-container {
+        .options {
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -89,297 +89,345 @@
             display: flex;
             align-items: center;
             padding: 12px 15px;
-            border: 2px solid var(--border-color);
+            border: 2px solid #e5e7eb;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            background-color: white;
+            transition: all 0.2s;
         }
 
         .option-label:hover {
-            background-color: #f8fafc;
-            border-color: #cbd5e1;
+            background-color: #f9fafb;
+            border-color: #d1d5db;
+        }
+
+        .option-label input {
+            margin-right: 15px;
+            transform: scale(1.2);
         }
 
         .option-label.selected {
+            border-color: var(--primary);
             background-color: #eff6ff;
-            border-color: var(--primary-color);
         }
 
-        .option-label input[type="radio"] {
-            margin-right: 15px;
-            transform: scale(1.3);
-            cursor: pointer;
-            accent-color: var(--primary-color);
-        }
-
-        .btn-container {
+        .controls {
             display: flex;
             justify-content: space-between;
         }
 
-        .btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 25px;
+        button {
+            padding: 10px 24px;
             font-size: 1rem;
-            border-radius: 5px;
+            font-weight: 600;
+            color: white;
+            background-color: var(--primary);
+            border: none;
+            border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background 0.2s;
         }
 
-        .btn:hover {
-            background-color: #1d4ed8;
+        button:hover {
+            background-color: var(--primary-hover);
         }
 
-        .btn:disabled {
-            background-color: #93c5fd;
+        button:disabled {
+            background-color: #9ca3af;
             cursor: not-allowed;
         }
 
-        #prev-btn {
-            background-color: #6b7280;
-        }
-        
-        #prev-btn:hover {
-            background-color: #4b5563;
+        #submit-btn {
+            background-color: var(--success);
         }
 
-        #prev-btn:disabled {
-            background-color: #d1d5db;
+        #submit-btn:hover {
+            background-color: #059669;
         }
 
         .hidden {
             display: none !important;
         }
 
-        .result-container {
-            text-align: center;
-            padding: 20px;
-        }
-
-        .score-display {
-            font-size: 3rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin: 20px 0;
-        }
-
         /* Review Section Styles */
-        .review-container {
-            margin-top: 30px;
-            text-align: left;
-            max-height: 500px;
-            overflow-y: auto;
-            border-top: 2px solid var(--border-color);
-            padding-top: 20px;
-        }
-
         .review-item {
-            margin-bottom: 20px;
-            padding: 15px;
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
             border-radius: 8px;
-            background-color: #f9fafb;
-            border-left: 5px solid #d1d5db;
+            background: #fdfdfd;
         }
 
-        .review-item.correct {
-            border-left-color: #16a34a;
-        }
+        .review-item.correct-bg { border-left: 5px solid var(--success); }
+        .review-item.wrong-bg { border-left: 5px solid var(--danger); }
 
-        .review-item.wrong {
-            border-left-color: #dc2626;
-        }
-
-        .review-question {
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .review-answer {
-            margin: 5px 0;
+        .theory-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e0f2fe;
+            color: #0369a1;
+            border-radius: 6px;
             font-size: 0.95rem;
+            line-height: 1.5;
         }
 
-        .correct-text {
-            color: #16a34a;
+        #score-display {
+            text-align: center;
+            font-size: 2rem;
             font-weight: bold;
-        }
-
-        .wrong-text {
-            color: #dc2626;
-            font-weight: bold;
+            margin-bottom: 30px;
+            color: var(--primary);
         }
     </style>
 </head>
 <body>
 
-    <div class="quiz-container" id="start-screen">
-        <div style="text-align: center;">
-            <h2>Programming Concepts Assessment</h2>
-            <p>Topics: Variables, Data Types, Operators, I/O, Strings</p>
-            <p>Questions: 20 | Time Limit: 30 Minutes</p>
-            <button class="btn" style="margin-top: 20px;" onclick="startQuiz()">Start Quiz</button>
-        </div>
-    </div>
-
-    <div class="quiz-container hidden" id="quiz-screen">
+    <div class="quiz-container" id="quiz-screen">
         <div class="header">
-            <div class="progress" id="progress-text">Question 1 of 20</div>
-            <div class="timer" id="timer-display">30:00</div>
+            <div class="question-progress" id="progress">Question 1 / 20</div>
+            <div class="timer" id="timer">30:00</div>
         </div>
 
-        <div class="question-text" id="question-text"></div>
-        <div class="code-snippet hidden" id="code-snippet"></div>
-        
-        <div class="options-container" id="options-container"></div>
+        <div id="question-container">
+            </div>
 
-        <div class="btn-container">
-            <button class="btn" id="prev-btn" onclick="prevQuestion()" disabled>Previous</button>
-            <button class="btn" id="next-btn" onclick="nextQuestion()" disabled>Next</button>
+        <div class="controls">
+            <button id="prev-btn" onclick="prevQuestion()">Previous</button>
+            <button id="next-btn" onclick="nextQuestion()">Next</button>
+            <button id="submit-btn" class="hidden" onclick="submitQuiz()">Submit Quiz</button>
         </div>
     </div>
 
     <div class="quiz-container hidden" id="result-screen">
-        <div class="result-container">
-            <h2>Assessment Complete</h2>
-            <p>Your final score is:</p>
-            <div class="score-display" id="final-score">0 / 20</div>
-            <p id="feedback-text"></p>
-            <button class="btn" id="toggle-review-btn" onclick="toggleReview()" style="float: none; margin-top: 20px;">Review Answers</button>
-            
-            <div class="review-container hidden" id="review-container">
-                </div>
-        </div>
+        <div id="score-display"></div>
+        <h2>Detailed Review & Theory</h2>
+        <div id="review-container">
+            </div>
     </div>
 
     <script>
         const questions = [
-            { question: "What will be the output of the following I/O operations?", code: "print(type(print('Hello')))", options: ["<class 'str'>", "Hello\\n<class 'NoneType'>", "Hello\\n<class 'str'>", "TypeError"], answer: 1 },
-            { question: "Evaluate the following floor division operator string expression:", code: "print(-17 // 3)", options: ["-5", "-6", "-5.66", "-5.0"], answer: 1 },
-            { question: "What is the result of this variable swapping and assignment operation?", code: "x = 10\ny = 5\nx, y = y, x + y\nprint(x, y)", options: ["5 10", "15 5", "5 15", "10 15"], answer: 2 },
-            { question: "What evaluates to True due to Python's precision with floating-point numbers?", code: "print(0.1 + 0.2 == 0.3)", options: ["True", "False", "Error", "None"], answer: 1 },
-            { question: "How do strings handle mutability and item assignment?", code: "s = 'Algorithm'\ns[0] = 'a'\nprint(s)", options: ["algorithm", "Algorithm", "TypeError: 'str' object does not support item assignment", "aAlgorithm"], answer: 2 },
-            { question: "Evaluate the boolean representation of the following data types:", code: "print(bool(0.0), bool('False'), bool(''))", options: ["False True False", "False False False", "True True False", "False True True"], answer: 0 },
-            { question: "What is the output of the exponentiation operator precedence here?", code: "print(2 ** 3 ** 2)", options: ["64", "512", "72", "12"], answer: 1 },
-            { question: "Analyze the use of string repetition and I/O:", code: "user_input = '3' # Assume input() returned '3'\nprint(user_input * 3)", options: ["9", "333", "TypeError", "27"], answer: 1 },
-            { question: "What is the result of using bitwise XOR on a variable with itself?", code: "a = 25\na = a ^ a\nprint(a)", options: ["25", "1", "0", "TypeError"], answer: 2 },
-            { question: "How does the greater-than operator evaluate string comparisons?", code: "print('apple' > 'Apple')", options: ["True", "False", "TypeError", "None"], answer: 0 },
-            { question: "Determine the output of the string slice operations:", code: "word = 'Computation'\nprint(word[-1:-5:-1])", options: ["noit", "tion", "itua", "noita"], answer: 0 },
-            { question: "What is the type coercion result of the following expression?", code: "x = True + False + 5.0\nprint(type(x), x)", options: ["<class 'int'> 6", "<class 'float'> 6.0", "<class 'bool'> True", "TypeError"], answer: 1 },
-            { question: "What does the `.isalpha()` method return for this string object?", code: "print('HelloWorld123'.isalpha())", options: ["True", "False", "Error", "None"], answer: 1 },
-            { question: "What is the output of the chained comparison operators?", code: "print(1 < 2 < 3 == 3 > 1)", options: ["True", "False", "SyntaxError", "TypeError"], answer: 0 },
-            { question: "Evaluate the use of raw strings in variable assignment:", code: "path = r'C:\\new\\folder'\nprint(len(path))", options: ["13", "14", "12", "15"], answer: 1 },
-            { question: "What happens when multiple formatting methods are combined?", code: "x = 1.23456\nprint(f'{x:.2f}')", options: ["1.23456", "1.23", "1.24", "f'{x:.2f}'"], answer: 1 },
-            { question: "What is the result of the `max()` function applied to a string data type?", code: "print(max('artificial'))", options: ["a", "r", "t", "l"], answer: 2 },
-            { question: "Identify the output of this complex number type initialization:", code: "num = 3 + 4j\nprint(type(num.real))", options: ["<class 'int'>", "<class 'complex'>", "<class 'float'>", "<class 'real'>"], answer: 2 },
-            { question: "Evaluate the custom `sep` and `end` arguments in the standard I/O:", code: "print('A', 'B', sep='-', end='+')\nprint('C')", options: ["A-B+\\nC", "A B-+\\nC", "A-B+C", "A-B\\n+C"], answer: 2 },
-            { question: "What is the consequence of evaluating empty sequences with logical operators?", code: "a = ''\nb = 'Python'\nprint(a and b or 'C++')", options: ["Python", "'' (Empty string)", "C++", "True"], answer: 2 }
+            {
+                q: "What is the output of the following string operation?",
+                snippet: 'print("a" + "bc" * 2)',
+                options: ["abcbc", "abccbc", "a bc bc", "TypeError"],
+                correct: 0,
+                theory: "String replication (*) has higher precedence than concatenation (+). 'bc' * 2 evaluates to 'bcbc', which is then concatenated with 'a' to form 'abcbc'."
+            },
+            {
+                q: "Analyze the behavior of mutable data types assigned to multiple variables:",
+                snippet: 'x = [1, 2]\ny = x\ny.append(3)\nprint(x)',
+                options: ["[1, 2]", "[1, 2, 3]", "[3]", "TypeError"],
+                correct: 1,
+                theory: "Lists are mutable. Assigning `y = x` does not create a copy; both variables point to the same list object in memory. Modifying `y` also modifies `x`."
+            },
+            {
+                q: "What is the result of chained exponentiation?",
+                snippet: 'print(2 ** 3 ** 2)',
+                options: ["64", "512", "72", "SyntaxError"],
+                correct: 1,
+                theory: "Exponentiation (**) is right-associative. The expression evaluates from right to left: 3 ** 2 is 9, and then 2 ** 9 is 512."
+            },
+            {
+                q: "What does this string slicing operation yield?",
+                snippet: 's = "Python"\nprint(s[::-2])',
+                options: ["nohtyP", "nhy", "pto", "TypeError"],
+                correct: 1,
+                theory: "A step of -2 means the string is traversed backwards, taking every second character. 'P(y)t(h)o(n)' backwards skipping one yields 'n', 'h', 'y'."
+            },
+            {
+                q: "Evaluate the boolean coercion of empty string and float zero:",
+                snippet: 'print(bool(0.0) == bool(""))',
+                options: ["True", "False", "TypeError", "ValueError"],
+                correct: 0,
+                theory: "Both 0.0 (float zero) and \"\" (empty string) are considered 'falsy' in Python. Therefore, bool(0.0) is False and bool(\"\") is False. False == False evaluates to True."
+            },
+            {
+                q: "Calculate the result of the bitwise OR operator:",
+                snippet: 'print(5 | 3)',
+                options: ["8", "1", "7", "15"],
+                correct: 2,
+                theory: "Bitwise OR operates on binary representations. 5 is 101, and 3 is 011. 101 OR 011 results in 111, which is 7 in decimal."
+            },
+            {
+                q: "What is the exact output of this I/O function call?",
+                snippet: 'print("A", "B", sep="-", end="!")',
+                options: ["A B-!", "A-B!", "A-B\\n!", "AB-!"],
+                correct: 1,
+                theory: "The `sep` argument defines the separator between multiple objects ('-'), and the `end` argument overrides the default newline with '!'. Output: A-B!"
+            },
+            {
+                q: "Determine the output after this multiple variable assignment (tuple unpacking):",
+                snippet: 'a, b = 1, 2\na, b = b, a + b\nprint(a, b)',
+                options: ["1, 3", "2, 3", "2, 4", "SyntaxError"],
+                correct: 1,
+                theory: "Tuple unpacking evaluates the right side completely before assigning to the left side. `b` is 2, `a+b` is 3. So `a` becomes 2, and `b` becomes 3."
+            },
+            {
+                q: "How does floor division handle negative integers?",
+                snippet: 'print(-7 // 3)',
+                options: ["-2", "-2.33", "-3", "2"],
+                correct: 2,
+                theory: "Floor division (//) rounds the result down to the nearest whole integer (towards negative infinity). -7 / 3 is -2.33, so rounding down gives -3."
+            },
+            {
+                q: "What is the length of this set?",
+                snippet: 's = {1, 2, 2, 3, "3"}\nprint(len(s))',
+                options: ["3", "4", "5", "TypeError"],
+                correct: 1,
+                theory: "Sets automatically remove duplicate values. The integers `2` and `2` become one item. However, the integer `3` and the string `\"3\"` are different data types, so both are kept. Final set: {1, 2, 3, '3'} (length 4)."
+            },
+            {
+                q: "Identify the output of this logical operation chaining:",
+                snippet: 'print(0 or [] or "Hello" or True)',
+                options: ["0", "[]", "Hello", "True"],
+                correct: 2,
+                theory: "The `or` operator returns the first 'truthy' value it encounters. 0 and [] are falsy. 'Hello' is a non-empty string, so it is truthy. The evaluation stops there and returns 'Hello'."
+            },
+            {
+                q: "Evaluate the identity operator (`is`) on empty lists:",
+                snippet: 'a = []\nb = []\nprint(a is b)',
+                options: ["True", "False", "Error", "None"],
+                correct: 1,
+                theory: "The `is` operator checks for memory identity, not value equality. Even though both are empty lists, they are created as two distinct objects in memory."
+            },
+            {
+                q: "What is the output of the raw string literal?",
+                snippet: 'print(r"C:\\new\\text")',
+                options: ["C:\new\text (with actual newline and tab)", "C:\\new\\text", "C:\\new\\text (with escaped slashes)", "SyntaxError"],
+                correct: 1,
+                theory: "The `r` prefix denotes a raw string, which tells the interpreter to treat backslashes as literal characters rather than escape characters (like \\n or \\t)."
+            },
+            {
+                q: "What happens when a string is passed to list.extend()?",
+                snippet: 'x = [1]\nx.extend("ab")\nprint(x)',
+                options: ["[1, 'ab']", "[1, 'a', 'b']", "['ab', 1]", "TypeError"],
+                correct: 1,
+                theory: "The `extend()` method iterates over the provided iterable. Since a string is iterable, it adds each character ('a', 'b') as separate elements to the list."
+            },
+            {
+                q: "Calculate the result of the bitwise left shift:",
+                snippet: 'print(4 << 2)',
+                options: ["8", "16", "1", "6"],
+                correct: 1,
+                theory: "A left shift (`<<`) by `n` bits is equivalent to multiplying the number by 2^n. 4 * (2^2) = 4 * 4 = 16. In binary: 100 becomes 10000."
+            },
+            {
+                q: "What happens when you try to reassign a character in a string?",
+                snippet: 's = "cat"\ns[0] = "b"\nprint(s)',
+                options: ["bat", "cat", "b", "TypeError"],
+                correct: 3,
+                theory: "Strings in Python are immutable data types. You cannot change, add, or delete individual characters within an existing string object."
+            },
+            {
+                q: "Analyze variable chaining and arithmetic:",
+                snippet: 'x = y = z = 5\nx += 1\nprint(y)',
+                options: ["5", "6", "None", "Error"],
+                correct: 0,
+                theory: "Integers are immutable. While x, y, and z initially point to the same integer object (5), `x += 1` creates a new object (6) and binds `x` to it. `y` still points to 5."
+            },
+            {
+                q: "What is the output of f-string floating point formatting?",
+                snippet: 'num = 10\nprint(f"{num:.2f}")',
+                options: ["10", "10.0", "10.00", "10.00f"],
+                correct: 2,
+                theory: "The format specifier `:.2f` forces the number to be displayed as a float with exactly two decimal places, turning the integer 10 into the string '10.00'."
+            },
+            {
+                q: "How does the `in` operator handle strings?",
+                snippet: 'print("foo" in "foobar" and "baz" not in "foobar")',
+                options: ["True", "False", "Error", "None"],
+                correct: 0,
+                theory: "The `in` operator checks for substrings. 'foo' is inside 'foobar' (True), and 'baz' is not inside 'foobar' (True). True and True evaluates to True."
+            },
+            {
+                q: "What does the `type()` function return for a standalone trailing comma?",
+                snippet: 'x = 5,\nprint(type(x))',
+                options: ["<class 'int'>", "<class 'tuple'>", "<class 'list'>", "SyntaxError"],
+                correct: 1,
+                theory: "A trailing comma after an element creates a tuple in Python, even without parentheses. Therefore, `x` is assigned the tuple `(5,)`."
+            }
         ];
 
         let currentQuestionIndex = 0;
-        let timeLeft = 1800; // 30 minutes in seconds
-        let timerInterval;
         let userAnswers = new Array(questions.length).fill(null);
+        let timeLeft = 30 * 60; // 30 minutes in seconds
+        let timerInterval;
 
-        const startScreen = document.getElementById('start-screen');
+        // Elements
         const quizScreen = document.getElementById('quiz-screen');
         const resultScreen = document.getElementById('result-screen');
-        const nextBtn = document.getElementById('next-btn');
+        const questionContainer = document.getElementById('question-container');
+        const progressEl = document.getElementById('progress');
+        const timerEl = document.getElementById('timer');
         const prevBtn = document.getElementById('prev-btn');
-
-        // Helper function to safely render HTML strings
-        function escapeHtml(unsafe) {
-            return unsafe
-                 .replace(/&/g, "&amp;")
-                 .replace(/</g, "&lt;")
-                 .replace(/>/g, "&gt;")
-                 .replace(/"/g, "&quot;")
-                 .replace(/'/g, "&#039;");
-        }
-
-        function startQuiz() {
-            startScreen.classList.add('hidden');
-            quizScreen.classList.remove('hidden');
-            startTimer();
-            loadQuestion();
-        }
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
 
         function startTimer() {
-            const timerDisplay = document.getElementById('timer-display');
             timerInterval = setInterval(() => {
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    endQuiz();
-                } else {
-                    timeLeft--;
-                    const minutes = Math.floor(timeLeft / 60);
-                    const seconds = timeLeft % 60;
-                    timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    submitQuiz();
+                    return;
+                }
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if(timeLeft < 300) {
+                    timerEl.style.color = 'white';
+                    timerEl.style.backgroundColor = 'var(--danger)';
                 }
             }, 1000);
         }
 
         function loadQuestion() {
-            const currentQ = questions[currentQuestionIndex];
-            document.getElementById('progress-text').textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
-            document.getElementById('question-text').textContent = currentQ.question;
+            const q = questions[currentQuestionIndex];
+            progressEl.textContent = `Question ${currentQuestionIndex + 1} / ${questions.length}`;
             
-            const codeContainer = document.getElementById('code-snippet');
-            if (currentQ.code) {
-                codeContainer.textContent = currentQ.code;
-                codeContainer.classList.remove('hidden');
-            } else {
-                codeContainer.classList.add('hidden');
-            }
+            let html = `
+                <div class="question-text">${currentQuestionIndex + 1}. ${q.q}</div>
+                <pre><code>${q.snippet}</code></pre>
+                <div class="options">
+            `;
 
-            const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = '';
-            
-            currentQ.options.forEach((option, index) => {
-                const label = document.createElement('label');
-                label.className = 'option-label';
-                
-                const radio = document.createElement('input');
-                radio.type = 'radio';
-                radio.name = 'option';
-                radio.value = index;
-                const radioId = `q${currentQuestionIndex}_opt${index}`;
-                radio.id = radioId;
-                
-                label.htmlFor = radioId;
-                
-                if (userAnswers[currentQuestionIndex] === index) {
-                    radio.checked = true;
-                    label.classList.add('selected');
-                }
-
-                radio.addEventListener('change', () => {
-                    nextBtn.disabled = false;
-                    
-                    const allLabels = optionsContainer.querySelectorAll('.option-label');
-                    allLabels.forEach(lbl => lbl.classList.remove('selected'));
-                    
-                    label.classList.add('selected');
-                    userAnswers[currentQuestionIndex] = index;
-                });
-                
-                const span = document.createElement('span');
-                span.textContent = option;
-                
-                label.appendChild(radio);
-                label.appendChild(span);
-                optionsContainer.appendChild(label);
+            q.options.forEach((opt, index) => {
+                const isSelected = userAnswers[currentQuestionIndex] === index;
+                html += `
+                    <label class="option-label ${isSelected ? 'selected' : ''}">
+                        <input type="radio" name="option" value="${index}" ${isSelected ? 'checked' : ''} onchange="selectOption(${index})">
+                        ${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+                    </label>
+                `;
             });
 
-            prevBtn.disabled = currentQuestionIndex === 0;
-            nextBtn.disabled = userAnswers[currentQuestionIndex] === null;
+            html += `</div>`;
+            questionContainer.innerHTML = html;
 
+            // Update button states
+            prevBtn.disabled = currentQuestionIndex === 0;
+            
             if (currentQuestionIndex === questions.length - 1) {
-                nextBtn.textContent = 'Submit Assessment';
+                nextBtn.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
             } else {
-                nextBtn.textContent = 'Next';
+                nextBtn.classList.remove('hidden');
+                submitBtn.classList.add('hidden');
+            }
+        }
+
+        function selectOption(index) {
+            userAnswers[currentQuestionIndex] = index;
+            const labels = document.querySelectorAll('.option-label');
+            labels.forEach(label => label.classList.remove('selected'));
+            labels[index].classList.add('selected');
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
             }
         }
 
@@ -390,91 +438,51 @@
             }
         }
 
-        function nextQuestion() {
-            if (currentQuestionIndex < questions.length - 1) {
-                currentQuestionIndex++;
-                loadQuestion();
-            } else {
-                endQuiz();
-            }
-        }
-
-        function endQuiz() {
+        function submitQuiz() {
             clearInterval(timerInterval);
             quizScreen.classList.add('hidden');
             resultScreen.classList.remove('hidden');
-            
-            // Calculate final score
-            let score = 0;
-            for (let i = 0; i < questions.length; i++) {
-                if (userAnswers[i] === questions[i].answer) {
-                    score++;
-                }
-            }
-
-            document.getElementById('final-score').textContent = `${score} / ${questions.length}`;
-            
-            const percentage = (score / questions.length) * 100;
-            const feedbackBox = document.getElementById('feedback-text');
-            
-            if (percentage >= 80) {
-                feedbackBox.textContent = "Excellent work! You have a solid grasp of core programming mechanics.";
-                feedbackBox.style.color = "#16a34a";
-            } else if (percentage >= 60) {
-                feedbackBox.textContent = "Good job! Reviewing operator precedence and data mutability might help you improve further.";
-                feedbackBox.style.color = "#ca8a04";
-            } else {
-                feedbackBox.textContent = "Keep practicing! Focus on foundational behaviors of I/O, types, and strings.";
-                feedbackBox.style.color = "#dc2626";
-            }
-
-            buildReviewSection();
+            generateReview();
         }
 
-        function buildReviewSection() {
-            const reviewContainer = document.getElementById('review-container');
-            reviewContainer.innerHTML = '<h3>Question Review</h3>';
+        function generateReview() {
+            let score = 0;
+            let reviewHtml = '';
 
             questions.forEach((q, index) => {
-                const userAnswerIndex = userAnswers[index];
-                const isCorrect = userAnswerIndex === q.answer;
-                
-                const reviewItem = document.createElement('div');
-                reviewItem.className = `review-item ${isCorrect ? 'correct' : 'wrong'}`;
-                
-                let html = `<div class="review-question">${index + 1}. ${q.question}</div>`;
-                
-                if (q.code) {
-                    html += `<div class="code-snippet" style="margin-bottom: 10px; padding: 10px; font-size: 0.95rem;">${escapeHtml(q.code)}</div>`;
-                }
+                const userAns = userAnswers[index];
+                const isCorrect = userAns === q.correct;
+                if (isCorrect) score++;
 
-                const userAnswerText = userAnswerIndex !== null ? q.options[userAnswerIndex] : "No answer selected";
-                const correctAnswerText = q.options[q.answer];
+                const statusClass = isCorrect ? 'correct-bg' : 'wrong-bg';
+                const userAnsText = userAns !== null ? q.options[userAns].replace(/</g, "&lt;").replace(/>/g, "&gt;") : "<em>Unanswered</em>";
+                const correctAnsText = q.options[q.correct].replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-                if (isCorrect) {
-                    html += `<div class="review-answer"><span class="correct-text">✓ Your Answer:</span> ${escapeHtml(userAnswerText)}</div>`;
-                } else {
-                    html += `<div class="review-answer"><span class="wrong-text">✗ Your Answer:</span> ${escapeHtml(userAnswerText)}</div>`;
-                    html += `<div class="review-answer"><span class="correct-text">✓ Correct Answer:</span> ${escapeHtml(correctAnswerText)}</div>`;
-                }
-
-                reviewItem.innerHTML = html;
-                reviewContainer.appendChild(reviewItem);
+                reviewHtml += `
+                    <div class="review-item ${statusClass}">
+                        <strong>Q${index + 1}: ${q.q}</strong>
+                        <pre><code>${q.snippet}</code></pre>
+                        <p><strong>Your Answer:</strong> <span style="color: ${isCorrect ? 'var(--success)' : 'var(--danger)'}">${userAnsText}</span></p>
+                        ${!isCorrect ? `<p><strong>Correct Answer:</strong> <span style="color: var(--success)">${correctAnsText}</span></p>` : ''}
+                        <div class="theory-box">
+                            <strong>Theory / Explanation:</strong><br>
+                            ${q.theory}
+                        </div>
+                    </div>
+                `;
             });
+
+            const scorePercentage = (score / questions.length) * 100;
+            document.getElementById('score-display').innerHTML = `
+                Your Score: ${score} / ${questions.length} <br>
+                <span style="font-size: 1.2rem; color: var(--text-light)">(${scorePercentage}%)</span>
+            `;
+            document.getElementById('review-container').innerHTML = reviewHtml;
         }
 
-        function toggleReview() {
-            const reviewContainer = document.getElementById('review-container');
-            const toggleBtn = document.getElementById('toggle-review-btn');
-            
-            if (reviewContainer.classList.contains('hidden')) {
-                reviewContainer.classList.remove('hidden');
-                toggleBtn.textContent = "Hide Review";
-            } else {
-                reviewContainer.classList.add('hidden');
-                toggleBtn.textContent = "Review Answers";
-            }
-        }
+        // Initialize
+        loadQuestion();
+        startTimer();
     </script>
 </body>
 </html>

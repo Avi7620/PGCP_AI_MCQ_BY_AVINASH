@@ -95,13 +95,20 @@
 
 <script>
 const questions = [
-    {
-        q: "What is the output of the following Method Resolution Order (MRO) hierarchy snippet?",
-        code: "class A:\n    def process(self): return 'A'\nclass B(A):\n    pass\nclass C(A):\n    def process(self): return 'C'\nclass D(B, C):\n    pass\n\nprint(D().process())",
-        options: ["'A'", "'B'", "'C'", "TypeError: Cannot create a consistent method resolution"],
-        answer: 2,
-        theory: "Python uses C3 Linearization for MRO. Even though D inherits from B first, B does not implement `process`. The MRO for D is [D, B, C, A, object]. Therefore, it finds `process` in C before reaching A."
-    },
+{
+    q: "What will be the output of the following tuple swapping code?",
+    code: `
+t1 = (11, 22)
+t2 = (99, 88)
+
+t1, t2 = t2, t1
+
+print(t1[0])
+    `,
+    options: ["11", "22", "99", "88"],
+    answer: 2,
+    theory: "Tuple unpacking swaps references. After swapping, t1 becomes (99, 88), so t1[0] = 99."
+},
     {
         q: "How does inheriting from a class without `__slots__` affect a child class that defines `__slots__`?",
         code: "class Base:\n    pass\n\nclass Child(Base):\n    __slots__ = ['x']\n\nc = Child()\nc.y = 10",

@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java Programming Quiz — PGCP-AI</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --card: #1a2235;
+    --border: #2a3a55;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --green: #10b981;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --code-bg: #0d1117;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    background-image: radial-gradient(ellipse at 20% 50%, rgba(124,58,237,0.08) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 20%, rgba(0,229,255,0.06) 0%, transparent 50%);
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; }
+
+  /* ===== WELCOME ===== */
+  #welcome { text-align: center; gap: 2rem; }
+  .logo-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent); letter-spacing: 0.2em; border: 1px solid var(--accent); padding: 0.3rem 1rem; border-radius: 2px; display: inline-block; margin-bottom: 1rem; }
+  #welcome h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; line-height: 1.1; }
+  #welcome h1 span { color: var(--accent); }
+  .meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0; max-width: 560px; }
+  .meta-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem; }
+  .meta-card .val { font-size: 2rem; font-weight: 800; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+  .meta-card .lbl { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+  .start-btn { background: var(--accent); color: #000; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; border: none; padding: 1rem 3rem; border-radius: 6px; cursor: pointer; letter-spacing: 0.05em; transition: all 0.2s; }
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0,229,255,0.4); }
+
+  /* ===== QUIZ ===== */
+  #quiz { justify-content: flex-start; padding: 0; align-items: stretch; }
+  .quiz-shell { width: 100%; max-width: 860px; margin: 0 auto; padding: 1.5rem 1.5rem 6rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+  /* Header bar */
+  .quiz-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; width: 100%; }
+  .q-counter { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--muted); }
+  .q-counter span { color: var(--accent); font-weight: 700; }
+  .timer-box { display: flex; align-items: center; gap: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; }
+  .timer-box.warn { color: var(--yellow); }
+  .timer-box.danger { color: var(--red); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  /* Progress */
+  .prog-bar { height: 3px; background: var(--border); width: 100%; }
+  .prog-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: width 0.4s; }
+
+  /* Question dot nav */
+  .dot-nav { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
+  .dot { width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border); background: var(--card); font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); transition: all 0.15s; }
+  .dot:hover { border-color: var(--accent); color: var(--accent); }
+  .dot.answered { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+  .dot.current { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 8px rgba(0,229,255,0.4); }
+
+  /* Question card */
+  .q-type-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 3px; display: inline-block; margin-bottom: 0.8rem; }
+  .badge-theory { background: rgba(124,58,237,0.2); color: #a78bfa; border: 1px solid rgba(124,58,237,0.3); }
+  .badge-code { background: rgba(0,229,255,0.1); color: var(--accent); border: 1px solid rgba(0,229,255,0.2); }
+
+  .q-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; }
+  .q-num { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.8rem; }
+  .q-text { font-size: 1.1rem; font-weight: 600; line-height: 1.6; margin-bottom: 1.5rem; }
+
+  pre.code-snippet {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 1rem 1.2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+    color: #c9d1d9;
+    white-space: pre;
+  }
+
+  .kw { color: #ff79c6; }
+  .cl { color: #8be9fd; }
+  .st { color: #f1fa8c; }
+  .cm { color: #6272a4; }
+  .nm { color: #bd93f9; }
+
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 0.75rem; }
+  .opt-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem 1.2rem;
+    text-align: left;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    transition: all 0.15s;
+  }
+  .opt-btn:hover { border-color: var(--accent); background: rgba(0,229,255,0.05); }
+  .opt-btn.selected { border-color: var(--accent2); background: rgba(124,58,237,0.12); }
+  .opt-key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    background: var(--border);
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .opt-btn.selected .opt-key { background: var(--accent2); color: #fff; }
+
+  /* Navigation */
+  .nav-btns { display: flex; gap: 1rem; justify-content: space-between; margin-top: 1rem; }
+  .btn-nav { padding: 0.75rem 1.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.15s; }
+  .btn-nav:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-submit { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn-submit:hover { background: #059669; border-color: #059669; color: #fff; }
+
+  /* ===== RESULT ===== */
+  #result { gap: 2rem; text-align: center; }
+  .score-ring-wrap { position: relative; width: 160px; height: 160px; }
+  .score-ring-wrap svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--border); stroke-width: 8; }
+  .ring-fg { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1.5s ease; }
+  .score-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+  .score-pct { font-size: 2rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .score-lbl { font-size: 0.7rem; color: var(--muted); }
+  .result-stats { display: flex; gap: 1.5rem; }
+  .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.5rem; min-width: 100px; }
+  .stat-box .sv { font-size: 1.8rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .stat-box .sk { font-size: 0.75rem; color: var(--muted); }
+  .sv.c { color: var(--green); }
+  .sv.w { color: var(--red); }
+  .sv.s { color: var(--yellow); }
+  .btn-review { background: var(--accent2); color: #fff; border: none; padding: 0.85rem 2.5rem; border-radius: 6px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s; }
+  .btn-review:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(124,58,237,0.5); }
+
+  /* ===== REVIEW ===== */
+  #review { justify-content: flex-start; align-items: stretch; padding: 0; }
+  .review-shell { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; width: 100%; }
+  .review-header { text-align: center; margin-bottom: 2rem; }
+  .review-header h2 { font-size: 2rem; font-weight: 800; }
+  .review-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.2rem; }
+  .review-card.correct { border-left: 4px solid var(--green); }
+  .review-card.wrong { border-left: 4px solid var(--red); }
+  .review-card.skipped { border-left: 4px solid var(--yellow); }
+  .rv-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+  .rv-qnum { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); }
+  .rv-badge { font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 3px; font-family: 'JetBrains Mono', monospace; }
+  .rv-badge.correct { background: rgba(16,185,129,0.2); color: var(--green); }
+  .rv-badge.wrong { background: rgba(239,68,68,0.15); color: var(--red); }
+  .rv-badge.skipped { background: rgba(245,158,11,0.15); color: var(--yellow); }
+  .rv-q { font-weight: 600; margin-bottom: 0.8rem; line-height: 1.5; }
+  pre.rv-code { font-size: 0.78rem; margin-bottom: 0.8rem; }
+  .rv-opts { display: flex; flex-direction: column; gap: 0.4rem; }
+  .rv-opt { padding: 0.5rem 0.8rem; border-radius: 5px; font-size: 0.88rem; border: 1px solid var(--border); display: flex; gap: 0.6rem; align-items: flex-start; }
+  .rv-opt.correct-ans { border-color: var(--green); background: rgba(16,185,129,0.1); }
+  .rv-opt.user-wrong { border-color: var(--red); background: rgba(239,68,68,0.1); }
+  .rv-icon { font-size: 0.9rem; flex-shrink: 0; }
+  .btn-back { margin: 1.5rem auto 0; display: block; background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: 'Syne', sans-serif; font-weight: 600; padding: 0.75rem 2rem; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+  .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- ===== WELCOME ===== -->
+<div id="welcome" class="screen active">
+  <div class="logo-tag">ACTS PUNE · PGCP-AI · FEB 2026</div>
+  <h1>Java Programming<br><span>Quiz Challenge</span></h1>
+  <div class="meta-grid">
+    <div class="meta-card"><div class="val">40</div><div class="lbl">Questions</div></div>
+    <div class="meta-card"><div class="val">60</div><div class="lbl">Minutes</div></div>
+    <div class="meta-card"><div class="val">&lt;/&gt;</div><div class="lbl">Code Only</div></div>
+  </div>
+  <p style="color:var(--muted);font-size:0.9rem;max-width:400px;line-height:1.6;">All 40 questions are tricky code snippets — predict the output, spot compile errors, and reason through Java's trickiest edge cases.</p>
+  <button class="start-btn" onclick="startQuiz()">START QUIZ →</button>
+</div>
+
+<!-- ===== QUIZ ===== -->
+<div id="quiz" class="screen">
+  <div class="quiz-header">
+    <div class="q-counter">Q <span id="qNumDisplay">1</span> / 40</div>
+    <div class="timer-box" id="timerBox">⏱ <span id="timerDisplay">60:00</span></div>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:2.5%"></div></div>
+
+  <div class="quiz-shell">
+    <div class="dot-nav" id="dotNav"></div>
+    <div class="q-card" id="qCard">
+      <!-- dynamic -->
+    </div>
+    <div class="nav-btns">
+      <button class="btn-nav" id="btnPrev" onclick="navigate(-1)">← Previous</button>
+      <button class="btn-nav" id="btnNext" onclick="navigate(1)">Next →</button>
+      <button class="btn-nav btn-submit" id="btnSubmit" onclick="submitQuiz()" style="display:none">Submit Quiz ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="result" class="screen">
+  <h2 style="font-size:2rem;font-weight:800;">Quiz Complete!</h2>
+  <div class="score-ring-wrap">
+    <svg width="160" height="160" viewBox="0 0 160 160">
+      <circle class="ring-bg" cx="80" cy="80" r="68"/>
+      <circle class="ring-fg" id="ringFg" cx="80" cy="80" r="68" stroke-dasharray="427" stroke-dashoffset="427"/>
+    </svg>
+    <div class="score-center">
+      <div class="score-pct" id="scorePct">0%</div>
+      <div class="score-lbl">SCORE</div>
+    </div>
+  </div>
+  <div class="result-stats">
+    <div class="stat-box"><div class="sv c" id="rCorrect">0</div><div class="sk">Correct</div></div>
+    <div class="stat-box"><div class="sv w" id="rWrong">0</div><div class="sk">Wrong</div></div>
+    <div class="stat-box"><div class="sv s" id="rSkipped">0</div><div class="sk">Skipped</div></div>
+  </div>
+  <button class="btn-review" onclick="showReview()">View Full Review →</button>
+</div>
+
+<!-- ===== REVIEW ===== -->
+<div id="review" class="screen">
+  <div class="review-shell">
+    <div class="review-header">
+      <h2>Answer Review</h2>
+      <p style="color:var(--muted);margin-top:0.4rem;font-size:0.9rem;">All 40 questions with correct answers highlighted</p>
+    </div>
+    <div id="reviewContent"></div>
+    <button class="btn-back" onclick="showScreen('result')">← Back to Results</button>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+
+
+// Q4
+{type:'code', q:'What is printed by this static initializer block?',
+ code:`<span class="kw">class</span> <span class="cl">Init</span> {
+  <span class="kw">static int</span> x;
+  <span class="kw">static</span> {
+    x = <span class="nm">10</span>;
+    System.out.println(<span class="st">"static: "</span> + x);
+  }
+  <span class="cl">Init</span>() { System.out.println(<span class="st">"ctor: "</span> + x); }
+}
+<span class="kw">new</span> <span class="cl">Init</span>();
+<span class="kw">new</span> <span class="cl">Init</span>();`,
+ opts:['static: 10, ctor: 10, static: 10, ctor: 10','static: 10, ctor: 10, ctor: 10','ctor: 10, ctor: 10','Compilation error'], ans:1},
+
+// Q5
+{type:'code', q:'What does this polymorphism snippet output?',
+ code:`<span class="kw">class</span> <span class="cl">A</span> {
+  <span class="cl">String</span> name = <span class="st">"A"</span>;
+  <span class="cl">String</span> getName() { <span class="kw">return</span> <span class="st">"A-method"</span>; }
+}
+<span class="kw">class</span> <span class="cl">B</span> <span class="kw">extends</span> <span class="cl">A</span> {
+  <span class="cl">String</span> name = <span class="st">"B"</span>;
+  <span class="cl">String</span> getName() { <span class="kw">return</span> <span class="st">"B-method"</span>; }
+}
+<span class="cl">A</span> obj = <span class="kw">new</span> <span class="cl">B</span>();
+System.out.println(obj.name);
+System.out.println(obj.getName());`,
+ opts:['B B-method','A A-method','A B-method','B A-method'], ans:2},
+
+// Q6
+{type:'code', q:'What is the output of this varargs overload resolution?',
+ code:`<span class="kw">static void</span> go(<span class="kw">int</span>... x) { System.out.println(<span class="st">"varargs"</span>); }
+<span class="kw">static void</span> go(<span class="kw">int</span> x) { System.out.println(<span class="st">"single"</span>); }
+go(<span class="nm">5</span>);
+go(<span class="nm">5</span>, <span class="nm">6</span>);`,
+ opts:['varargs varargs','single varargs','single single','Compilation error'], ans:1},
+
+// Q7
+{type:'code', q:'What does this string pool + new keyword print?',
+ code:`<span class="cl">String</span> s1 = <span class="kw">new</span> <span class="cl">String</span>(<span class="st">"hello"</span>);
+<span class="cl">String</span> s2 = <span class="kw">new</span> <span class="cl">String</span>(<span class="st">"hello"</span>);
+<span class="cl">String</span> s3 = s1.intern();
+<span class="cl">String</span> s4 = s2.intern();
+System.out.println(s1 == s2);
+System.out.println(s3 == s4);`,
+ opts:['true true','false false','false true','true false'], ans:2},
+
+// Q8
+{type:'code', q:'What is the output of this tricky exception catch order?',
+ code:`<span class="kw">try</span> {
+  <span class="kw">throw new</span> <span class="cl">NullPointerException</span>(<span class="st">"npe"</span>);
+} <span class="kw">catch</span> (<span class="cl">RuntimeException</span> e) {
+  System.out.println(<span class="st">"runtime: "</span> + e.getMessage());
+} <span class="kw">catch</span> (<span class="cl">NullPointerException</span> e) {
+  System.out.println(<span class="st">"npe: "</span> + e.getMessage());
+}`,
+ opts:['runtime: npe','npe: npe','Both blocks run','Compilation error'], ans:3},
+
+// Q9
+{type:'code', q:'What does this lambda capturing a local variable print?',
+ code:`<span class="kw">int</span> base = <span class="nm">10</span>;
+<span class="cl">Function</span>&lt;<span class="cl">Integer</span>, <span class="cl">Integer</span>&gt; adder = x -> x + base;
+<span class="cm">// base = 20; // uncommenting this causes compile error</span>
+System.out.println(adder.apply(<span class="nm">5</span>));`,
+ opts:['5','10','15','20'], ans:2},
+
+// Q10
+{type:'code', q:'What is printed by this generic bounded wildcard code?',
+ code:`<span class="kw">static double</span> sum(<span class="cl">List</span>&lt;? <span class="kw">extends</span> <span class="cl">Number</span>&gt; list) {
+  <span class="kw">double</span> s = <span class="nm">0</span>;
+  <span class="kw">for</span> (<span class="cl">Number</span> n : list) s += n.doubleValue();
+  <span class="kw">return</span> s;
+}
+System.out.println(sum(<span class="cl">Arrays</span>.asList(<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>)));`,
+ opts:['6','6.0','Compilation error','ClassCastException'], ans:1},
+
+// Q11
+{type:'code', q:'What does this Comparable with TreeSet output?',
+ code:`<span class="cl">TreeSet</span>&lt;<span class="cl">Integer</span>&gt; set = <span class="kw">new</span> <span class="cl">TreeSet</span>&lt;&gt;();
+set.add(<span class="nm">5</span>); set.add(<span class="nm">1</span>); set.add(<span class="nm">3</span>); set.add(<span class="nm">1</span>);
+System.out.println(set);`,
+ opts:['[5, 1, 3, 1]','[1, 3, 5]','[5, 3, 1]','[1, 1, 3, 5]'], ans:1},
+
+// Q12
+{type:'code', q:'What is the output of this multi-catch block?',
+ code:`<span class="kw">try</span> {
+  <span class="cl">String</span> s = <span class="kw">null</span>;
+  s.length();
+} <span class="kw">catch</span> (<span class="cl">NullPointerException</span> | <span class="cl">IllegalArgumentException</span> e) {
+  System.out.println(e.getClass().getSimpleName());
+}`,
+ opts:['NullPointerException','IllegalArgumentException','Exception','Compilation error'], ans:0},
+
+// Q13
+{type:'code', q:'What does this Optional chain output?',
+ code:`<span class="cl">Optional</span>&lt;<span class="cl">String</span>&gt; opt = <span class="cl">Optional</span>.of(<span class="st">"hello"</span>)
+    .filter(s -> s.length() > <span class="nm">3</span>)
+    .map(<span class="cl">String</span>::toUpperCase);
+System.out.println(opt.orElse(<span class="st">"none"</span>));`,
+ opts:['none','hello','HELLO','Optional[HELLO]'], ans:2},
+
+// Q14
+{type:'code', q:'What is printed by this interface with static method?',
+ code:`<span class="kw">interface</span> <span class="cl">MathOp</span> {
+  <span class="kw">static int</span> square(<span class="kw">int</span> x) { <span class="kw">return</span> x * x; }
+  <span class="kw">default int</span> cube(<span class="kw">int</span> x) { <span class="kw">return</span> x * x * x; }
+}
+System.out.println(<span class="cl">MathOp</span>.square(<span class="nm">3</span>));`,
+ opts:['9','27','Compilation error','3'], ans:0},
+
+// Q15
+{type:'code', q:'What does this method reference on an instance method output?',
+ code:`<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; words = <span class="cl">Arrays</span>.asList(<span class="st">"banana"</span>, <span class="st">"apple"</span>, <span class="st">"cherry"</span>);
+words.stream()
+     .sorted(<span class="cl">String</span>::compareTo)
+     .forEach(System.out::println);`,
+ opts:['banana apple cherry','apple banana cherry','cherry banana apple','apple cherry banana'], ans:1},
+
+// Q16
+{type:'code', q:'What is the output of this HashMap iteration?',
+ code:`<span class="cl">Map</span>&lt;<span class="cl">String</span>, <span class="cl">Integer</span>&gt; map = <span class="kw">new</span> <span class="cl">HashMap</span>&lt;&gt;();
+map.put(<span class="st">"a"</span>, <span class="nm">1</span>);
+map.put(<span class="st">"b"</span>, <span class="nm">2</span>);
+map.put(<span class="st">"a"</span>, <span class="nm">3</span>);
+System.out.println(map.size());
+System.out.println(map.get(<span class="st">"a"</span>));`,
+ opts:['3 and 1','2 and 1','2 and 3','3 and 3'], ans:2},
+
+// Q17
+{type:'code', q:'What does this Supplier and Consumer chain print?',
+ code:`<span class="cl">Supplier</span>&lt;<span class="cl">String</span>&gt; sup = () -> <span class="st">"PGCP"</span>;
+<span class="cl">Consumer</span>&lt;<span class="cl">String</span>&gt; con = s -> System.out.println(s.toLowerCase());
+con.accept(sup.get());`,
+ opts:['PGCP','pgcp','pgcp PGCP','Compilation error'], ans:1},
+
+// Q18
+{type:'code', q:'What is the output of this inheritance constructor chain?',
+ code:`<span class="kw">class</span> <span class="cl">P</span> {
+  <span class="cl">P</span>() { System.out.println(<span class="st">"P"</span>); }
+}
+<span class="kw">class</span> <span class="cl">C</span> <span class="kw">extends</span> <span class="cl">P</span> {
+  <span class="cl">C</span>() {
+    System.out.println(<span class="st">"C"</span>);
+  }
+}
+<span class="kw">new</span> <span class="cl">C</span>();`,
+ opts:['C','P','P then C','C then P'], ans:2},
+
+// Q19
+{type:'code', q:'What is printed by this tricky post/pre-increment expression?',
+ code:`<span class="kw">int</span> i = <span class="nm">3</span>;
+<span class="kw">int</span> result = i++ + ++i + i++;
+System.out.println(result);
+System.out.println(i);`,
+ opts:['result=12 i=6','result=14 i=6','result=11 i=5','result=13 i=6'], ans:0},
+
+// Q20
+{type:'code', q:'What does this Comparable sort output?',
+ code:`<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; list = <span class="kw">new</span> <span class="cl">ArrayList</span>&lt;&gt;(<span class="cl">Arrays</span>.asList(<span class="st">"z"</span>,<span class="st">"a"</span>,<span class="st">"m"</span>));
+<span class="cl">Collections</span>.sort(list, (<span class="cl">Comparator</span>.reverseOrder()));
+System.out.println(list);`,
+ opts:['[a, m, z]','[z, m, a]','[m, a, z]','Compilation error'], ans:1},
+
+// Q21
+{type:'code', q:'What is the output of this ternary inside println?',
+ code:`<span class="kw">int</span> x = <span class="nm">5</span>, y = <span class="nm">10</span>;
+System.out.println(x > y ? <span class="st">"x"</span> : x == y ? <span class="st">"eq"</span> : <span class="st">"y"</span>);`,
+ opts:['x','y','eq','Compilation error'], ans:1},
+
+// Q22
+{type:'code', q:'What does this checked exception in lambda cause?',
+ code:`<span class="cm">// Runnable r = () -> { throw new Exception("err"); };</span>
+<span class="cl">Runnable</span> r2 = () -> {
+  <span class="kw">throw new</span> <span class="cl">RuntimeException</span>(<span class="st">"err"</span>);
+};
+r2.run();`,
+ opts:['Prints err','Prints nothing','Throws RuntimeException','Compilation error'], ans:2},
+
+// Q23
+{type:'code', q:'What does this nested generic method return?',
+ code:`<span class="kw">static</span> &lt;T&gt; <span class="cl">List</span>&lt;T&gt; repeat(T val, <span class="kw">int</span> n) {
+  <span class="cl">List</span>&lt;T&gt; list = <span class="kw">new</span> <span class="cl">ArrayList</span>&lt;&gt;();
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="nm">0</span>; i&lt;n; i++) list.add(val);
+  <span class="kw">return</span> list;
+}
+System.out.println(repeat(<span class="st">"hi"</span>, <span class="nm">3</span>).size());`,
+ opts:['0','1','2','3'], ans:3},
+
+// Q24
+{type:'code', q:'What is the output of this stream with distinct and limit?',
+ code:`<span class="cl">Arrays</span>.asList(<span class="nm">3</span>,<span class="nm">1</span>,<span class="nm">4</span>,<span class="nm">1</span>,<span class="nm">5</span>,<span class="nm">3</span>)
+      .stream()
+      .distinct()
+      .sorted()
+      .limit(<span class="nm">3</span>)
+      .forEach(System.out::print);`,
+ opts:['314','134','135','345'], ans:1},
+
+// Q25
+{type:'code', q:'What does this instanceof + casting print?',
+ code:`<span class="cl">Object</span> obj = <span class="st">"Hello"</span>;
+<span class="kw">if</span> (obj <span class="kw">instanceof</span> <span class="cl">String</span> s) {
+  System.out.println(s.length());
+} <span class="kw">else</span> {
+  System.out.println(<span class="st">"not string"</span>);
+}`,
+ opts:['5','not string','Compilation error','0'], ans:0},
+
+// Q26
+{type:'code', q:'What is printed by this HashMap computeIfAbsent?',
+ code:`<span class="cl">Map</span>&lt;<span class="cl">String</span>, <span class="cl">List</span>&lt;<span class="cl">Integer</span>&gt;&gt; map = <span class="kw">new</span> <span class="cl">HashMap</span>&lt;&gt;();
+map.computeIfAbsent(<span class="st">"k"</span>, key -> <span class="kw">new</span> <span class="cl">ArrayList</span>&lt;&gt;()).add(<span class="nm">1</span>);
+map.computeIfAbsent(<span class="st">"k"</span>, key -> <span class="kw">new</span> <span class="cl">ArrayList</span>&lt;&gt;()).add(<span class="nm">2</span>);
+System.out.println(map.get(<span class="st">"k"</span>));`,
+ opts:['[1]','[2]','[1, 2]','[1][2]'], ans:2},
+
+// Q27
+{type:'code', q:'What does this enum with method output?',
+ code:`<span class="kw">enum</span> <span class="cl">Planet</span> {
+  EARTH(<span class="nm">5.97e24</span>), MARS(<span class="nm">6.39e23</span>);
+  <span class="kw">final double</span> mass;
+  <span class="cl">Planet</span>(<span class="kw">double</span> m) { mass = m; }
+}
+System.out.println(<span class="cl">Planet</span>.MARS.mass > <span class="cl">Planet</span>.EARTH.mass);`,
+ opts:['true','false','Compilation error','NaN'], ans:1},
+
+// Q28
+{type:'code', q:'What is the output of this autoboxing equality trap?',
+ code:`<span class="cl">Integer</span> x = <span class="nm">1000</span>;
+<span class="kw">int</span> y = <span class="nm">1000</span>;
+System.out.println(x == y);
+System.out.println(x.equals(y));`,
+ opts:['false false','true false','true true','false true'], ans:2},
+
+// Q29
+{type:'code', q:'What is the output of this functional composition?',
+ code:`<span class="cl">Function</span>&lt;<span class="cl">Integer</span>,<span class="cl">Integer</span>&gt; f = x -> x + <span class="nm">2</span>;
+<span class="cl">Function</span>&lt;<span class="cl">Integer</span>,<span class="cl">Integer</span>&gt; g = x -> x * <span class="nm">3</span>;
+System.out.println(f.andThen(g).apply(<span class="nm">4</span>));
+System.out.println(f.compose(g).apply(<span class="nm">4</span>));`,
+ opts:['18 14','18 10','18 14 are same','14 18'], ans:0},
+
+// Q30
+{type:'code', q:'What does this Collectors.groupingBy output?',
+ code:`<span class="cl">List</span>&lt;<span class="cl">String</span>&gt; words = <span class="cl">Arrays</span>.asList(<span class="st">"hi"</span>,<span class="st">"hey"</span>,<span class="st">"go"</span>,<span class="st">"get"</span>);
+<span class="cl">Map</span>&lt;<span class="cl">Integer</span>,<span class="cl">List</span>&lt;<span class="cl">String</span>&gt;&gt; g = words.stream()
+  .collect(<span class="cl">Collectors</span>.groupingBy(<span class="cl">String</span>::length));
+System.out.println(g.get(<span class="nm">2</span>).size());
+System.out.println(g.get(<span class="nm">3</span>).size());`,
+ opts:['1 1','2 2','2 1','1 2'], ans:1},
+
+// Q31
+{type:'code', q:'What does this recursive static method print?',
+ code:`<span class="kw">static int</span> fib(<span class="kw">int</span> n) {
+  <span class="kw">if</span> (n <= <span class="nm">1</span>) <span class="kw">return</span> n;
+  <span class="kw">return</span> fib(n-<span class="nm">1</span>) + fib(n-<span class="nm">2</span>);
+}
+System.out.println(fib(<span class="nm">7</span>));`,
+ opts:['11','13','8','21'], ans:1},
+
+// Q32
+{type:'code', q:'What is the output of this interface diamond problem?',
+ code:`<span class="kw">interface</span> <span class="cl">A</span> { <span class="kw">default</span> <span class="cl">String</span> name() { <span class="kw">return</span> <span class="st">"A"</span>; } }
+<span class="kw">interface</span> <span class="cl">B</span> <span class="kw">extends</span> <span class="cl">A</span> { <span class="kw">default</span> <span class="cl">String</span> name() { <span class="kw">return</span> <span class="st">"B"</span>; } }
+<span class="kw">class</span> <span class="cl">C</span> <span class="kw">implements</span> <span class="cl">A</span>, <span class="cl">B</span> {}
+System.out.println(<span class="kw">new</span> <span class="cl">C</span>().name());`,
+ opts:['A','B','Compilation error','AB'], ans:1},
+
+// Q33
+{type:'code', q:'What does this parallel stream collect produce (guaranteed)?',
+ code:`<span class="kw">long</span> count = <span class="cl">IntStream</span>.range(<span class="nm">0</span>, <span class="nm">100</span>)
+    .parallel()
+    .filter(i -> i % <span class="nm">2</span> == <span class="nm">0</span>)
+    .count();
+System.out.println(count);`,
+ opts:['49','50','51','Unpredictable'], ans:1},
+
+// Q34
+{type:'code', q:'What is the output of this tricky string switch?',
+ code:`<span class="cl">String</span> s = <span class="st">"b"</span>;
+<span class="kw">switch</span>(s) {
+  <span class="kw">case</span> <span class="st">"a"</span>: System.out.print(<span class="st">"A"</span>);
+  <span class="kw">case</span> <span class="st">"b"</span>: System.out.print(<span class="st">"B"</span>);
+  <span class="kw">case</span> <span class="st">"c"</span>: System.out.print(<span class="st">"C"</span>);
+  <span class="kw">break</span>;
+  <span class="kw">default</span>: System.out.print(<span class="st">"D"</span>);
+}`,
+ opts:['B','BC','BCD','B only with break'], ans:1},
+
+// Q35
+{type:'code', q:'What does this ConcurrentModificationException trigger print?',
+ code:`<span class="cl">List</span>&lt;<span class="cl">Integer</span>&gt; list = <span class="kw">new</span> <span class="cl">ArrayList</span>&lt;&gt;(<span class="cl">Arrays</span>.asList(<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">3</span>));
+<span class="kw">for</span> (<span class="cl">Integer</span> i : list) {
+  <span class="kw">if</span> (i == <span class="nm">2</span>) list.remove(i);
+}`,
+ opts:['Prints nothing','Removes 2 silently','Throws ConcurrentModificationException','Compilation error'], ans:2},
+
+// Q36
+{type:'code', q:'What is the result of this type widening in arithmetic?',
+ code:`<span class="kw">byte</span> b = <span class="nm">10</span>;
+<span class="kw">short</span> s = <span class="nm">20</span>;
+<span class="kw">int</span> result = b + s;
+System.out.println(result);
+System.out.println(((Object) result).getClass().getSimpleName());`,
+ opts:['30 int','30 Integer','30 byte','Compilation error'], ans:1},
+
+// Q37
+{type:'code', q:'What does this Collectors.joining output?',
+ code:`<span class="cl">String</span> result = <span class="cl">Stream</span>.of(<span class="st">"Java"</span>, <span class="st">"is"</span>, <span class="st">"fun"</span>)
+    .collect(<span class="cl">Collectors</span>.joining(<span class="st">"-"</span>, <span class="st">"["</span>, <span class="st">"]"</span>));
+System.out.println(result);`,
+ opts:['Java-is-fun','[Java-is-fun]','[Java is fun]','Java is fun'], ans:1},
+
+// Q38
+{type:'code', q:'What does this volatile field example guarantee?',
+ code:`<span class="kw">class</span> <span class="cl">Flag</span> {
+  <span class="kw">volatile boolean</span> running = <span class="kw">true</span>;
+  <span class="kw">void</span> stop() { running = <span class="kw">false</span>; }
+}
+<span class="cm">// After stop() is called in Thread-1:</span>
+<span class="cm">// Thread-2 reads running</span>
+<span class="cm">// What is guaranteed?</span>`,
+ opts:['Thread-2 may still see true','Thread-2 always sees false immediately','Thread-2 throws exception','Compilation error'], ans:1},
+// Q1
+{type:'code', q:'What does this Stream reduce produce?',
+ code:`<span class="kw">int</span> result = <span class="cl">IntStream</span>.rangeClosed(<span class="nm">1</span>, <span class="nm">4</span>)
+               .reduce(<span class="nm">1</span>, (a, b) -> a * b);
+System.out.println(result);`,
+ opts:['10','24','4','1'], ans:1},
+
+// Q2
+{type:'code', q:'What is the output of this tricky integer cache comparison?',
+ code:`<span class="cl">Integer</span> a = <span class="nm">127</span>;
+<span class="cl">Integer</span> b = <span class="nm">127</span>;
+<span class="cl">Integer</span> c = <span class="nm">128</span>;
+<span class="cl">Integer</span> d = <span class="nm">128</span>;
+System.out.println(a == b);
+System.out.println(c == d);`,
+ opts:['true true','false false','true false','false true'], ans:2},
+
+// Q3
+{type:'code', q:'What does this finally-with-return code output?',
+ code:`<span class="kw">static int</span> test() {
+  <span class="kw">try</span> {
+    <span class="kw">return</span> <span class="nm">1</span>;
+  } <span class="kw">finally</span> {
+    <span class="kw">return</span> <span class="nm">2</span>;
+  }
+}
+System.out.println(test());`,
+ opts:['1','2','Compilation error','1 then 2'], ans:1},
+// Q39
+{type:'code', q:'What is the output of this try-catch returning from finally?',
+ code:`<span class="kw">static</span> <span class="cl">String</span> test() {
+  <span class="kw">try</span> {
+    <span class="kw">return</span> <span class="st">"try"</span>;
+  } <span class="kw">catch</span> (<span class="cl">Exception</span> e) {
+    <span class="kw">return</span> <span class="st">"catch"</span>;
+  } <span class="kw">finally</span> {
+    System.out.println(<span class="st">"finally"</span>);
+  }
+}
+System.out.println(test());`,
+ opts:['try','finally try','try finally','finally'], ans:1},
+
+// Q40
+{type:'code', q:'What does this Reflection getDeclaredMethods print?',
+ code:`<span class="kw">class</span> <span class="cl">Demo</span> {
+  <span class="kw">private void</span> secret() {}
+  <span class="kw">public void</span> open() {}
+}
+<span class="cl">Method</span>[] m = <span class="cl">Demo</span>.<span class="kw">class</span>.getDeclaredMethods();
+System.out.println(m.length);`,
+ opts:['0','1','2','Throws SecurityException'], ans:2},
+];
+
+// ── STATE ──
+let current = 0;
+let answers = new Array(40).fill(null);
+let timerInterval;
+let timeLeft = 3600;
+
+function startQuiz() {
+  showScreen('quiz');
+  buildDotNav();
+  renderQuestion();
+  startTimer();
+}
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) { clearInterval(timerInterval); submitQuiz(); }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = String(Math.floor(timeLeft/60)).padStart(2,'0');
+  const s = String(timeLeft % 60).padStart(2,'0');
+  document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+  const box = document.getElementById('timerBox');
+  box.className = 'timer-box';
+  if (timeLeft <= 300) box.classList.add('danger');
+  else if (timeLeft <= 600) box.classList.add('warn');
+}
+
+function buildDotNav() {
+  const nav = document.getElementById('dotNav');
+  nav.innerHTML = '';
+  for (let i = 0; i < 40; i++) {
+    const d = document.createElement('button');
+    d.className = 'dot';
+    d.textContent = i + 1;
+    d.onclick = () => { current = i; renderQuestion(); };
+    nav.appendChild(d);
+  }
+}
+
+function updateDots() {
+  const dots = document.querySelectorAll('.dot');
+  dots.forEach((d, i) => {
+    d.className = 'dot';
+    if (answers[i] !== null) d.classList.add('answered');
+    if (i === current) d.classList.add('current');
+  });
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[current];
+  document.getElementById('qNumDisplay').textContent = current + 1;
+  document.getElementById('progFill').style.width = `${((current+1)/40)*100}%`;
+
+  let codeHTML = '';
+  if (q.type === 'code' && q.code) {
+    codeHTML = `<pre class="code-snippet">${q.code}</pre>`;
+  }
+
+  const badgeClass = q.type === 'code' ? 'badge-code' : 'badge-theory';
+  const badgeLabel = q.type === 'code' ? '&lt;/&gt; CODE SNIPPET' : '📖 THEORY';
+
+  const optsHTML = q.opts.map((o, i) => {
+    const keys = ['A','B','C','D'];
+    const sel = answers[current] === i ? 'selected' : '';
+    return `<button class="opt-btn ${sel}" onclick="selectAnswer(${i})">
+      <span class="opt-key">${keys[i]}</span>
+      <span>${o}</span>
+    </button>`;
+  }).join('');
+
+  document.getElementById('qCard').innerHTML = `
+    <span class="q-type-badge ${badgeClass}">${badgeLabel}</span>
+    <div class="q-num">Question ${current + 1} of 40</div>
+    <div class="q-text">${q.q}</div>
+    ${codeHTML}
+    <div class="options">${optsHTML}</div>
+  `;
+
+  document.getElementById('btnPrev').disabled = current === 0;
+  const isLast = current === 39;
+  document.getElementById('btnNext').style.display = isLast ? 'none' : '';
+  document.getElementById('btnSubmit').style.display = isLast ? '' : 'none';
+
+  updateDots();
+}
+
+function selectAnswer(i) {
+  answers[current] = i;
+  renderQuestion();
+}
+
+function navigate(dir) {
+  current = Math.max(0, Math.min(39, current + dir));
+  renderQuestion();
+}
+
+function submitQuiz() {
+  clearInterval(timerInterval);
+  let correct = 0, wrong = 0, skipped = 0;
+  QUESTIONS.forEach((q, i) => {
+    if (answers[i] === null) skipped++;
+    else if (answers[i] === q.ans) correct++;
+    else wrong++;
+  });
+  const pct = Math.round((correct / 40) * 100);
+
+  showScreen('result');
+  document.getElementById('rCorrect').textContent = correct;
+  document.getElementById('rWrong').textContent = wrong;
+  document.getElementById('rSkipped').textContent = skipped;
+  document.getElementById('scorePct').textContent = pct + '%';
+
+  const ringColor = pct >= 70 ? '#10b981' : pct >= 40 ? '#f59e0b' : '#ef4444';
+  const ring = document.getElementById('ringFg');
+  ring.style.stroke = ringColor;
+  const circumference = 427;
+  const offset = circumference - (pct / 100) * circumference;
+  setTimeout(() => { ring.style.strokeDashoffset = offset; }, 100);
+}
+
+function showReview() {
+  showScreen('review');
+  const keys = ['A','B','C','D'];
+  let html = '';
+  QUESTIONS.forEach((q, i) => {
+    const userAns = answers[i];
+    const isCorrect = userAns === q.ans;
+    const isSkipped = userAns === null;
+    const cardCls = isSkipped ? 'skipped' : isCorrect ? 'correct' : 'wrong';
+    const badgeCls = isSkipped ? 'skipped' : isCorrect ? 'correct' : 'wrong';
+    const badgeTxt = isSkipped ? 'SKIPPED' : isCorrect ? '✓ CORRECT' : '✗ WRONG';
+    const typeBadge = q.type === 'code' ? `<span class="q-type-badge badge-code" style="font-size:0.65rem;padding:0.15rem 0.5rem">&lt;/&gt; CODE</span>` : `<span class="q-type-badge badge-theory" style="font-size:0.65rem;padding:0.15rem 0.5rem">THEORY</span>`;
+
+    const codeHTML = (q.type === 'code' && q.code)
+      ? `<pre class="code-snippet rv-code">${q.code}</pre>` : '';
+
+    const optsHTML = q.opts.map((o, j) => {
+      let cls = '';
+      let icon = '';
+      if (j === q.ans) { cls = 'correct-ans'; icon = '✓'; }
+      else if (j === userAns && !isCorrect) { cls = 'user-wrong'; icon = '✗'; }
+      return `<div class="rv-opt ${cls}"><span class="rv-icon">${icon}</span><span>${keys[j]}: ${o}</span></div>`;
+    }).join('');
+
+    html += `<div class="review-card ${cardCls}">
+      <div class="rv-top">
+        <span class="rv-qnum">${typeBadge} Q${i+1}</span>
+        <span class="rv-badge ${badgeCls}">${badgeTxt}</span>
+      </div>
+      <div class="rv-q">${q.q}</div>
+      ${codeHTML}
+      <div class="rv-opts">${optsHTML}</div>
+    </div>`;
+  });
+  document.getElementById('reviewContent').innerHTML = html;
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

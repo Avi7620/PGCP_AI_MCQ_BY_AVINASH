@@ -135,18 +135,36 @@
 </div>
 
 <script>
-    const questions = [
-        // Basics & Control Flow
+const questions = [
         {
-            q: "What is the output of the following code snippet?\n<pre>for i in range(3):\n    pass\nelse:\n    print('Done')</pre>",
-            options: ["SyntaxError", "'Done'", "No output", "Infinite loop"],
-            ans: 1
-        },
-        {
-            q: "Which statement is true regarding the 'break' and 'continue' keywords inside nested loops?",
-            options: ["'break' exits all nested loops entirely.", "'continue' skips to the next iteration of the outermost loop.", "'break' terminates only the innermost loop currently executing.", "They cannot be used inside while loops."],
-            ans: 2
-        },
+        q: "What is the output of the following Method Resolution Order (MRO) hierarchy snippet?",
+        code: "class A:\n    def process(self): return 'A'\nclass B(A):\n    pass\nclass C(A):\n    def process(self): return 'C'\nclass D(B, C):\n    pass\n\nprint(D().process())",
+        options: ["'A'", "'B'", "'C'", "TypeError: Cannot create a consistent method resolution"],
+        answer: 2,
+        theory: "Python uses C3 Linearization for MRO. Even though D inherits from B first, B does not implement `process`. The MRO for D is [D, B, C, A, object]. Therefore, it finds `process` in C before reaching A."
+    },
+           
+    // Basics & Control Flow
+    {
+        q: "What will happen when you run the following code?\n\n<pre>s = { [1, 2, 3], [4, 5, 6] }\nprint(s)</pre>",
+        options: [
+            "A set with two lists",
+            "SyntaxError",
+            "TypeError: unhashable type: 'list'",
+            "{[1,2,3], [4,5,6]}",
+        ],
+        ans: 1
+    },
+{
+    q: "What will happen when you run the following code?\n\n<pre>s = { (1, 2, 3), (4, 5, 6) }\nprint(s)</pre>",
+    options: [
+        "A set with two tuples",
+        "TypeError: unhashable type: 'tuple'",
+        "SyntaxError",
+        "{[1,2,3], [4,5,6]}"
+    ],
+    ans: 0
+},
         // Strings & Tuples
         {
             q: "If `s = 'Python'`, what is the output of `s[::-2]`?",
@@ -158,11 +176,7 @@
             options: ["t = (1)", "t = tuple(1)", "t = (1,)", "t = [1,]"],
             ans: 2
         },
-        {
-            q: "What will be the output?\n<pre>t1 = (11, 22)\nt2 = (99, 88)\nt1, t2 = t2, t1\nprint(t1[0])</pre>",
-            options: ["11", "22", "99", "88"],
-            ans: 2
-        },
+
         // Dictionaries
         {
             q: "Consider a dictionary used for ROT-13 encryption. What happens if you try to access a key that doesn't exist using the `d.get(key, 'default')` method?",

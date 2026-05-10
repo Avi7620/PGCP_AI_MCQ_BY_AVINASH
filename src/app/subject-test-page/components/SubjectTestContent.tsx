@@ -201,7 +201,7 @@ const subjectMap: Record<
         icon: BookOpen,
         iconGradient: 'gradient-bg-green',
         status: 'available',
-        filename: 'test1.html',
+        filename: 'unit1.html',
       },
       {
         key: 'test-java-2',
@@ -217,7 +217,7 @@ const subjectMap: Record<
         icon: Zap,
         iconGradient: 'gradient-bg-amber',
         status: 'available',
-        filename: 'test2.html',
+        filename: 'unit2.html',
       },
       {
         key: 'test-java-3',
@@ -233,13 +233,13 @@ const subjectMap: Record<
         icon: Target,
         iconGradient: 'gradient-bg-violet',
         status: 'available',
-        filename: 'test3.html',
+        filename: 'unit3.html',
       },
 
       {
         key: 'test-java-final',
-        id: 'final',
-        label: 'Final Test',
+        id: 'final1',
+        label: 'Final Test - 1',
         title: 'Final Exam Practice',
         description: 'Mirrors the final semester Java exam — full syllabus, strict timing.',
         topics: ['Exam Pattern', 'Full Syllabus', 'University Standard'],
@@ -251,6 +251,54 @@ const subjectMap: Record<
         iconGradient: 'gradient-bg-pink',
         status: 'available',
         filename: 'final1.html',
+        isFeatured: true,
+      },      {
+        key: 'test-java-final',
+        id: 'final2',
+        label: 'Final Test - 2',
+        title: 'Final Exam Practice',
+        description: 'Mirrors the final semester Java exam — full syllabus, strict timing.',
+        topics: ['Exam Pattern', 'Full Syllabus', 'University Standard'],
+        questions: 60,
+        duration: 60,
+        difficulty: 'Hard',
+        difficultyColor: 'text-pink-400 bg-pink-400/10 border-pink-400/30',
+        icon: Trophy,
+        iconGradient: 'gradient-bg-pink',
+        status: 'available',
+        filename: 'final2.html',
+        isFeatured: true,
+      },      {
+        key: 'test-java-final',
+        id: 'final3',
+        label: 'Final Test - 3',
+        title: 'Final Exam Practice',
+        description: 'Mirrors the final semester Java exam — full syllabus, strict timing.',
+        topics: ['Exam Pattern', 'Full Syllabus', 'University Standard'],
+        questions: 60,
+        duration: 60,
+        difficulty: 'Hard',
+        difficultyColor: 'text-pink-400 bg-pink-400/10 border-pink-400/30',
+        icon: Trophy,
+        iconGradient: 'gradient-bg-pink',
+        status: 'available',
+        filename: 'final3.html',
+        isFeatured: true,
+      },      {
+        key: 'test-java-final',
+        id: 'final4',
+        label: 'Final Test - 4',
+        title: 'Final Exam Practice',
+        description: 'Mirrors the final semester Java exam — full syllabus, strict timing.',
+        topics: ['Exam Pattern', 'Full Syllabus', 'University Standard'],
+        questions: 60,
+        duration: 60,
+        difficulty: 'Hard',
+        difficultyColor: 'text-pink-400 bg-pink-400/10 border-pink-400/30',
+        icon: Trophy,
+        iconGradient: 'gradient-bg-pink',
+        status: 'available',
+        filename: 'final4.html',
         isFeatured: true,
       },
     ],
@@ -563,20 +611,7 @@ export default function SubjectTestContent() {
         </div>
       </div>
 
-      {/* Info banner */}
-      <div className="flex items-start gap-3 p-4 rounded-xl glass-card border border-amber-500/30 bg-amber-500/5">
-        <AlertCircle size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
-        <div>
-          <p className="text-sm font-600 text-amber-400">Test files are managed by the college</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Each test opens an HTML file placed at{' '}
-            <code className="text-amber-300 bg-amber-400/10 px-1 rounded text-[11px]">
-              /tests/{subject.id}/[testname].html
-            </code>
-            . Contact your faculty if a test link is unavailable.
-          </p>
-        </div>
-      </div>
+      
 
       {/* Regular Tests (Test 1, 2, 3) */}
       <section>

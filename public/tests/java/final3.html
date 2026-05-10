@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Advanced Programming - Final Assessment</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .quiz-container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        .timer { font-size: 1.2rem; font-weight: bold; color: #d9534f; }
+        .question-box { display: none; }
+        .active { display: block; }
+        .snippet { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; font-family: 'Courier New', Courier, monospace; margin: 15px 0; overflow-x: auto; white-space: pre; }
+        .options-list { list-style: none; padding: 0; }
+        .option { background: #f9f9f9; border: 1px solid #ddd; padding: 12px; margin-bottom: 10px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        .option:hover { background: #e9ecef; }
+        .option.selected { background: #007bff; color: white; border-color: #0056b3; }
+        .nav-buttons { margin-top: 20px; display: flex; justify-content: space-between; }
+        button { padding: 10px 25px; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; }
+        .btn-next { background: #28a745; color: white; }
+        .btn-prev { background: #6c757d; color: white; }
+        .btn-submit { background: #dc3545; color: white; }
+        #result-area { display: none; text-align: center; }
+        .review-item { text-align: left; margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .correct { border-left: 5px solid #28a745; background: #e9f7ef; }
+        .wrong { border-left: 5px solid #dc3545; background: #fdf2f2; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container" id="quiz-wrapper">
+    <div class="header">
+        <h2 id="topic-title">Java Programming MCQ</h2>
+        <div class="timer" id="timer">Time Remaining: 60:00</div>
+    </div>
+
+    <div id="question-container">
+        </div>
+
+    <div class="nav-buttons" id="nav-controls">
+        <button class="btn-prev" onclick="changeQuestion(-1)" id="prevBtn" disabled>Previous</button>
+        <button class="btn-next" onclick="changeQuestion(1)" id="nextBtn">Next</button>
+        <button class="btn-submit hidden" onclick="showResults()" id="submitBtn">Submit Quiz</button>
+    </div>
+</div>
+
+<div class="quiz-container" id="result-area">
+    <h2>Quiz Completed!</h2>
+    <h1 id="score-display"></h1>
+    <div id="review-container"></div>
+    <button class="btn-prev" onclick="location.reload()" style="margin-top: 20px;">Retake Quiz</button>
+</div>
+
+<script>
+    const questions = [
+        // 1. JVM (Session 1)
+        { q: "Which component of the JVM is responsible for converting bytecode into machine code at runtime?", options: ["Class Loader", "JIT Compiler", "Garbage Collector", "Execution Engine"], correct: 1 },
+        // 2. Control Statements (Session 1)
+        { q: "What is the output of the following snippet?", snippet: "int x = 10;\ndo {\n  x -= 2;\n} while (x > 5);\nSystem.out.println(x);", options: ["4", "6", "5", "8"], correct: 0 },
+        // 3. Wrapper Classes (Session 1)
+        { q: "Which of the following will result in 'true'?", snippet: "Integer a = 127;\nInteger b = 127;\nInteger c = 128;\nInteger d = 128;\nSystem.out.print((a == b) + ' ' + (c == d));", options: ["true true", "true false", "false true", "false false"], correct: 1 },
+        // 4. Arrays (Session 3)
+        { q: "What is the result of trying to access 'arr[2][1]'?", snippet: "int[][] arr = {{1, 2}, {3, 4, 5}};", options: ["4", "5", "ArrayIndexOutOfBoundsException", "Compile-time Error"], correct: 2 },
+        // 5. Strings (Session 3)
+        { q: "Which statement about StringBuilder is TRUE?", options: ["It is thread-safe.", "It is immutable.", "It is faster than String for repeated modifications.", "It is located in the String Constant Pool."], correct: 2 },
+        // 6. Polymorphism (Session 4)
+        { q: "In Java, method overriding is an example of:", options: ["Compile-time polymorphism", "Runtime polymorphism", "Static binding", "Encapsulation"], correct: 1 },
+        // 7. Inheritance (Session 4)
+        { q: "Can a class implement two interfaces that have a method with the same signature but different return types?", options: ["Yes, always.", "No, it causes a compile-time error.", "Yes, if the return types are covariant.", "Only if the methods are default."], correct: 1 },
+        // 8. Exceptions (Session 5)
+        { q: "Which exception is thrown when a thread is waiting, sleeping, or otherwise occupied, and the thread is interrupted?", options: ["RuntimeException", "InterruptedException", "IOException", "ExecutionException"], correct: 1 },
+        // 9. Exceptions Snippet (Session 5)
+        { q: "What is the output?", snippet: "try {\n  int x = 0;\n  int y = 5 / x;\n} catch (Exception e) {\n  System.out.print('Caught ');\n} finally {\n  System.out.print('Finally');\n}", options: ["Caught", "Finally", "Caught Finally", "ArithmeticException"], correct: 2 },
+        // 10. Enums (Session 6)
+        { q: "Which of the following is NOT true about Java Enums?", options: ["They can have constructors.", "They can implement interfaces.", "They can extend other classes.", "They can have fields and methods."], correct: 2 },
+        // 11. Collections (Session 6)
+        { q: "Which collection allows null elements and maintains insertion order?", options: ["HashSet", "TreeSet", "ArrayList", "PriorityQueue"], correct: 2 },
+        // 12. Generics (Session 6)
+        { q: "What does the '<? extends T>' wildcard represent?", options: ["An unknown type that is a superclass of T", "An unknown type that is a subclass of T", "Any type except T", "A type that is exactly T"], correct: 1 },
+        // 13. Functional Interfaces (Session 7)
+        { q: "Which functional interface takes one argument and returns a boolean?", options: ["Consumer", "Supplier", "Predicate", "Function"], correct: 2 },
+        // 14. Lambda (Session 7)
+        { q: "Identify the valid lambda expression for (String s) -> s.length():", options: ["Function<String, Integer> f = s -> s.length();", "Consumer<String> c = s -> s.length();", "Predicate<String> p = s -> s.length();", "Supplier<Integer> s = () -> s.length();"], correct: 0 },
+        // 15. Streams (Session 9)
+        { q: "Which Stream operation is 'short-circuiting'?", options: ["map()", "filter()", "anyMatch()", "reduce()"], correct: 2 },
+        // 16. Stream API (Session 9)
+        { q: "What is the output?", snippet: "List<Integer> list = Arrays.asList(1, 2, 3, 4);\nint sum = list.stream().filter(n -> n % 2 == 0).mapToInt(n -> n).sum();\nSystem.out.println(sum);", options: ["6", "4", "10", "2"], correct: 0 },
+        // 17. Date-Time API (Session 10)
+        { q: "Which class in the new Date-Time API is used to represent a date without a time or time-zone?", options: ["LocalDateTime", "ZonedDateTime", "LocalDate", "Instant"], correct: 2 },
+        // 18. Concurrency (Session 11)
+        { q: "Which method is used to force a thread to wait for another thread to finish?", options: ["wait()", "yield()", "join()", "sleep()"], correct: 2 },
+        // 19. Synchronization (Session 11)
+        { q: "What happens when a 'synchronized' method is called?", options: ["The thread acquires a lock on the class.", "The thread acquires a lock on the object instance.", "The thread stops execution of all other threads.", "The thread bypasses the heap memory."], correct: 1 },
+        // 20. Reflection (Session 13)
+        { q: "What can you NOT do with Reflection?", options: ["Analyze class fields at runtime", "Instantiate private constructors", "Increase performance of method calls", "Get method parameter types"], correct: 2 },
+        // 21. Node.js (Session 14)
+        { q: "What engine does Node.js use to execute JavaScript?", options: ["SpiderMonkey", "Chakra", "V8", "Nashorn"], correct: 2 },
+        // 22. Spring (Session 15)
+        { q: "In Spring MVC, which component acts as the Front Controller?", options: ["Model", "DispatcherServlet", "ViewResolver", "Controller"], correct: 1 },
+        // 23. JVM Memory
+        { q: "Where are objects stored in the JVM?", options: ["Stack", "Heap", "Method Area", "PC Registers"], correct: 1 },
+        // 24. Access Modifiers
+        { q: "Which modifier makes a member accessible only within the same package and its subclasses in other packages?", options: ["private", "public", "protected", "default"], correct: 2 },
+        // 25. Final Keyword
+        { q: "What happens when a method is declared 'final'?", options: ["It cannot be overloaded.", "It cannot be overridden.", "It cannot be inherited.", "It becomes static."], correct: 1 },
+        // 26. Abstract Classes
+        { q: "Can an abstract class have a constructor?", options: ["Yes", "No", "Only if it is static", "Only if all methods are abstract"], correct: 0 },
+        // 27. Interface (Java 8+)
+        { q: "Can an interface contain method implementations since Java 8?", options: ["No, interfaces are strictly for declarations.", "Yes, via 'default' and 'static' keywords.", "Yes, but only private methods.", "Only in abstract interfaces."], correct: 1 },
+        // 28. Garbage Collection
+        { q: "Which method is called by the Garbage Collector before destroying an object?", options: ["destroy()", "finalize()", "clean()", "delete()"], correct: 1 },
+        // 29. String Pool
+        { q: "What is the result?", snippet: "String s1 = 'Java';\nString s2 = new String('Java');\nSystem.out.println(s1 == s2.intern());", options: ["true", "false", "Error", "Null"], correct: 0 },
+        // 30. Collections
+        { q: "Which Map implementation allows one null key and multiple null values?", options: ["Hashtable", "HashMap", "TreeMap", "ConcurrentHashMap"], correct: 1 },
+        // 31. Streams (flatMap)
+        { q: "What is the purpose of flatMap() in Streams?", options: ["To filter null values.", "To transform a stream of streams into a single stream.", "To sort the elements.", "To convert primitives to objects."], correct: 1 },
+        // 32. Parallel Streams
+        { q: "Which operation is most likely to show performance degradation in parallel streams due to thread management overhead?", options: ["Filtering large lists", "Processing independent tasks", "Summing small arrays", "Complex mathematical mapping"], correct: 2 },
+        // 33. Try-with-resources
+        { q: "What is required for a class to be used in a try-with-resources statement?", options: ["Implement Serializable", "Implement AutoCloseable", "Extend Exception", "Implement Runnable"], correct: 1 },
+        // 34. Volatile Keyword
+        { q: "What does the 'volatile' keyword ensure in Java?", options: ["Atomicity of operations", "Visibility of changes across threads", "Mutual exclusion", "Method synchronization"], correct: 1 },
+        // 35. Spring Architecture
+        { q: "Which module of Spring provides Transaction Management?", options: ["Spring Context", "Spring AOP", "Spring Data/DAO", "Spring Web"], correct: 2 },
+        // 36. OOP (Composition)
+        { q: "The 'has-a' relationship is known as:", options: ["Inheritance", "Association/Composition", "Abstraction", "Encapsulation"], correct: 1 },
+        // 37. Class vs Interface
+        { q: "How many classes can a Java class extend?", options: ["One", "Unlimited", "Two", "Zero"], correct: 0 },
+        // 38. Node.js REPL
+        { q: "In the Node.js REPL, what does the underscore (_) variable represent?", options: ["The first result", "The last result", "An error object", "Global scope"], correct: 1 },
+        // 39. Exception Hierachy
+        { q: "Which class is the root of the Java Exception hierarchy?", options: ["Exception", "RuntimeException", "Throwable", "Error"], correct: 2 },
+        // 40. Reflection API
+        { q: "Which method of the 'Class' object returns the public methods of that class and its superclasses?", options: ["getDeclaredMethods()", "getMethods()", "findMethods()", "listMethods()"], correct: 1 }
+    ];
+
+    let currentIdx = 0;
+    let userAnswers = new Array(questions.length).fill(null);
+    let timeLeft = 3600; // 60 minutes in seconds
+
+    const questionContainer = document.getElementById('question-container');
+    const timerElement = document.getElementById('timer');
+
+    function initQuiz() {
+        questions.forEach((q, index) => {
+            const div = document.createElement('div');
+            div.className = `question-box ${index === 0 ? 'active' : ''}`;
+            div.id = `q-${index}`;
+            
+            let html = `<h3>Question ${index + 1} of 40</h3>`;
+            html += `<p>${q.q}</p>`;
+            if (q.snippet) {
+                html += `<div class="snippet">${q.snippet}</div>`;
+            }
+            html += `<div class="options-list">`;
+            q.options.forEach((opt, optIdx) => {
+                html += `<div class="option" onclick="selectOption(${index}, ${optIdx})" id="q${index}-o${optIdx}">${opt}</div>`;
+            });
+            html += `</div>`;
+            div.innerHTML = html;
+            questionContainer.appendChild(div);
+        });
+        startTimer();
+    }
+
+    function selectOption(qIdx, oIdx) {
+        userAnswers[qIdx] = oIdx;
+        const options = document.querySelectorAll(`#q-${qIdx} .option`);
+        options.forEach(o => o.classList.remove('selected'));
+        document.getElementById(`q${qIdx}-o${oIdx}`).classList.add('selected');
+    }
+
+    function changeQuestion(step) {
+        document.getElementById(`q-${currentIdx}`).classList.remove('active');
+        currentIdx += step;
+        document.getElementById(`q-${currentIdx}`).classList.add('active');
+        
+        document.getElementById('prevBtn').disabled = (currentIdx === 0);
+        if (currentIdx === questions.length - 1) {
+            document.getElementById('nextBtn').classList.add('hidden');
+            document.getElementById('submitBtn').classList.remove('hidden');
+        } else {
+            document.getElementById('nextBtn').classList.remove('hidden');
+            document.getElementById('submitBtn').classList.add('hidden');
+        }
+    }
+
+    function startTimer() {
+        const interval = setInterval(() => {
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            timerElement.innerText = `Time Remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                showResults();
+            }
+            timeLeft--;
+        }, 1000);
+    }
+
+    function showResults() {
+        document.getElementById('quiz-wrapper').style.display = 'none';
+        document.getElementById('result-area').style.display = 'block';
+        
+        let score = 0;
+        const reviewContainer = document.getElementById('review-container');
+        reviewContainer.innerHTML = '';
+
+        questions.forEach((q, i) => {
+            const isCorrect = userAnswers[i] === q.correct;
+            if (isCorrect) score++;
+
+            const div = document.createElement('div');
+            div.className = `review-item ${isCorrect ? 'correct' : 'wrong'}`;
+            div.innerHTML = `
+                <strong>Q${i+1}: ${q.q}</strong><br>
+                Your Answer: ${userAnswers[i] !== null ? q.options[userAnswers[i]] : 'No Answer'}<br>
+                Correct Answer: ${q.options[q.correct]}
+            `;
+            reviewContainer.appendChild(div);
+        });
+
+        document.getElementById('score-display').innerText = `Your Score: ${score} / 40`;
+    }
+
+    initQuiz();
+</script>
+
+</body>
+</html>

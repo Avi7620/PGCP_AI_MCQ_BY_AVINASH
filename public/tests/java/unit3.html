@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Java Collections Expert Quiz</title>
+    <style>
+        :root { --bg: #f8f9fa; --text: #212529; --primary: #007bff; --code-bg: #282a36; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; line-height: 1.6; }
+        .quiz-card { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+        .timer { font-size: 1.5rem; font-weight: bold; color: #dc3545; }
+        .snippet { background: var(--code-bg); color: #f8f8f2; padding: 15px; border-radius: 8px; font-family: 'Consolas', 'Courier New', monospace; margin: 15px 0; overflow-x: auto; white-space: pre; }
+        .option { display: block; background: #f1f3f5; border: 2px solid #dee2e6; padding: 12px; margin-bottom: 10px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .option:hover { background: #e9ecef; }
+        .option.selected { background: var(--primary); color: white; border-color: #0056b3; }
+        .controls { display: flex; justify-content: space-between; margin-top: 25px; }
+        button { padding: 10px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
+        .btn-nav { background: #6c757d; color: white; }
+        .btn-submit { background: #28a745; color: white; }
+        .hidden { display: none; }
+        #review-section { margin-top: 30px; }
+        .review-item { padding: 15px; border-bottom: 1px solid #eee; border-left: 5px solid transparent; margin-bottom: 10px; }
+        .review-correct { border-left-color: #28a745; background: #e9f7ef; }
+        .review-wrong { border-left-color: #dc3545; background: #fdf2f2; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card" id="quiz-container">
+    <div class="header">
+        <h2>Java Collections: Advanced Level</h2>
+        <div class="timer" id="timer">30:00</div>
+    </div>
+
+    <div id="question-area">
+        </div>
+
+    <div class="controls">
+        <button class="btn-nav" id="prev-btn" onclick="changeQuestion(-1)">Previous</button>
+        <button class="btn-nav" id="next-btn" onclick="changeQuestion(1)">Next</button>
+        <button class="btn-submit hidden" id="finish-btn" onclick="showResults()">Finish & Review</button>
+    </div>
+</div>
+
+<div class="quiz-card hidden" id="result-container">
+    <h2 style="text-align: center;">Final Results</h2>
+    <h1 id="score-text" style="text-align: center; color: var(--primary);"></h1>
+    <div id="review-section"></div>
+    <button class="btn-nav" onclick="location.reload()" style="width: 100%; margin-top: 20px;">Restart Quiz</button>
+</div>
+
+<script>
+    const questions = [
+        {
+            q: "What is the result of the following snippet involving the 'PECS' principle?",
+            snippet: "List<? extends Number> list = new ArrayList<Integer>();\n// list.add(10); // Line 1\nNumber n = list.get(0); // Line 2\nSystem.out.println(n);",
+            opts: ["Compile error on Line 1 only", "Compile error on Line 2 only", "Success (prints null)", "Compile error on both lines"],
+            ans: 0
+        },
+        {
+            q: "In a HashMap, what happens when two distinct keys produce the same hash code (Collision)?",
+            opts: ["The new value overwrites the old one", "Values are stored in a Linked List or Tree in that bucket", "A RuntimeException is thrown", "The HashMap automatically doubles its capacity"],
+            ans: 1
+        },
+        {
+            q: "Analyze the complexity of this operation:",
+            snippet: "LinkedList<Integer> list = new LinkedList<>();\n// ... list populated with 1M elements\nlist.get(500000);",
+            opts: ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+            ans: 2
+        },
+        {
+            q: "How does an Iterator handle concurrent modification in an ArrayList?",
+            snippet: "List<String> l = new ArrayList<>(Arrays.asList(\"A\", \"B\"));\nfor(String s : l) {\n  if(s.equals(\"A\")) l.remove(s);\n}",
+            opts: ["Elements are removed successfully", "Throws ConcurrentModificationException", "Throws ArrayIndexOutOfBoundsException", "Skips the second element"],
+            ans: 1
+        },
+        {
+            q: "Which property is TRUE regarding TreeMap elements?",
+            opts: ["It allows one null key", "It maintains insertion order", "It requires keys to implement Comparable or use a Comparator", "It uses a Hash Table internally"],
+            ans: 2
+        },
+        {
+            q: "What is the result of using 'raw types' in this scenario?",
+            snippet: "List list = new ArrayList<String>();\nlist.add(10);\nString s = (String) list.get(0);",
+            opts: ["Compile error at add(10)", "Success", "ClassCastException at runtime", "Compile error at get(0)"],
+            ans: 2
+        },
+        {
+            q: "Which data structure is best for a 'First-In-First-Out' (FIFO) queue with high insertion frequency?",
+            opts: ["ArrayList", "TreeMap", "LinkedList (as Deque)", "HashSet"],
+            ans: 2
+        },
+        {
+            q: "Predict the output of the following HashSet operation:",
+            snippet: "Set<StringBuilder> set = new HashSet<>();\nStringBuilder sb = new StringBuilder(\"Test\");\nset.add(sb);\nsb.append(\"ing\");\nSystem.out.println(set.contains(sb));",
+            opts: ["true", "false", "Compile Error", "NullPointerException"],
+            ans: 1
+        },
+        {
+            q: "What is the default load factor of a HashMap?",
+            opts: ["0.5", "0.75", "1.0", "0.85"],
+            ans: 1
+        },
+        {
+            q: "What is the difference between 'Iterator' and 'ListIterator'?",
+            opts: ["Iterator is faster", "ListIterator allows bidirectional traversal", "Iterator can modify elements, ListIterator cannot", "There is no difference"],
+            ans: 1
+        },
+        {
+            q: "In Java 8+, when does a HashMap bucket switch from a Linked List to a Balanced Tree?",
+            opts: ["When size > 16", "When bucket size exceeds 8", "When the load factor is 1.0", "When hash collisions stop occurring"],
+            ans: 1
+        },
+        {
+            q: "What does 'Type Erasure' mean in Java Generics?",
+            opts: ["Type info is removed at runtime", "Variables are deleted from memory", "The compiler replaces types with 'Object'", "Both A and C"],
+            ans: 3
+        },
+        {
+            q: "Which interface does TreeMap implement to provide sorted navigation methods?",
+            opts: ["SortedSet", "NavigableMap", "List", "Cloneable"],
+            ans: 1
+        },
+        {
+            q: "What is the time complexity of searching for a value (not a key) in a HashMap?",
+            opts: ["O(1)", "O(log n)", "O(n)", "O(1) average, O(n) worst"],
+            ans: 2
+        },
+        {
+            q: "Which of these is thread-safe?",
+            opts: ["ArrayList", "HashMap", "Vector", "TreeMap"],
+            ans: 2
+        },
+        {
+            q: "Predict the behavior:",
+            snippet: "ArrayList<Integer> al = new ArrayList<>(5);\nal.add(1); al.add(2); al.add(3);\nSystem.out.println(al.size());",
+            opts: ["5", "3", "0", "Capacity is not Size"],
+            ans: 1
+        },
+        {
+            q: "What happens if a TreeMap key does not implement Comparable and no Comparator is provided?",
+            opts: ["Compile Error", "ClassCastException at runtime", "It defaults to hashcode sorting", "Elements remain unsorted"],
+            ans: 1
+        },
+        {
+            q: "What is the purpose of 'Collections.unmodifiableList()'?",
+            opts: ["To make the underlying list immutable", "To return a read-only view of the list", "To speed up search operations", "To sort the list permanently"],
+            ans: 1
+        },
+        {
+            q: "Which wild card allows you to add elements to a list?",
+            opts: ["? extends T", "? super T", "?", "No wildcard allows adding"],
+            ans: 1
+        },
+        {
+            q: "Why is it generally better to use 'ArrayList' over 'LinkedList' for random access?",
+            opts: ["ArrayList uses less memory", "ArrayList is contiguous in memory, allowing index-based O(1) access", "LinkedList is deprecated", "ArrayList is synchronized"],
+            ans: 1
+        }
+    ];
+
+    let currentIdx = 0;
+    let userAnswers = new Array(questions.length).fill(null);
+    let timeLeft = 1800; // 30 minutes
+
+    function initTimer() {
+        const timerObj = setInterval(() => {
+            if(timeLeft <= 0) {
+                clearInterval(timerObj);
+                showResults();
+            }
+            let mins = Math.floor(timeLeft / 60);
+            let secs = timeLeft % 60;
+            document.getElementById('timer').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            timeLeft--;
+        }, 1000);
+    }
+
+    function renderQuestion() {
+        const qArea = document.getElementById('question-area');
+        const q = questions[currentIdx];
+        let html = `<h3>Question ${currentIdx + 1} of ${questions.length}</h3>
+                    <p>${q.q}</p>`;
+        
+        if(q.snippet) html += `<div class="snippet">${q.snippet}</div>`;
+        
+        html += `<div class="options-container">`;
+        q.opts.forEach((opt, i) => {
+            const selectedClass = userAnswers[currentIdx] === i ? 'selected' : '';
+            html += `<div class="option ${selectedClass}" onclick="selectOpt(${i})">${opt}</div>`;
+        });
+        html += `</div>`;
+        
+        qArea.innerHTML = html;
+        
+        document.getElementById('prev-btn').style.visibility = currentIdx === 0 ? 'hidden' : 'visible';
+        if(currentIdx === questions.length - 1) {
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('finish-btn').classList.remove('hidden');
+        } else {
+            document.getElementById('next-btn').classList.remove('hidden');
+            document.getElementById('finish-btn').classList.add('hidden');
+        }
+    }
+
+    function selectOpt(idx) {
+        userAnswers[currentIdx] = idx;
+        renderQuestion();
+    }
+
+    function changeQuestion(dir) {
+        currentIdx += dir;
+        renderQuestion();
+    }
+
+    function showResults() {
+        document.getElementById('quiz-container').classList.add('hidden');
+        document.getElementById('result-container').classList.remove('hidden');
+        
+        let score = 0;
+        const review = document.getElementById('review-section');
+        review.innerHTML = '<h3>Question Review:</h3>';
+
+        questions.forEach((q, i) => {
+            const correct = userAnswers[i] === q.ans;
+            if(correct) score++;
+            
+            const div = document.createElement('div');
+            div.className = `review-item ${correct ? 'review-correct' : 'review-wrong'}`;
+            div.innerHTML = `<strong>Q${i+1}: ${q.q}</strong><br>
+                             Your answer: ${userAnswers[i] !== null ? q.opts[userAnswers[i]] : 'Skipped'}<br>
+                             Correct answer: ${q.opts[q.ans]}`;
+            review.appendChild(div);
+        });
+
+        document.getElementById('score-text').innerText = `${score} / ${questions.length}`;
+    }
+
+    initTimer();
+    renderQuestion();
+</script>
+
+</body>
+</html>

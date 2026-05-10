@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Fundamentals - Hard MCQ Assessment</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #e67e22;
+            --bg: #f4f7f6;
+            --white: #ffffff;
+            --success: #27ae60;
+            --error: #e74c3c;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); color: var(--primary); margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: var(--white); padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--secondary); padding-bottom: 15px; margin-bottom: 20px; }
+        #timer { font-size: 1.4em; font-weight: bold; color: var(--error); }
+        .q-meta { color: #7f8c8d; font-weight: bold; margin-bottom: 10px; }
+        .q-text { font-size: 1.2em; margin-bottom: 15px; line-height: 1.4; }
+        .code-block { background: #282c34; color: #abb2bf; padding: 15px; border-radius: 6px; font-family: 'Consolas', monospace; overflow-x: auto; margin-bottom: 20px; border-left: 5px solid var(--secondary); }
+        .options-list { list-style: none; padding: 0; }
+        .options-list li { margin-bottom: 12px; }
+        .options-list label { display: block; padding: 12px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .options-list label:hover { background: #fff4e6; border-color: var(--secondary); }
+        .nav-btns { display: flex; justify-content: space-between; margin-top: 30px; }
+        button { padding: 10px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-prev { background: #bdc3c7; }
+        .btn-next { background: var(--secondary); color: white; }
+        .btn-submit { background: var(--success); color: white; }
+        .review-card { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px; }
+        .correct { border-left: 6px solid var(--success); background: #f0fff4; }
+        .incorrect { border-left: 6px solid var(--error); background: #fff5f5; }
+        .theory-box { margin-top: 10px; background: #ebf5fb; padding: 10px; border-radius: 4px; font-size: 0.9em; border: 1px solid #d4e6f1; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="quiz-ui">
+    <div class="quiz-header">
+        <h2>Java Fundamentals Quiz</h2>
+        <div id="timer">30:00</div>
+    </div>
+    <div id="question-area">
+        <div class="q-meta" id="q-number"></div>
+        <div class="q-text" id="q-title"></div>
+        <pre class="code-block" id="q-code"></pre>
+        <ul class="options-list" id="q-options"></ul>
+    </div>
+    <div class="nav-btns">
+        <button class="btn-prev" onclick="move(-1)" id="prev-btn">Previous</button>
+        <button class="btn-next" onclick="move(1)" id="next-btn">Next</button>
+        <button class="btn-submit" onclick="finish()" id="submit-btn" style="display:none;">Submit Quiz</button>
+    </div>
+</div>
+
+<div class="container" id="result-ui" style="display:none;">
+    <h1 id="score-text"></h1>
+    <hr>
+    <h3>Detailed Review</h3>
+    <div id="review-list"></div>
+</div>
+
+<script>
+const quizData = [
+    {
+        q: "What is the output of this combined operator and widening scenario?",
+        code: "int a = 10;\ndouble b = 20.0;\na += b;\nSystem.out.println(a);",
+        options: ["30", "30.0", "Compilation Error", "Runtime Exception"],
+        ans: 0,
+        theory: "Compound assignment operators (+=, -=, etc.) include an implicit cast. 'a += b' is internally treated as 'a = (int)(a + b)', which truncates the double result back to an integer."
+    },
+    {
+        q: "Identify the result of the logical short-circuiting.",
+        code: "int x = 5;\nboolean result = (x < 2) && (++x > 5);\nSystem.out.println(x + \" \" + result);",
+        options: ["6 true", "5 false", "6 false", "5 true"],
+        ans: 1,
+        theory: "The '&&' operator is short-circuiting. Since (x < 2) is false, the second part of the expression (++x > 5) is never executed. Therefore, 'x' remains 5."
+    },
+    {
+        q: "What happens with narrow-primitive conversion in a switch statement?",
+        code: "byte b = 1;\nswitch(b) {\n    case 1: System.out.print(\"One \");\n    case 128: System.out.print(\"Large\");\n}",
+        options: ["One", "One Large", "Compilation Error", "Runtime Exception"],
+        ans: 2,
+        theory: "A 'byte' ranges from -128 to 127. Providing 'case 128' causes a compilation error because 128 is out of range for a byte variable used in the switch expression."
+    },
+    {
+        q: "Which output is produced by this post-increment loop?",
+        code: "int i = 0;\nfor (; i < 2; i++) {\n    i = i++;\n    System.out.print(i + \" \");\n}",
+        options: ["0 1", "0 0 0... (Infinite Loop)", "1 2", "Compilation Error"],
+        ans: 1,
+        theory: "In 'i = i++', the old value of i (0) is stored, i is incremented to 1, then the stored 0 is assigned back to i. The loop variable never effectively increases, resulting in an infinite loop."
+    },
+    {
+        q: "What is the behavior of Unicode literals and char data types?",
+        code: "char c = '\\u0031';\nint n = c + 1;\nSystem.out.println(n);",
+        options: ["11", "50", "49", "Compilation Error"],
+        ans: 1,
+        theory: "'\\u0031' is the Unicode for the character '1'. Its ASCII/decimal value is 49. When added to the integer 1, numeric promotion occurs: 49 + 1 = 50."
+    },
+    {
+        q: "How does Java handle integer division and floating point literals?",
+        code: "double d = 10 / 4 + 2.5;\nSystem.out.println(d);",
+        options: ["5.0", "4.5", "5", "Compilation Error"],
+        ans: 1,
+        theory: "10 / 4 performs integer division resulting in 2. Then, 2 + 2.5 performs floating point addition, resulting in 4.5."
+    },
+    {
+        q: "Predict the output of nested ternary operators.",
+        code: "int x = 10, y = 20;\nint result = (x > y) ? x++ : (y > x) ? y++ : 0;\nSystem.out.println(y);",
+        options: ["20", "21", "10", "0"],
+        ans: 1,
+        theory: "The second condition (y > x) is true. Therefore, y++ is executed. Post-increment returns the value then increments, so y becomes 21."
+    },
+    {
+        q: "What is the result of String vs Char concatenation?",
+        code: "System.out.println('A' + 'B' + \"C\");",
+        options: ["ABC", "131C", "AB C", "Compilation Error"],
+        ans: 1,
+        theory: "'A' (65) and 'B' (66) are chars. The '+' operator first adds their numeric values (65+66=131). Then it encounters a String 'C', triggering String concatenation: '131C'."
+    },
+    {
+        q: "What happens in this uninitialized local variable scenario?",
+        code: "int x;\nif (false) { x = 10; }\nelse { /* empty */ }\nSystem.out.println(x);",
+        options: ["0", "null", "Compilation Error", "10"],
+        ans: 2,
+        theory: "Local variables in Java are not assigned default values. The compiler detects that 'x' might not have been initialized before usage, leading to a compilation error."
+    },
+    {
+        q: "What is the effect of the 'break' label in nested loops?",
+        code: "outer: for(int i=0; i<3; i++) {\n    for(int j=0; j<3; j++) {\n        if(i == 1) break outer;\n        System.out.print(i);\n    }\n}",
+        options: ["000", "000111222", "000222", "012"],
+        ans: 0,
+        theory: "When i=1, the 'break outer' statement terminates the entire outer loop. Only the output for i=0 (which prints three times) is generated."
+    },
+    {
+        q: "Determine the output of bitwise XOR on booleans.",
+        code: "boolean a = true, b = false;\nSystem.out.println(a ^ b);",
+        options: ["true", "false", "1", "Compilation Error"],
+        ans: 0,
+        theory: "The XOR (^) operator on booleans returns true if exactly one operand is true. Since a and b are different, it returns true."
+    },
+    {
+        q: "What is the result of shifting a negative integer?",
+        code: "int x = -1;\nSystem.out.println(x >>> 31);",
+        options: ["-1", "1", "0", "2147483647"],
+        ans: 1,
+        theory: "The '>>>' is the unsigned right shift. For -1 (all bits 1), shifting right by 31 positions leaves only the rightmost 1, resulting in the value 1."
+    },
+    {
+        q: "Identify the floating point comparison issue.",
+        code: "float f = 0.1f;\nif (f == 0.1) System.out.print(\"Equal\");\nelse System.out.print(\"Not Equal\");",
+        options: ["Equal", "Not Equal", "Compilation Error", "Runtime Error"],
+        ans: 1,
+        theory: "0.1 is a 'double' literal by default. 'float' has less precision than 'double'. 0.1f and 0.1 are not strictly equal in memory."
+    },
+    {
+        q: "What is the output of the modulo operator with negative numbers?",
+        code: "System.out.println(-10 % 3);",
+        options: ["1", "-1", "0", "Compilation Error"],
+        ans: 1,
+        theory: "In Java, the result of the remainder operator (%) takes the sign of the left operand (the dividend). -10 % 3 equals -1."
+    },
+    {
+        q: "Predict the output of this while loop with a semi-colon.",
+        code: "int x = 0;\nwhile (x < 3); {\n    x++;\n}\nSystem.out.println(x);",
+        options: ["3", "0", "Infinite Loop", "Compilation Error"],
+        ans: 2,
+        theory: "The semi-colon after the while condition creates an empty loop body. Since x is 0 and never changes inside that empty body, the condition (0 < 3) remains true forever."
+    },
+    {
+        q: "How does Java handle multiple assignments in one line?",
+        code: "int a, b, c;\na = b = c = 50;\nSystem.out.println(a + b + c);",
+        options: ["150", "50", "Compilation Error", "505050"],
+        ans: 0,
+        theory: "Assignment is right-associative. 50 is assigned to c, then c to b, then b to a. All variables become 50."
+    },
+    {
+        q: "What is the behavior of the DO-WHILE loop?",
+        code: "int i = 10;\ndo {\n    i++;\n} while (i < 10);\nSystem.out.println(i);",
+        options: ["10", "11", "Infinite Loop", "Compilation Error"],
+        ans: 1,
+        theory: "A do-while loop always executes the body at least once. i becomes 11, then the condition (11 < 10) is checked and fails."
+    },
+    {
+        q: "What is the output of the wrapper class comparison?",
+        code: "Integer i1 = 100;\nInteger i2 = 100;\nSystem.out.println(i1 == i2);",
+        options: ["true", "false", "Compilation Error", "Runtime Exception"],
+        ans: 0,
+        theory: "Java caches Integers from -128 to 127. Since 100 is within this range, i1 and i2 refer to the same cached object."
+    },
+    {
+        q: "What is the result of using a label without a loop?",
+        code: "myLabel: System.out.println(\"Hello\");",
+        options: ["Hello", "Compilation Error", "Runtime Exception", "Nothing"],
+        ans: 0,
+        theory: "In Java, any statement can be labeled, not just loops. However, labels are typically only useful with 'break' or 'continue' inside loops."
+    },
+    {
+        q: "What is the output of the octal literal?",
+        code: "int x = 010;\nSystem.out.println(x + 1);",
+        options: ["11", "9", "10", "Compilation Error"],
+        ans: 1,
+        theory: "Integers starting with '0' are treated as octal (base 8). 010 in octal is 8 in decimal. 8 + 1 = 9."
+    }
+];
+
+let currentIdx = 0;
+let responses = new Array(quizData.length).fill(null);
+let time = 1800; // 30 mins
+
+function load() {
+    const data = quizData[currentIdx];
+    document.getElementById('q-number').innerText = `Question ${currentIdx + 1} of ${quizData.length}`;
+    document.getElementById('q-title').innerText = data.q;
+    document.getElementById('q-code').innerText = data.code;
+    
+    const opts = document.getElementById('q-options');
+    opts.innerHTML = '';
+    data.options.forEach((o, i) => {
+        const checked = responses[currentIdx] === i ? 'checked' : '';
+        opts.innerHTML += `<li><label><input type="radio" name="opt" onclick="save(${i})" ${checked}> ${o}</label></li>`;
+    });
+
+    document.getElementById('prev-btn').disabled = currentIdx === 0;
+    document.getElementById('next-btn').style.display = currentIdx === quizData.length -1 ? 'none' : 'block';
+    document.getElementById('submit-btn').style.display = currentIdx === quizData.length -1 ? 'block' : 'none';
+}
+
+function save(idx) { responses[currentIdx] = idx; }
+function move(step) { currentIdx += step; load(); }
+
+function finish() {
+    clearInterval(timer);
+    document.getElementById('quiz-ui').style.display = 'none';
+    document.getElementById('result-ui').style.display = 'block';
+    
+    let score = 0;
+    let html = '';
+    quizData.forEach((d, i) => {
+        const correct = responses[i] === d.ans;
+        if(correct) score++;
+        html += `<div class="review-card ${correct ? 'correct' : 'incorrect'}">
+            <b>Q${i+1}: ${d.q}</b><br><pre>${d.code}</pre>
+            Your: ${responses[i] !== null ? d.options[responses[i]] : 'None'} | Correct: ${d.options[d.ans]}
+            <div class="theory-box"><b>Theory:</b> ${d.theory}</div>
+        </div>`;
+    });
+    document.getElementById('score-text').innerText = `You scored ${score} out of ${quizData.length}`;
+    document.getElementById('review-list').innerHTML = html;
+}
+
+const timer = setInterval(() => {
+    time--;
+    let m = Math.floor(time/60), s = time%60;
+    document.getElementById('timer').innerText = `${m}:${s < 10 ? '0'+s : s}`;
+    if(time <= 0) finish();
+}, 1000);
+
+load();
+</script>
+</body>
+</html>
