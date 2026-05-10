@@ -1,10 +1,10 @@
-'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
-import { Search, Bell, Menu, X, GraduationCap, BookOpen, Home, FlaskConical, Trophy } from 'lucide-react';
+import { Search, Bell, Menu, X, GraduationCap, BookOpen, Home, FlaskConical, Trophy, Sparkles } from 'lucide-react';
 import Icon from '@/components/ui/AppIcon';
+import './topbar.css';
 
 
 interface TopbarProps {
@@ -32,30 +32,19 @@ export default function Topbar({ onMenuToggle, sidebarOpen }: TopbarProps) {
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center gap-2">
           <AppLogo size={28} />
-          <span className="font-extrabold text-sm text-foreground">CollegeMCQ</span>
+          <span className="pgcp-brand-text">PGCP-AI</span>
         </div>
 
-        {/* Search Bar */}
+        {/* PGCP-AI Brand Box (replaces search bar) */}
         <div
-          className={`
-            hidden md:flex items-center gap-2 flex-1 max-w-md px-3 py-2 rounded-xl
-            border transition-all duration-200
-            ${searchFocused
-              ? 'border-primary bg-muted/80 shadow-lg shadow-primary/10'
-              : 'border-border bg-muted/40 hover:border-border/80'
-            }
-          `}
+          className="pgcp-brand-box hidden md:flex items-center gap-2.5 px-4 py-2 rounded-xl"
+          data-testid="pgcp-brand-box"
         >
-          <Search size={15} className="text-muted-foreground flex-shrink-0" />
-          <input
-            type="text"
-            placeholder="Search subjects, tests..."
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
-            className="flex-1 bg-transparent text-sm text-foreground placeholder-muted-foreground outline-none"
-          />
+          <span className="pgcp-brand-icon">
+            <Sparkles size={15} className="text-white" />
+          </span>
+          <span className="pgcp-brand-text">PGCP-AI</span>
+          
         </div>
 
         <div className="flex-1 hidden md:block" />

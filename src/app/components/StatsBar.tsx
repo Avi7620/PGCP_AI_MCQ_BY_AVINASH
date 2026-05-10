@@ -18,7 +18,7 @@ const stats = [
   {
     key: 'stat-tests',
     icon: FlaskConical,
-    value: 20,
+    value: 36,
     label: 'Total Tests',
     suffix: '+',
     color: 'text-accent',
@@ -27,21 +27,13 @@ const stats = [
   {
     key: 'stat-questions',
     icon: Award,
-    value: 500,
+    value: 650,
     label: 'MCQ Questions',
     suffix: '+',
     color: 'text-amber-400',
     bg: 'bg-amber-400/10',
   },
-  {
-    key: 'stat-students',
-    icon: Users,
-    value: 1200,
-    label: 'Students Enrolled',
-    suffix: '+',
-    color: 'text-green-400',
-    bg: 'bg-green-400/10',
-  },
+
 ];
 
 function CountUp({ target, suffix }: { target: number; suffix: string }) {

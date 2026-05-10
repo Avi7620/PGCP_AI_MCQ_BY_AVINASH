@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced ML Assessment: Classification & Clustering</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --primary: #0056b3;
+            --primary-hover: #004494;
+            --text-dark: #333333;
+            --text-light: #666666;
+            --border: #e0e0e0;
+            --danger: #d9534f;
+            --success: #5cb85c;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .quiz-container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 700px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .timer {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timer.warning {
+            background: var(--danger);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--border);
+            width: 100%;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+
+        .option-label:hover {
+            background: #f8fbff;
+            border-color: #b3d4ff;
+        }
+
+        .option-label input {
+            margin-right: 15px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .option-label.selected {
+            border-color: var(--primary);
+            background: #f0f7ff;
+        }
+
+        .footer {
+            padding: 20px 30px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            background: #fafafa;
+        }
+
+        button.btn-next {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        button.btn-next:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
+
+        button.btn-next:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* Result Screen */
+        #result-screen {
+            display: none;
+            text-align: center;
+            padding: 50px 30px;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 8px solid var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 0 auto 30px;
+        }
+
+        .result-message {
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container" id="quiz-screen">
+        <div class="header">
+            <h1>Machine Learning Assessment</h1>
+            <div class="timer" id="timer">⏱️ 30:00</div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="content">
+            <div class="question-header">
+                <span id="question-counter">Question 1 of 20</span>
+                <span>Category: <span id="question-category" style="font-weight:bold;">KNN</span></span>
+            </div>
+            <div class="question-text" id="question-text">
+                </div>
+            <div class="options-list" id="options-list">
+                </div>
+        </div>
+        <div class="footer">
+            <button class="btn-next" id="btn-next" disabled onclick="handleNext()">Next Question</button>
+        </div>
+    </div>
+
+    <div class="quiz-container" id="result-screen">
+        <div class="header">
+            <h1>Assessment Complete</h1>
+        </div>
+        <div class="content" style="text-align: center; padding-top: 40px;">
+            <div class="score-circle" id="final-score">0/20</div>
+            <h2 class="result-message" id="result-text">Good Effort!</h2>
+            <p style="color: #666; margin-bottom: 30px;" id="result-subtext">You have completed the test.</p>
+            <button class="btn-next" onclick="location.reload()">Retake Assessment</button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            // KNN
+            {
+                category: "K-Nearest Neighbors",
+                question: "In a highly dimensional space, why does the performance of a standard KNN model drastically degrade (Curse of Dimensionality)?",
+                options: [
+                    "The variance of the features becomes negative.",
+                    "The distance to the nearest neighbor approaches the distance to the farthest neighbor.",
+                    "The model cannot compute Euclidean distance beyond 3 dimensions.",
+                    "The training time becomes exponential, rendering the algorithm useless."
+                ],
+                correct: 1
+            },
+            {
+                category: "K-Nearest Neighbors",
+                question: "What is the time complexity of predicting a single new instance using a brute-force KNN model with N training samples and D dimensions?",
+                options: ["O(log N * D)", "O(1)", "O(N * D)", "O(N^2 * D)"],
+                correct: 2
+            },
+            {
+                category: "K-Nearest Neighbors",
+                question: "How does setting K=1 affect the bias and variance of a KNN classifier compared to setting K=100?",
+                options: [
+                    "High Bias, Low Variance",
+                    "Low Bias, High Variance",
+                    "Low Bias, Low Variance",
+                    "High Bias, High Variance"
+                ],
+                correct: 1
+            },
+            {
+                category: "K-Nearest Neighbors",
+                question: "Which data scaling technique is strictly required before applying KNN to ensure features with larger numerical ranges do not dominate the distance metric?",
+                options: ["Log Transformation", "One-Hot Encoding", "Min-Max Scaling or Standardization", "Label Encoding"],
+                correct: 2
+            },
+            // Decision Trees
+            {
+                category: "Decision Trees",
+                question: "In the CART algorithm for building Decision Trees, why is Gini Impurity often preferred as a split criterion over Information Gain (Entropy)?",
+                options: [
+                    "It natively handles missing data better.",
+                    "It creates deeper, more accurate trees.",
+                    "It does not require computing computationally expensive logarithmic functions.",
+                    "It guarantees a globally optimal tree structure."
+                ],
+                correct: 2
+            },
+            {
+                category: "Decision Trees",
+                question: "Which of the following is the primary mechanism by which setting a 'min_samples_split' hyperparameter helps a decision tree?",
+                options: [
+                    "It converts continuous variables to categorical ones.",
+                    "It acts as pre-pruning, preventing the tree from overfitting to noise.",
+                    "It forces the tree to use Gini impurity.",
+                    "It balances the classes in imbalanced datasets."
+                ],
+                correct: 1
+            },
+            {
+                category: "Decision Trees",
+                question: "What kind of decision boundary is inherently created by a standard Decision Tree algorithm with numerical features?",
+                options: [
+                    "Smooth, non-linear curves.",
+                    "Orthogonal (axis-parallel) step-like boundaries.",
+                    "Linear boundaries intersecting the origin.",
+                    "Circular boundaries around dense clusters."
+                ],
+                correct: 1
+            },
+            {
+                category: "Decision Trees",
+                question: "Without constraints (like max_depth or min_samples_leaf), what will a Decision Tree naturally tend to do?",
+                options: [
+                    "Underfit the training data due to high bias.",
+                    "Converge slowly taking excessive epochs.",
+                    "Overfit by creating a leaf node for almost every individual training sample.",
+                    "Fail to converge entirely."
+                ],
+                correct: 2
+            },
+            // SVM
+            {
+                category: "Support Vector Machines",
+                question: "In the context of the soft-margin SVM formulation, what happens when the hyperparameter 'C' approaches infinity?",
+                options: [
+                    "The model strictly forbids margin violations, risking severe overfitting (hard margin).",
+                    "The model allows infinite margin violations, risking severe underfitting.",
+                    "The model switches from a linear kernel to an RBF kernel.",
+                    "The decision boundary becomes entirely random."
+                ],
+                correct: 0
+            },
+            {
+                category: "Support Vector Machines",
+                question: "Why is solving the Dual formulation of the SVM optimization problem mathematically advantageous over the Primal formulation in certain scenarios?",
+                options: [
+                    "It inherently acts as L1 regularization for feature selection.",
+                    "It allows the application of the Kernel Trick, avoiding explicit computation of high-dimensional feature mappings.",
+                    "It guarantees that all support vectors will have a weight of zero.",
+                    "It reduces the time complexity from quadratic to linear."
+                ],
+                correct: 1
+            },
+            {
+                category: "Support Vector Machines",
+                question: "Which subset of the training data points actually dictates the position and orientation of the SVM decision boundary?",
+                options: [
+                    "Only the misclassified points.",
+                    "The cluster centroids.",
+                    "The support vectors (points on or inside the margin).",
+                    "All points in the training dataset equally."
+                ],
+                correct: 2
+            },
+            {
+                category: "Support Vector Machines",
+                question: "Which of the following kernels maps the original features into an infinite-dimensional feature space?",
+                options: [
+                    "Linear Kernel",
+                    "Polynomial Kernel (degree > 3)",
+                    "Sigmoid Kernel",
+                    "Radial Basis Function (RBF) Kernel"
+                ],
+                correct: 3
+            },
+            // K-Means
+            {
+                category: "K-Means Clustering",
+                question: "What specific objective function does the standard K-Means algorithm mathematically attempt to minimize?",
+                options: [
+                    "Between-cluster sum of squares",
+                    "Within-cluster sum of squares (Inertia)",
+                    "Maximum margin between centroids",
+                    "Silhouette Score"
+                ],
+                correct: 1
+            },
+            {
+                category: "K-Means Clustering",
+                question: "How does the K-Means++ initialization fundamentally improve upon standard random initialization?",
+                options: [
+                    "It selects initial centroids probabilistically, favoring points that are far away from already chosen centroids.",
+                    "It runs K-Means multiple times and averages the centroids.",
+                    "It uses PCA to project the data to 2D before choosing centroids.",
+                    "It automatically determines the optimal number of clusters (K)."
+                ],
+                correct: 0
+            },
+            {
+                category: "K-Means Clustering",
+                question: "Which type of dataset distribution is standard K-Means clustering notorious for failing to cluster correctly?",
+                options: [
+                    "Dense, perfectly spherical clusters.",
+                    "Datasets with highly uniform variance across clusters.",
+                    "Non-convex, elongated, or concentric geometric shapes (e.g., moons or circles).",
+                    "Datasets with fewer than 10,000 samples."
+                ],
+                correct: 2
+            },
+            {
+                category: "K-Means Clustering",
+                question: "If your dataset contains massive, extreme outliers, what is the likely impact on a K-Means algorithm?",
+                options: [
+                    "Centroids will be significantly pulled toward the outliers, skewing the clusters.",
+                    "The algorithm will automatically drop the outliers during initialization.",
+                    "The number of clusters (K) will dynamically increase to accommodate them.",
+                    "It has no impact because K-Means uses median distance instead of mean."
+                ],
+                correct: 0
+            },
+            // Evaluation & Confusion Matrix
+            {
+                category: "Evaluation Metrics",
+                question: "In a heavily imbalanced dataset (e.g., 99% Negative, 1% Positive), which evaluation metric is the most misleading and dangerous to rely on?",
+                options: ["Precision", "F1 Score", "Accuracy", "Area Under the ROC Curve (AUC)"],
+                correct: 2
+            },
+            {
+                category: "Evaluation Metrics",
+                question: "If you are building a model to detect a fatal, highly contagious disease, which metric should you generally prioritize maximizing to ensure safety?",
+                options: [
+                    "Precision (to minimize False Positives)",
+                    "Recall / Sensitivity (to minimize False Negatives)",
+                    "Specificity (to maximize True Negatives)",
+                    "Log-Loss"
+                ],
+                correct: 1
+            },
+            {
+                category: "Evaluation Metrics",
+                question: "What is the exact probabilistic interpretation of an ROC AUC score of 0.85?",
+                options: [
+                    "The model correctly classifies 85% of all samples.",
+                    "The model is 85% confident in its positive predictions.",
+                    "There is an 85% chance the model will rank a randomly chosen positive instance higher than a randomly chosen negative instance.",
+                    "85% of the variance in the target variable is explained by the model."
+                ],
+                correct: 2
+            },
+            {
+                category: "Evaluation Metrics",
+                question: "Why is the Matthews Correlation Coefficient (MCC) generally considered a more reliable metric than the F1 Score for binary classification?",
+                options: [
+                    "It is easier to compute than F1.",
+                    "It ignores False Negatives.",
+                    "It symmetrically considers all four quadrants of the confusion matrix (TP, TN, FP, FN).",
+                    "It automatically calibrates prediction probabilities."
+                ],
+                correct: 2
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedOption = null;
+        let timeLeft = 1800; // 30 minutes in seconds
+        let timerInterval;
+
+        const elements = {
+            quizScreen: document.getElementById('quiz-screen'),
+            resultScreen: document.getElementById('result-screen'),
+            timer: document.getElementById('timer'),
+            progressFill: document.getElementById('progress-fill'),
+            counter: document.getElementById('question-counter'),
+            category: document.getElementById('question-category'),
+            questionText: document.getElementById('question-text'),
+            optionsList: document.getElementById('options-list'),
+            btnNext: document.getElementById('btn-next'),
+            finalScore: document.getElementById('final-score'),
+            resultText: document.getElementById('result-text'),
+            resultSubtext: document.getElementById('result-subtext')
+        };
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                elements.timer.innerHTML = `⏱️ ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 300) { // Under 5 minutes
+                    elements.timer.classList.add('warning');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    finishQuiz(true);
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            const q = quizData[currentQuestion];
+            selectedOption = null;
+            elements.btnNext.disabled = true;
+            
+            // Update UI
+            elements.counter.innerText = `Question ${currentQuestion + 1} of ${quizData.length}`;
+            elements.category.innerText = q.category;
+            elements.progressFill.style.width = `${(currentQuestion / quizData.length) * 100}%`;
+            elements.questionText.innerText = q.question;
+            
+            // Generate Options
+            elements.optionsList.innerHTML = '';
+            q.options.forEach((opt, index) => {
+                const label = document.createElement('label');
+                label.className = 'option-label';
+                label.innerHTML = `
+                    <input type="radio" name="quiz-option" value="${index}">
+                    <span>${opt}</span>
+                `;
+                
+                label.addEventListener('click', () => {
+                    // Remove selected class from all
+                    document.querySelectorAll('.option-label').forEach(el => el.classList.remove('selected'));
+                    // Add selected class to clicked
+                    label.classList.add('selected');
+                    // Check radio
+                    label.querySelector('input').checked = true;
+                    // Update state
+                    selectedOption = index;
+                    elements.btnNext.disabled = false;
+                });
+                
+                elements.optionsList.appendChild(label);
+            });
+
+            // Change button text on last question
+            if (currentQuestion === quizData.length - 1) {
+                elements.btnNext.innerText = "Submit Assessment";
+            }
+        }
+
+        function handleNext() {
+            if (selectedOption === null) return;
+
+            // Check answer
+            if (selectedOption === quizData[currentQuestion].correct) {
+                score++;
+            }
+
+            currentQuestion++;
+
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
+            } else {
+                finishQuiz(false);
+            }
+        }
+
+        function finishQuiz(timeout = false) {
+            clearInterval(timerInterval);
+            elements.quizScreen.style.display = 'none';
+            elements.resultScreen.style.display = 'block';
+            
+            elements.finalScore.innerText = `${score}/${quizData.length}`;
+            
+            const percentage = (score / quizData.length) * 100;
+            
+            if (timeout) {
+                elements.resultText.innerText = "Time's Up!";
+                elements.resultText.style.color = "var(--danger)";
+            } else if (percentage >= 80) {
+                elements.resultText.innerText = "Excellent Work!";
+                elements.resultText.style.color = "var(--success)";
+            } else if (percentage >= 60) {
+                elements.resultText.innerText = "Good Effort!";
+            } else {
+                elements.resultText.innerText = "Keep Practicing!";
+                elements.resultText.style.color = "var(--danger)";
+            }
+
+            elements.resultSubtext.innerText = `You scored ${percentage}% on this advanced ML assessment.`;
+        }
+
+        // Initialize Quiz
+        startTimer();
+        loadQuestion();
+
+    </script>
+</body>
+</html>

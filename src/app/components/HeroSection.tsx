@@ -22,19 +22,19 @@ export default function HeroSection() {
       {/* Floating decorative elements */}
       <div className="absolute top-12 right-16 animate-float hidden xl:block">
         <div className="glass-card p-3 rounded-2xl border border-primary/30 glow-violet">
-          <BookOpen size={24} className="text-primary" />
+          <BookOpen size={35} className="text-primary" />
         </div>
       </div>
       <div className="absolute top-1/3 right-1/4 animate-float-delayed hidden xl:block">
         <div className="glass-card p-2.5 rounded-xl border border-accent/30 glow-cyan">
-          <Zap size={18} className="text-accent" />
+          <Zap size={25} className="text-accent" />
         </div>
       </div>
-      <div className="absolute bottom-16 right-24 animate-float hidden xl:block" style={{ animationDelay: '1s' }}>
+      {/* <div className="absolute bottom-16 right-24 animate-float hidden xl:block" style={{ animationDelay: '1s' }}>
         <div className="glass-card px-3 py-2 rounded-xl border border-amber-500/30">
           <span className="text-xs font-600 text-amber-400">500+ Questions</span>
         </div>
-      </div>
+      </div> */}
       {/* Content */}
       <div className="relative z-10 w-full px-6 py-16 lg:py-20">
         <div className="max-w-3xl">
@@ -94,7 +94,7 @@ export default function HeroSection() {
               Start Practicing
               <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform duration-200" />
             </Link>
-            <Link
+            {/* <Link
               href="/subject-selection"
               className="
                 inline-flex items-center gap-2 px-6 py-3 rounded-xl
@@ -105,7 +105,7 @@ export default function HeroSection() {
             >
               <BookOpen size={16} />
               Browse Subjects
-            </Link>
+            </Link> */}
           </div>
 
           {/* Quick tags */}

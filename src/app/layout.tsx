@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   description:
     'Practice MCQs for Python, Java, Data Analytics, and Machine Learning. Timed tests, mock exams, and final test prep — all in one portal.',
   icons: {
-    icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
+    icon: [{ url: '/favicon.ico', type: 'image/index.jpg' }],
   },
 };
 

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Regression & Metrics Quiz</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .quiz-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .timer {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #dc2626;
+            background: #fee2e2;
+            padding: 8px 16px;
+            border-radius: 6px;
+        }
+
+        .progress {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+        }
+
+        .option-label:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .option-label input[type="radio"] {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        button:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        .result-container {
+            text-align: center;
+            display: none;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: #dbeafe;
+            color: var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0 auto 20px auto;
+            border: 8px solid var(--primary-color);
+        }
+
+        .result-message {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container" id="quiz-screen">
+    <div class="header">
+        <h1>Regression & Metrics Assessment</h1>
+        <div class="timer" id="timer">60:00</div>
+    </div>
+    
+    <div class="progress" id="progress">Question 1 of 40</div>
+    
+    <div class="question-text" id="question">Loading question...</div>
+    
+    <div class="options" id="options">
+        </div>
+    
+    <div class="controls">
+        <button id="next-btn" onclick="nextQuestion()" disabled>Next Question</button>
+    </div>
+</div>
+
+<div class="quiz-container result-container" id="result-screen">
+    <div class="score-circle" id="score-display">0/40</div>
+    <h2>Assessment Complete</h2>
+    <p class="result-message" id="result-message">You have finished the quiz.</p>
+</div>
+
+<script>
+    const questions = [
+        // Linear Regression (1-10)
+        {
+            q: "In Ordinary Least Squares (OLS) linear regression, what exactly is the algorithm trying to minimize?",
+            options: ["Sum of absolute errors", "Sum of squared residuals", "Mean absolute error", "Total variance of the independent variable"],
+            answer: 1
+        },
+        {
+            q: "Which of the following violates the assumptions of classical linear regression?",
+            options: ["The residuals follow a normal distribution", "The independent variables are perfectly correlated", "The variance of the errors is constant", "The relationship between X and Y is linear"],
+            answer: 1
+        },
+        {
+            q: "What does heteroscedasticity mean in the context of linear regression?",
+            options: ["The independent variables are highly correlated", "The model is overfitting the training data", "The variance of the error terms is non-constant across observations", "The errors are normally distributed"],
+            answer: 2
+        },
+        {
+            q: "In a multiple linear regression model, what does the coefficient of an independent variable represent?",
+            options: ["The absolute impact of that variable on the dependent variable", "The change in the dependent variable for a one-unit change in the independent variable, holding all other variables constant", "The correlation between that variable and the dependent variable", "The statistical significance of the model"],
+            answer: 1
+        },
+        {
+            q: "Why is gradient descent often preferred over the normal equation for solving linear regression with a massive number of features (e.g., 1 million)?",
+            options: ["Gradient descent always finds the exact global minimum immediately", "The normal equation requires inverting a matrix, which is computationally expensive O(N^3)", "The normal equation cannot handle continuous variables", "Gradient descent does not require a learning rate"],
+            answer: 1
+        },
+        {
+            q: "What is the consequence of having multicollinearity in your linear regression model?",
+            options: ["It makes the model underfit the data", "It biases the predictions downward", "It inflates the variance of the coefficient estimates, making them unstable", "It prevents the algorithm from minimizing the cost function"],
+            answer: 2
+        },
+        {
+            q: "If the relationship between the features and the target variable is highly non-linear, applying standard linear regression will likely result in:",
+            options: ["High variance", "High bias (underfitting)", "Perfect predictions", "Heteroscedasticity"],
+            answer: 1
+        },
+        {
+            q: "How do outliers affect an OLS linear regression line?",
+            options: ["They have no effect because OLS ignores extremes", "They pull the regression line towards themselves heavily because errors are squared", "They only affect the intercept, not the slope", "They reduce the model's R-squared to exactly 0"],
+            answer: 1
+        },
+        {
+            q: "What is the primary role of the y-intercept (bias term) in a linear regression equation?",
+            options: ["It determines the steepness of the line", "It represents the expected value of Y when all X variables are zero", "It measures the correlation between X and Y", "It prevents the model from overfitting"],
+            answer: 1
+        },
+        {
+            q: "Which scaling method is strictly required before running an unregularized OLS linear regression to get accurate predictions?",
+            options: ["Min-Max scaling", "Standardization (Z-score)", "Log transformation", "Scaling is not strictly required for standard OLS predictions"],
+            answer: 3
+        },
+
+        // Polynomial Regression (11-18)
+        {
+            q: "Is Polynomial Regression considered a linear or non-linear model?",
+            options: ["Non-linear in parameters, linear in variables", "Linear in parameters, non-linear in variables", "Non-linear in both", "Linear in both"],
+            answer: 1
+        },
+        {
+            q: "As you increase the degree of the polynomial in polynomial regression, what happens to the training error and the testing error?",
+            options: ["Both decrease continually", "Training error increases, testing error decreases", "Training error decreases, testing error eventually increases (overfitting)", "Both remain constant"],
+            answer: 2
+        },
+        {
+            q: "In polynomial regression, creating polynomial features of degree 3 for variables x1 and x2 will include which of the following terms?",
+            options: ["Only x1^3 and x2^3", "x1, x2, x1^2, x2^2, x1^3, x2^3", "x1, x2, x1^2, x2^2, x1*x2, x1^3, x2^3, x1^2*x2, x1*x2^2", "x1^3 * x2^3"],
+            answer: 2
+        },
+        {
+            q: "What is a major danger of using a very high-degree polynomial regression model?",
+            options: ["It will suffer from extreme high bias", "It will wildly oscillate between data points and perform poorly on extrapolation", "It will automatically drop irrelevant features", "It takes too long to converge using OLS"],
+            answer: 1
+        },
+        {
+            q: "How can you determine the optimal degree for a polynomial regression model?",
+            options: ["Always choose degree 3 as an industry standard", "Use cross-validation and choose the degree with the lowest validation error", "Choose the degree that gives 100% accuracy on the training set", "Use the normal equation"],
+            answer: 1
+        },
+        {
+            q: "Which of the following statements about bias and variance is true when comparing a degree-1 polynomial (straight line) to a degree-10 polynomial on a complex dataset?",
+            options: ["Degree 1 has high variance; Degree 10 has high bias", "Degree 1 has low bias; Degree 10 has low variance", "Degree 1 has high bias and low variance; Degree 10 has low bias and high variance", "Both have high bias and high variance"],
+            answer: 2
+        },
+        {
+            q: "Why is feature scaling highly recommended before applying Polynomial Regression?",
+            options: ["Because raising large numbers to high powers can cause numerical overflow and dominance of higher-order features", "Because the model will crash without it", "Because it converts non-linear relationships into linear ones", "Because it forces the coefficients to be zero"],
+            answer: 0
+        },
+        {
+            q: "If a polynomial regression model is drastically overfitting the data, which of the following is a valid remedy?",
+            options: ["Increase the degree of the polynomial", "Apply L1 or L2 regularization", "Remove all training data points", "Use a lower learning rate for the normal equation"],
+            answer: 1
+        },
+
+        // Ridge Regression (L2) (19-25)
+        {
+            q: "What is the penalty term added to the cost function in Ridge Regression?",
+            options: ["Lambda multiplied by the sum of absolute values of coefficients", "Lambda multiplied by the sum of squared coefficients", "Lambda multiplied by the number of non-zero coefficients", "The sum of residuals squared"],
+            answer: 1
+        },
+        {
+            q: "What is the primary mathematical effect of the Ridge (L2) penalty on the model's coefficients?",
+            options: ["It forces all coefficients to exactly zero", "It shrinks the coefficients towards zero, but rarely exactly to zero", "It inflates the coefficients to prevent underfitting", "It only affects the intercept term"],
+            answer: 1
+        },
+        {
+            q: "In Ridge regression, if the hyperparameter lambda (or alpha) is set to 0, what does the model become?",
+            options: ["Lasso regression", "A random guess", "Standard Ordinary Least Squares (OLS) regression", "A constant mean model"],
+            answer: 2
+        },
+        {
+            q: "Why is feature scaling essential before applying Ridge Regression?",
+            options: ["Because Ridge penalizes the magnitude of coefficients, and without scaling, features with smaller scales will be unfairly penalized", "Because Ridge requires all features to be normally distributed", "Because the lambda hyperparameter only works with negative numbers", "Because scaling automatically removes multicollinearity"],
+            answer: 0
+        },
+        {
+            q: "How does Ridge Regression handle severe multicollinearity among features?",
+            options: ["It drops one of the correlated features entirely", "It assigns a coefficient of zero to all correlated features", "It distributes the coefficient weights relatively evenly among the correlated features", "It multiplies the correlated features together"],
+            answer: 2
+        },
+        {
+            q: "In the context of Ridge Regression, what happens as the lambda (regularization strength) parameter approaches infinity?",
+            options: ["The coefficients approach infinity", "The model fits the training data perfectly", "All feature coefficients approach zero, leaving only the intercept", "The model becomes highly non-linear"],
+            answer: 2
+        },
+        {
+            q: "Which theorem/mathematical concept explains why Ridge Regression has an analytical solution using the normal equation?",
+            options: ["Because the L2 penalty term keeps the matrix strictly positive definite and invertible", "Because the absolute value function is always differentiable", "Because it uses gradient descent", "Because it ignores the bias term"],
+            answer: 0
+        },
+
+        // Lasso Regression (L1) (26-32)
+        {
+            q: "What is the penalty term added to the cost function in Lasso Regression?",
+            options: ["Lambda * sum of squared coefficients", "Lambda * sum of absolute values of coefficients", "Lambda * sum of squared residuals", "Lambda * intercept"],
+            answer: 1
+        },
+        {
+            q: "What is a unique and highly useful property of Lasso (L1) Regression compared to Ridge?",
+            options: ["It performs automatic feature selection by shrinking some coefficients to exactly zero", "It is computationally faster than standard OLS", "It can model non-linear relationships without polynomial features", "It is unaffected by outliers"],
+            answer: 0
+        },
+        {
+            q: "Geometrically, why does Lasso regression tend to produce sparse models (coefficients exactly zero)?",
+            options: ["Because the L1 constraint region is a circle", "Because the L1 constraint region has sharp corners (diamond shape) that the elliptical cost function often hits first", "Because L1 regularization increases the variance of the data", "Because L1 regularization drops the dependent variable"],
+            answer: 1
+        },
+        {
+            q: "If you have a dataset with 10,000 features but you suspect only 50 of them are actually important, which model is generally best suited for this?",
+            options: ["Standard OLS Linear Regression", "Ridge Regression", "Lasso Regression", "Polynomial Regression degree 5"],
+            answer: 2
+        },
+        {
+            q: "How does Lasso handle a group of highly correlated features?",
+            options: ["It shrinks them all equally like Ridge", "It tends to select one feature from the group randomly and forces the others to zero", "It drops all of them", "It combines them into a single principal component"],
+            answer: 1
+        },
+        {
+            q: "Unlike Ridge Regression, Lasso Regression cannot be directly solved using the standard normal equation. Why?",
+            options: ["Because the L1 penalty function (absolute value) is not differentiable at zero", "Because matrices cannot be inverted if they contain zeroes", "Because it requires imaginary numbers", "Because the cost function is not convex"],
+            answer: 0
+        },
+        {
+            q: "Which algorithm combines both L1 (Lasso) and L2 (Ridge) penalties?",
+            options: ["Principal Component Regression", "Elastic Net Regression", "Robust Regression", "Support Vector Regression"],
+            answer: 1
+        },
+
+        // Evaluation Metrics (33-40)
+        {
+            q: "Which evaluation metric calculates the average of the squared differences between predicted and actual values?",
+            options: ["Mean Absolute Error (MAE)", "R-squared", "Mean Squared Error (MSE)", "Adjusted R-squared"],
+            answer: 2
+        },
+        {
+            q: "What is the primary advantage of Root Mean Squared Error (RMSE) over MSE?",
+            options: ["RMSE is robust to outliers", "RMSE is interpretable in the same units as the target variable", "RMSE is always a percentage", "RMSE cannot be negative"],
+            answer: 1
+        },
+        {
+            q: "If your dataset contains many extreme outliers and you don't want your model to be overly penalized by them, which evaluation metric is best to use?",
+            options: ["Mean Squared Error (MSE)", "Root Mean Squared Error (RMSE)", "Mean Absolute Error (MAE)", "Sum of Squared Errors (SSE)"],
+            answer: 2
+        },
+        {
+            q: "What does an R-squared score of 0 indicate?",
+            options: ["The model perfectly predicts the target variable", "The model performs exactly as well as a horizontal line predicting the mean of the target variable", "The model performs worse than a random guess", "There are no errors in the predictions"],
+            answer: 1
+        },
+        {
+            q: "Can the R-squared metric be negative?",
+            options: ["No, it is strictly between 0 and 1", "No, because it squares the errors", "Yes, if the model fits the data worse than simply predicting the mean of the target", "Yes, but only in classification tasks"],
+            answer: 2
+        },
+        {
+            q: "Why is Adjusted R-squared often preferred over standard R-squared in Multiple Linear Regression?",
+            options: ["Adjusted R-squared is always larger than R-squared", "Adjusted R-squared penalizes the model for adding independent variables that do not improve the model significantly", "Adjusted R-squared is easier to calculate manually", "Adjusted R-squared handles non-linear data better"],
+            answer: 1
+        },
+        {
+            q: "If adding a new feature to a regression model causes the standard R-squared to slightly increase, but the Adjusted R-squared decreases, what does this imply?",
+            options: ["The new feature is highly valuable", "The new feature is perfectly correlated with the target", "The new feature does not add enough explanatory power to justify the loss in degrees of freedom", "The model is underfitting"],
+            answer: 2
+        },
+        {
+            q: "Which metric represents the proportion of the variance in the dependent variable that is predictable from the independent variables?",
+            options: ["Mean Absolute Error (MAE)", "Root Mean Squared Error (RMSE)", "Coefficient of Determination (R-squared)", "Pearson Correlation Coefficient"],
+            answer: 2
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let selectedOption = null;
+    let timeLeft = 3600; // 60 minutes
+    let timerInterval;
+
+    // DOM Elements
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const progressEl = document.getElementById('progress');
+    const nextBtn = document.getElementById('next-btn');
+    const timerEl = document.getElementById('timer');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const scoreDisplay = document.getElementById('score-display');
+    const resultMessage = document.getElementById('result-message');
+
+    function initQuiz() {
+        startTimer();
+        loadQuestion();
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            
+            const hours = Math.floor(timeLeft / 3600);
+            const minutes = Math.floor((timeLeft % 3600) / 60);
+            const seconds = timeLeft % 60;
+            
+            let timeString = "";
+            if (hours > 0) {
+                timeString += `${hours.toString().padStart(2, '0')}:`;
+            }
+            timeString += `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            timerEl.textContent = timeString;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                finishQuiz();
+            }
+        }, 1000);
+    }
+
+    function loadQuestion() {
+        const q = questions[currentQuestionIndex];
+        questionEl.textContent = `${currentQuestionIndex + 1}. ${q.q}`;
+        progressEl.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+        optionsEl.innerHTML = '';
+        selectedOption = null;
+        nextBtn.disabled = true;
+
+        if (currentQuestionIndex === questions.length - 1) {
+            nextBtn.textContent = 'Submit Quiz';
+        }
+
+        q.options.forEach((opt, index) => {
+            const label = document.createElement('label');
+            label.className = 'option-label';
+            label.innerHTML = `
+                <input type="radio" name="option" value="${index}" onchange="selectOption(${index})">
+                ${opt}
+            `;
+            optionsEl.appendChild(label);
+        });
+    }
+
+    function selectOption(index) {
+        selectedOption = index;
+        nextBtn.disabled = false;
+    }
+
+    function nextQuestion() {
+        if (selectedOption === questions[currentQuestionIndex].answer) {
+            score++;
+        }
+
+        currentQuestionIndex++;
+
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            finishQuiz();
+        }
+    }
+
+    function finishQuiz() {
+        clearInterval(timerInterval);
+        quizScreen.style.display = 'none';
+        resultScreen.style.display = 'block';
+        scoreDisplay.textContent = `${score}/${questions.length}`;
+
+        const percentage = (score / questions.length) * 100;
+        if (percentage >= 80) {
+            resultMessage.textContent = 'Excellent work! You have a strong grasp of advanced regression and metrics.';
+        } else if (percentage >= 60) {
+            resultMessage.textContent = 'Good job! You passed, but reviewing regularization techniques might help.';
+        } else {
+            resultMessage.textContent = 'Keep studying! Brush up on the differences between Ridge, Lasso, and OLS.';
+        }
+    }
+
+    // Start Quiz
+    window.onload = initQuiz;
+
+</script>
+</body>
+</html>

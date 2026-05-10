@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PGCP-AI Assessment: Foundations & Lifecycle</title>
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-hover: #0284c7;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #10b981;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
+        
+        body { background-color: var(--bg); color: var(--text); line-height: 1.6; }
+        
+        .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 1rem 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); border-bottom: 3px solid var(--primary); }
+        
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.875rem; color: var(--text-muted); }
+        
+        .timer { font-size: 1.5rem; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+        .timer.warning { color: var(--danger); }
+
+        .card { background: var(--surface); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); margin-bottom: 2rem; }
+        
+        .progress-text { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem; display: block; }
+        
+        .question-text { font-size: 1.125rem; font-weight: 500; margin-bottom: 1.5rem; }
+        
+        .options-grid { display: grid; gap: 1rem; margin-bottom: 2rem; }
+        
+        .option-label { display: flex; align-items: flex-start; padding: 1rem; background: rgba(14, 165, 233, 0.05); border: 1px solid #334155; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+        .option-label:hover { border-color: var(--primary); background: rgba(14, 165, 233, 0.1); }
+        
+        input[type="radio"] { margin-right: 1rem; margin-top: 0.25rem; transform: scale(1.2); accent-color: var(--primary); flex-shrink: 0; }
+
+        .btn { background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center; width: 100%; }
+        .btn:hover { background: var(--primary-hover); }
+        .btn:disabled { background: #475569; cursor: not-allowed; }
+
+        #result-screen { display: none; }
+        .score-display { text-align: center; font-size: 3rem; font-weight: bold; color: var(--accent); margin: 2rem 0; }
+        
+        .review-item { background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border-left: 4px solid var(--danger); }
+        .review-item.correct { border-left-color: var(--accent); }
+        .theory-box { background: #0b1120; padding: 1rem; border-radius: 8px; margin-top: 1rem; font-size: 0.9rem; border-left: 3px solid var(--primary); color: #cbd5e1;}
+        .status-badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.5rem; }
+        .status-badge.correct { background: #05966933; color: #10b981; }
+        .status-badge.incorrect { background: #e11d4833; color: #ef4444; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Foundations & Lifecycle</h1>
+            <div class="subtitle">PGCP-AI Assessment • ACTS, Pune</div>
+        </div>
+        <div class="timer" id="timer">60:00</div>
+    </header>
+
+    <div id="quiz-screen">
+        <div class="card">
+            <span class="progress-text" id="progress-text">Question 1 of 40</span>
+            <div class="question-text" id="question-text"></div>
+            <div class="options-grid" id="options-container"></div>
+            <button class="btn" id="next-btn" onclick="handleNext()">Next Question</button>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <div class="card">
+            <h2>Assessment Complete</h2>
+            <div class="score-display" id="score-display">0 / 40</div>
+            <p style="text-align: center; margin-bottom: 2rem;">Review your answers and the theoretical rationales below.</p>
+            <div id="review-container"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const questions = [
+    // Supervised vs Unsupervised (1-10)
+    {
+        q: "In the context of statistical learning theory, how does the objective of Unsupervised Learning fundamentally differ from Supervised Learning?",
+        options: [
+            "Unsupervised learning minimizes empirical risk, whereas supervised learning minimizes structural risk.",
+            "Unsupervised learning seeks to infer the underlying probability density function $P(X)$ or structural properties of the data, whereas supervised learning aims to estimate the conditional distribution $P(Y|X)$.",
+            "Unsupervised learning strictly utilizes linear boundaries, whereas supervised learning can utilize non-linear manifolds.",
+            "Unsupervised learning always requires a larger volume of data to converge than supervised learning."
+        ],
+        answer: 1,
+        theory: "Supervised learning maps inputs to outputs by modeling the conditional probability of Y given X. Unsupervised learning has no target Y; its goal is to uncover the hidden structure, manifold, or density of the raw input space X itself."
+    },
+    {
+        q: "Which of the following scenarios describes a 'Self-Supervised Learning' paradigm, sitting conceptually between unsupervised and supervised learning?",
+        options: [
+            "Clustering customer records using K-Means and then assigning manual labels to the resulting centroids.",
+            "Masking out a random 15% of words in an unannotated text corpus and training a model to predict the missing words from the surrounding context.",
+            "Using a pre-trained ResNet model to classify a dataset that only contains 50 labeled examples (Few-Shot Learning).",
+            "Training a model to classify anomalies using a dataset containing only 'normal' transactions (One-Class SVM)."
+        ],
+        answer: 1,
+        theory: "Self-supervised learning leverages the inherent structure of unannotated data to generate its own synthetic 'labels'. Predicting masked words (like in BERT) or predicting the next frame in a video are classic examples where the data provides its own supervision."
+    },
+    {
+        q: "Why is evaluating an Unsupervised Learning model (like a clustering algorithm) inherently more subjective and difficult than evaluating a Supervised Learning model?",
+        options: [
+            "Unsupervised models do not use gradient descent, making their loss functions impossible to track.",
+            "Because there is no ground-truth label (Y), metrics rely on heuristic structural assumptions (like inter-cluster distance) rather than exact error calculations (like MSE or Accuracy).",
+            "Unsupervised algorithms always output continuous values, whereas classification metrics require discrete labels.",
+            "Unsupervised models perfectly memorize the data, rendering evaluation metrics meaningless."
+        ],
+        answer: 1,
+        theory: "Without true labels, we cannot calculate predictive accuracy. We must rely on intrinsic metrics like the Silhouette Score, which assume that 'good' clusters are dense and well-separated—an assumption that may not align with the actual business logic of the data."
+    },
+    {
+        q: "Which of the following techniques is a form of 'Semi-Supervised Learning'?",
+        options: [
+            "Applying Principal Component Analysis (PCA) to reduce dimensions before running a Random Forest.",
+            "Using Label Propagation, where a small set of labeled data propagates its labels to a large set of unlabeled data based on feature similarity.",
+            "Ensembling multiple unsupervised models to vote on an anomaly score.",
+            "Training a deep neural network using an Autoencoder loss function."
+        ],
+        answer: 1,
+        theory: "Semi-supervised learning combines a small amount of labeled data with a large amount of unlabeled data. Label Propagation uses the manifold structure of the unlabeled data to infer labels for it, expanding the training set."
+    },
+    {
+        q: "In an Autoencoder, the encoder compresses the data into a 'bottleneck' latent space, and the decoder reconstructs it. How is this classified?",
+        options: [
+            "Supervised learning, because the input data X is used as the target label Y.",
+            "Unsupervised learning, because it learns representations without any external human-annotated labels.",
+            "Reinforcement learning, because the decoder is rewarded for lowering the reconstruction error.",
+            "Active learning, because the bottleneck actively selects features."
+        ],
+        answer: 1,
+        theory: "Although it uses a loss function measuring the difference between output and input (reconstruction loss), it requires no external labels. It is widely classified as an unsupervised (or self-supervised) representation learning technique."
+    },
+    {
+        q: "What is the primary constraint of applying purely Supervised Learning to detect fraudulent banking transactions in a dynamic, real-world system?",
+        options: [
+            "Supervised models cannot process the extreme class imbalance typical of fraud datasets.",
+            "Supervised models are constrained to historical patterns of known fraud and cannot detect entirely novel, 'zero-day' fraud strategies that lack previous labels.",
+            "Supervised models require categorical targets, but fraud is a continuous spectrum.",
+            "Supervised models are too computationally expensive for real-time inference."
+        ],
+        answer: 1,
+        theory: "A supervised model only learns the decision boundary for patterns it has been explicitly trained on. If a fraudster invents a completely new tactic, the supervised model will likely classify it as normal. Unsupervised anomaly detection is needed for novel outliers."
+    },
+    {
+        q: "Contrastive Learning is an emerging technique that maps similar instances close together and dissimilar instances far apart in a latent space. It is typically trained via:",
+        options: [
+            "Strictly Supervised Learning using labeled pairs.",
+            "Unsupervised Learning utilizing positive pairs generated via data augmentation (e.g., cropping the same image twice) and negative pairs from other images.",
+            "Reinforcement learning using a policy gradient.",
+            "A standard K-Means centroid update rule."
+        ],
+        answer: 1,
+        theory: "Modern contrastive learning (like SimCLR) is unsupervised. It applies two different random augmentations to the same image to create a 'positive pair', and treats all other images in the batch as 'negative pairs', learning representations without human labels."
+    },
+    {
+        q: "If a dataset contains severe multi-collinearity, how do Supervised and Unsupervised dimensionality reduction approaches differ in resolving it?",
+        options: [
+            "Supervised methods like PCA drop features; Unsupervised methods like PLS combine them.",
+            "Unsupervised methods like PCA maximize variance of the features regardless of the target; Supervised methods like PLS maximize covariance between the features and the target variable.",
+            "Both methods use exactly the same eigenvectors.",
+            "Unsupervised methods only work on categorical data."
+        ],
+        answer: 1,
+        theory: "PCA (unsupervised) ignores the target variable completely and just finds the axes of maximum variance in X. Partial Least Squares (PLS) is supervised and finds the axes in X that explain the maximum variance in the target Y."
+    },
+    {
+        q: "Which assumption does Unsupervised clustering fundamentally rely on to be practically useful?",
+        options: [
+            "The Manifold Assumption: that data points lying close to each other in a high-dimensional space or on a lower-dimensional manifold share semantic meaning.",
+            "The I.I.D. Assumption: that all data points are independent and identically distributed.",
+            "The Linearity Assumption: that classes are linearly separable.",
+            "The Homoscedasticity Assumption: that variance is constant."
+        ],
+        answer: 0,
+        theory: "Clustering mathematically groups points that are 'close' based on a distance metric. This only translates to business value if we assume the Manifold Assumption—that geometric proximity in feature space equates to semantic similarity in the real world."
+    },
+    {
+        q: "In a real-world project, you start with Unsupervised learning to group customers, then use those groups to train a Supervised predictive model. What is the greatest risk of this pipeline?",
+        options: [
+            "The pipeline will execute an infinite loop.",
+            "The supervised model will suffer from 'Data Leakage' because the clusters were generated using the entire dataset, blurring train/test boundaries.",
+            "The supervised model will experience zero variance.",
+            "The unsupervised model will change the target variable's distribution."
+        ],
+        answer: 1,
+        theory: "If you apply clustering (like K-Means) or PCA on the entire dataset (Train + Test) before splitting, information about the test set leaks into the cluster definitions or PCA components, artificially inflating the supervised model's performance metrics."
+    },
+
+    // Model Lifecycle & MLOps (11-20)
+    {
+        q: "In the Machine Learning Lifecycle, what does 'Concept Drift' strictly refer to?",
+        options: [
+            "A shift in the statistical distribution of the input features (P(X)) over time.",
+            "A fundamental change in the relationship between the input features and the target variable (P(Y|X)) over time.",
+            "The gradual degradation of hardware performance serving the model.",
+            "The transition of a model from a staging environment to production."
+        ],
+        answer: 1,
+        theory: "Data Drift (Covariate Shift) is a change in P(X), like users suddenly getting older. Concept Drift is a change in P(Y|X), meaning the underlying rules have changed (e.g., what constituted a 'high income' in 1990 no longer means 'high income' today)."
+    },
+    {
+        q: "What is the primary purpose of a 'Shadow Deployment' in the model deployment lifecycle?",
+        options: [
+            "To deploy the model on a secondary cloud provider for failover redundancy.",
+            "To run a new model alongside the production model, processing real live traffic to monitor its predictions without actually returning those predictions to the end-users.",
+            "To intentionally inject faulty data into the model to test its error-handling capabilities.",
+            "To securely hide the model's architecture from reverse-engineering attacks."
+        ],
+        answer: 1,
+        theory: "Shadow deployment allows data scientists to evaluate how a new model performs on live, real-world data distributions in real-time, verifying stability and accuracy without risking negative impacts on the actual user experience."
+    },
+    {
+        q: "Which metric is commonly used to mathematically monitor Data Drift in production systems by comparing the distribution of incoming inference data against the original training data distribution?",
+        options: [
+            "F1-Score",
+            "Mean Absolute Error (MAE)",
+            "Population Stability Index (PSI)",
+            "Area Under the ROC Curve (AUC)"
+        ],
+        answer: 2,
+        theory: "PSI (and the related Kullback-Leibler divergence) quantifies how much the population distribution of a variable has shifted over time. A PSI > 0.2 typically indicates significant drift requiring model retraining."
+    },
+    {
+        q: "In an MLOps pipeline, what is the critical function of a Feature Store?",
+        options: [
+            "To sell pre-trained models to other organizations.",
+            "To serve as a centralized repository that calculates, stores, and serves curated features consistently for both offline batch training and online real-time inference.",
+            "To store the mathematical weights of deep neural networks.",
+            "To automatically generate new features using deep learning."
+        ],
+        answer: 1,
+        theory: "A Feature Store eliminates 'training-serving skew' by ensuring that the exact same feature engineering logic used to train the model is applied when the model is queried in production, preventing mismatch errors."
+    },
+    {
+        q: "What is 'Training-Serving Skew' in the context of the ML Lifecycle?",
+        options: [
+            "When the model trains faster than it can serve predictions.",
+            "A degradation in performance caused by a discrepancy between how data was processed during model training versus how it is processed in the live production pipeline.",
+            "When the training data has more rows than the serving data.",
+            "When the model is trained on GPUs but served on CPUs."
+        ],
+        answer: 1,
+        theory: "If a data scientist cleans data one way in a Jupyter Notebook, but the backend engineering team writes slightly different data-cleaning code in Java for the production API, the model will receive skewed inputs and perform poorly. This is Training-Serving Skew."
+    },
+    {
+        q: "During the CI/CD/CT (Continuous Training) lifecycle of a machine learning model, what is the 'Challenger' model?",
+        options: [
+            "An adversarial model designed specifically to trick the main model.",
+            "A newly trained model that competes against the currently deployed 'Champion' model in an A/B test to see if it yields better business metrics.",
+            "A model built purely on randomized data to establish a baseline.",
+            "A model used exclusively for unsupervised clustering."
+        ],
+        answer: 1,
+        theory: "In champion/challenger deployments, the current production model is the Champion. A newly trained model (the Challenger) is deployed alongside it. If the Challenger statistically outperforms the Champion on live traffic, it gets promoted."
+    },
+    {
+        q: "Why is 'Model Provenance' (or Data Lineage) a critical requirement in enterprise ML lifecycles?",
+        options: [
+            "It guarantees the model will achieve 100% accuracy.",
+            "It ensures total traceability of exactly which dataset version, hyperparameters, and code commit produced a specific model binary, crucial for auditing, reproducibility, and debugging.",
+            "It automatically updates the model's weights.",
+            "It minimizes the RAM footprint of the deployed model."
+        ],
+        answer: 1,
+        theory: "Without provenance, if a production model starts making biased or erroneous decisions, engineers cannot trace back to discover if the error stemmed from corrupted data, a buggy code commit, or bad hyperparameters. Tools like MLflow track this lineage."
+    },
+    {
+        q: "When establishing a feedback loop in the ML lifecycle, what is the 'Delayed Label' problem?",
+        options: [
+            "When the API takes too long to return a prediction.",
+            "When the ground truth (the actual outcome) required to calculate model performance in production is not known until days, weeks, or months after the prediction was made.",
+            "When a human annotator takes too long to label training data.",
+            "When the model predicts a sequence instead of a single value."
+        ],
+        answer: 1,
+        theory: "For a loan default model, you predict default today, but you won't know the ground truth until the customer actually defaults (which could be years later). This makes real-time performance monitoring impossible, forcing teams to rely on drift metrics instead."
+    },
+    {
+        q: "In an automated ML training pipeline represented as a Directed Acyclic Graph (DAG), what does 'Acyclic' mathematically guarantee?",
+        options: [
+            "The pipeline will run continuously forever.",
+            "The execution paths contain no circular dependencies or infinite loops, ensuring the pipeline progresses logically from data ingestion to model deployment.",
+            "The model relies purely on linear algebra rather than calculus.",
+            "The pipeline can only execute on a single CPU core."
+        ],
+        answer: 1,
+        theory: "A DAG is a graph that flows in one direction. It guarantees that step B executes after step A, and there is no path from step B back to step A, preventing execution deadlocks in orchestration tools like Apache Airflow."
+    },
+    {
+        q: "What is the primary operational objective of A/B testing a machine learning model in production?",
+        options: [
+            "To calculate the model's True Positive Rate on the training set.",
+            "To measure the statistical significance of the model's impact on actual business metrics (e.g., click-through rate, revenue) compared to a baseline or another model.",
+            "To test the maximum load (requests per second) the API can handle.",
+            "To automatically generate new labels for the dataset."
+        ],
+        answer: 1,
+        theory: "While offline metrics (F1 score, RMSE) are evaluated during training, A/B testing evaluates the model's actual utility in the real world. A model might have a better F1 score but somehow result in lower revenue due to UX factors; A/B testing catches this."
+    },
+
+    // Train/Test Split & Validation (21-30)
+    {
+        q: "When performing a Train/Test split on a highly imbalanced classification dataset (e.g., 99% Class 0, 1% Class 1), why is 'Stratified Splitting' strictly required?",
+        options: [
+            "It guarantees that all features have a mean of 0 and standard deviation of 1.",
+            "It ensures that both the training and testing sets maintain the exact same proportional ratio of target classes as the original dataset, preventing a test set entirely devoid of the minority class.",
+            "It automatically applies SMOTE to oversample the minority class in the test set.",
+            "It sorts the dataset temporally before splitting."
+        ],
+        answer: 1,
+        theory: "A random split on a 99/1 dataset could easily result in a test set containing zero instances of Class 1. Stratification enforces the original distribution across all splits, ensuring the model can be evaluated fairly on all classes."
+    },
+    {
+        q: "Why is a standard K-Fold Cross Validation technique dangerously flawed when applied to Time-Series forecasting data?",
+        options: [
+            "Time-series data is usually too large for K-Fold to compute efficiently.",
+            "It randomly shuffles data, allowing the model to train on 'future' data points to predict 'past' data points, violating the fundamental arrow of time and causing massive data leakage.",
+            "Time-series models do not have loss functions compatible with K-Fold.",
+            "It forces the model to ignore seasonality."
+        ],
+        answer: 1,
+        theory: "Standard cross-validation assumes data is Independent and Identically Distributed (I.I.D). Time-series data is sequential. Training on December to predict January is valid; training on January and March to predict February allows the model to 'peek' into the future."
+    },
+    {
+        q: "What specific form of cross-validation must be used to correctly evaluate a Time-Series model?",
+        options: [
+            "Leave-One-Out Cross-Validation (LOOCV)",
+            "Stratified K-Fold",
+            "Forward Chaining (Time Series Split / Rolling Window)",
+            "Group K-Fold"
+        ],
+        answer: 2,
+        theory: "Forward chaining respects temporal order. Fold 1: Train on T1, Test on T2. Fold 2: Train on T1+T2, Test on T3. Fold 3: Train on T1+T2+T3, Test on T4. The model never sees data that chronologically occurs after the test set."
+    },
+    {
+        q: "You have a medical dataset containing multiple X-ray images per patient. What critical splitting mistake will cause severe data leakage?",
+        options: [
+            "Splitting the data into 80% train and 20% test based on the target diagnosis.",
+            "Performing a standard random split across all images, resulting in images from the *same* patient appearing in both the training and testing sets.",
+            "Stratifying the split based on the patient's age.",
+            "Using a validation set instead of cross-validation."
+        ],
+        answer: 1,
+        theory: "If Patient A has 5 images, and 4 go to Train and 1 goes to Test, the model might just memorize Patient A's unique bone structure rather than learning generalized disease features. You must use 'Group K-Fold' to ensure all images from one patient stay together in either Train or Test."
+    },
+    {
+        q: "What is the primary purpose of employing a 'Nested Cross-Validation' architecture?",
+        options: [
+            "To decrease the computational time required for deep learning models.",
+            "To obtain an unbiased estimate of model performance while simultaneously performing hyperparameter tuning, preventing optimization bias.",
+            "To handle datasets with more than 10,000 features.",
+            "To automatically perform feature selection at every fold."
+        ],
+        answer: 1,
+        theory: "If you tune hyperparameters and evaluate performance on the exact same cross-validation loops, the performance metric becomes biased because you selected the parameters that specifically maximized that exact CV score. Nested CV uses an inner loop for tuning and an outer loop purely for unbiased evaluation."
+    },
+    {
+        q: "In the context of the train/validation/test split architecture, what is the explicit, strict rule regarding the 'Test Set'?",
+        options: [
+            "It must be used to fine-tune the learning rate during the final epochs.",
+            "It must be used to select the best model among multiple competing algorithms.",
+            "It must be locked away and completely unseen by the model and the data scientist during all phases of training and hyperparameter tuning, used strictly once at the very end to estimate real-world generalization.",
+            "It must be combined with the training set after tuning to improve final accuracy."
+        ],
+        answer: 2,
+        theory: "The validation set is used for tuning and model selection. The test set is the ultimate arbiter of truth. If the test set influences *any* decision in the modeling process, it is no longer an unbiased estimator of out-of-sample performance."
+    },
+    {
+        q: "When analyzing learning curves, what is the characteristic signature of a model suffering from high bias (underfitting)?",
+        options: [
+            "The training error is extremely low, but the validation error is extremely high.",
+            "Both the training error and the validation error converge quickly to a high, unacceptable value, and adding more training data does not improve them.",
+            "The validation error continues to drop indefinitely as more data is added.",
+            "The training and validation error lines perfectly overlap at zero."
+        ],
+        answer: 1,
+        theory: "High bias implies the model lacks the capacity to capture the underlying patterns (e.g., fitting a straight line to a sine wave). It performs poorly on both train and validation sets, and no amount of extra data will fix the model's fundamental lack of capacity."
+    },
+    {
+        q: "What mathematical guarantee does Leave-One-Out Cross-Validation (LOOCV) provide regarding the training sets across its iterations?",
+        options: [
+            "They are completely disjoint and share no data points.",
+            "They contain exactly 50% of the dataset.",
+            "They are highly correlated, overlapping by N-2 data points on every single iteration, leading to an almost completely unbiased estimate of the true error but with very high variance.",
+            "They perfectly balance the target classes."
+        ],
+        answer: 2,
+        theory: "In LOOCV, if you have N samples, you train on N-1 samples. The training sets across folds are nearly identical. This provides a great estimate of how an N-sized model performs (low bias), but because the models are so similar, the variance of the error estimate across folds is extremely high."
+    },
+    {
+        q: "In a machine learning competition, you repeatedly tweak your model's hyperparameters and features to maximize your score on the public leaderboard (a specific validation set). What phenomenon are you risking?",
+        options: [
+            "Underfitting.",
+            "Data Imputation.",
+            "Overfitting to the validation set (Information Leakage), leading to a crash on the final private test set.",
+            "Concept Drift."
+        ],
+        answer: 2,
+        theory: "Even if the model never directly trains on the validation set, the human data scientist acts as an optimization algorithm, adjusting parameters specifically to beat that one static validation set, ultimately destroying the model's ability to generalize."
+    },
+    {
+        q: "What is 'Target Leakage' in the context of creating a Train/Test split for predicting customer churn?",
+        options: [
+            "Failing to stratify the target variable.",
+            "Accidentally including a feature in the training data that is logically generated *after* the churn event occurs or explicitly reveals the target, rendering the model useless in real-time prediction.",
+            "Using a model that is too complex for the dataset.",
+            "Leaking memory during the cross-validation loop."
+        ],
+        answer: 1,
+        theory: "If your churn prediction dataset includes a feature like 'Date of Account Closure', the model will simply learn 'If Date exists -> Churn = True'. This feature won't exist for active customers in the real world, making the model practically useless."
+    },
+
+    // Overfitting & Bias-Variance (31-40)
+    {
+        q: "According to the Bias-Variance Decomposition of expected mean squared error, what are the three fundamental components of predictive error?",
+        options: [
+            "Bias^2 + Variance + Irreducible Error (Noise)",
+            "Bias + Variance + Regularization Penalty",
+            "True Positives + False Positives + False Negatives",
+            "Information Gain + Entropy + Gini Impurity"
+        ],
+        answer: 0,
+        theory: "Error(x) = Bias^2 + Variance + Irreducible Error. Bias is the error from wrong assumptions. Variance is the error from sensitivity to fluctuations in the training set. Irreducible error is the fundamental noise in the problem itself that no model can eliminate."
+    },
+    {
+        q: "What counter-intuitive phenomenon occurs in the 'Double Descent' curve in modern deep learning?",
+        options: [
+            "The model perfectly fits the training data but fails completely on the test data.",
+            "As model capacity increases past the interpolation threshold (where training error hits zero), the test error drops again, contradicting classical U-shaped bias-variance theory.",
+            "The learning rate must be halved twice to reach convergence.",
+            "The loss function contains exactly two distinct global minima."
+        ],
+        answer: 1,
+        theory: "Classical theory states test error forms a U-shape, rising as the model overfits. Modern research shows that if you continue adding capacity (parameters) far beyond the point of overfitting (over-parameterization), the test error often descends a second time, finding smoother interpolating solutions."
+    },
+    {
+        q: "In statistical learning theory, what does the Vapnik-Chervonenkis (VC) dimension measure?",
+        options: [
+            "The number of layers in a neural network.",
+            "The maximum number of distinct clusters a K-Means algorithm can reliably separate.",
+            "The capacity (complexity) of a hypothesis space, specifically the maximum number of points that can be shattered (perfectly classified in all possible binary labeling assignments) by the model.",
+            "The geometric margin between support vectors."
+        ],
+        answer: 2,
+        theory: "VC dimension is a formal mathematical measure of model complexity. For example, a 2D line can shatter 3 points but not 4, so its VC dimension is 3. A higher VC dimension indicates higher capacity and a higher risk of overfitting."
+    },
+    {
+        q: "What is 'Structural Risk Minimization' (SRM)?",
+        options: [
+            "A framework that minimizes structural damage to the hardware during training.",
+            "An inductive principle that balances the empirical risk (training error) with a penalty based on the VC dimension (model complexity), directly aiming to control the true generalization error.",
+            "A clustering algorithm that groups points based on structural graph proximity.",
+            "An ensemble method that averages the structure of multiple decision trees."
+        ],
+        answer: 1,
+        theory: "Empirical Risk Minimization (ERM) just minimizes training error, leading to overfitting. SRM (championed by Vapnik) minimizes a bound on the true error by factoring in both the training error and the complexity penalty of the chosen model class."
+    },
+    {
+        q: "How does L1 Regularization (Lasso) mechanically combat overfitting compared to L2 Regularization (Ridge)?",
+        options: [
+            "L1 prevents the weights from changing during backpropagation.",
+            "L1 applies a spherical constraint that shrinks all weights equally.",
+            "L1 applies an absolute value penalty that induces sparsity, forcing the weights of less important features to exactly zero, effectively performing feature selection to reduce model complexity.",
+            "L1 increases the bias to exactly zero."
+        ],
+        answer: 2,
+        theory: "The sharp geometrical corners of the L1 penalty constraint cause the optimization contours to intersect exactly on the axes, driving specific coefficients to zero. This simplifies the model and reduces variance, preventing it from fitting to noisy features."
+    },
+    {
+        q: "You are training a deep neural network, and you observe that the training loss continues to decrease, but the validation loss begins to increase after epoch 50. What specific mechanism should be triggered?",
+        options: [
+            "Gradient Clipping",
+            "Early Stopping",
+            "Increasing the learning rate",
+            "Batch Normalization"
+        ],
+        answer: 1,
+        theory: "The divergence of training and validation loss is the exact definition of overfitting. Early Stopping halts the training process at the epoch where validation loss was lowest (e.g., epoch 50) and restores the model weights from that point."
+    },
+    {
+        q: "What is 'Grokking' in the context of training over-parameterized neural networks?",
+        options: [
+            "When the network memorizes the training data but fails to generalize.",
+            "A phenomenon where a model suddenly learns to perfectly generalize (validation accuracy spikes) long after it has already achieved near-zero training error and appeared to be heavily overfitted.",
+            "The process of manually pruning weights to zero.",
+            "A catastrophic forgetting event where the network loses all previous knowledge."
+        ],
+        answer: 1,
+        theory: "Grokking is a mysterious phenomenon where continuing to train a model far past the point of overfitting suddenly results in a phase transition where the model 'figures out' the underlying rule and generalization accuracy jumps from random chance to 100%."
+    },
+    {
+        q: "Which of the following is an example of an 'Implicit Regularization' technique that prevents overfitting without explicitly modifying the loss function?",
+        options: [
+            "Adding an L2 penalty to the cost function.",
+            "Stochastic Gradient Descent (SGD) inherently escaping sharp, overfitting minima due to its noisy, batch-based gradient approximations.",
+            "Applying a Ridge regression matrix inversion.",
+            "Using a Support Vector Machine."
+        ],
+        answer: 1,
+        theory: "Explicit regularization involves adding a mathematical penalty term (like L1/L2). Implicit regularization occurs naturally due to the algorithm's architecture or optimization dynamics. The noise in SGD helps the model settle into wide, flat minima that generalize better than sharp, overfitted minima."
+    },
+    {
+        q: "If a decision tree algorithm is allowed to grow to its maximum depth without any constraints, what is its theoretical behavior regarding the Bias-Variance tradeoff?",
+        options: [
+            "It will have high bias and high variance.",
+            "It will have low bias and low variance.",
+            "It will have extreme bias and zero variance.",
+            "It will have near-zero bias (perfectly fitting the training set) and extremely high variance (wildly erratic predictions on new data)."
+        ],
+        answer: 3,
+        theory: "An unconstrained decision tree will grow until every leaf contains exactly one sample, achieving 0% training error. This perfectly memorizes the noise in the training set (zero bias) but generalizes terribly to unseen data (massive variance)."
+    },
+    {
+        q: "What is the consequence of adding completely random, uncorrelated noise features to a standard linear regression model without regularization?",
+        options: [
+            "The training error will increase.",
+            "The R-squared value on the training set will inevitably increase or stay the same, giving a false illusion of improvement, while out-of-sample performance will degrade due to increased variance.",
+            "The model will automatically drop the noise features.",
+            "The bias of the model will increase exponentially."
+        ],
+        answer: 1,
+        theory: "In unregularized OLS regression, adding ANY feature mathematically provides another degree of freedom to fit the training data, so training R-squared can never decrease. However, it fits to noise, increasing variance and ruining the model's ability to predict new data."
+    }
+];
+
+let currentQuestionIndex = 0;
+let score = 0;
+let userAnswers = new Array(questions.length).fill(null);
+let timerLeft = 3600; 
+let timerInterval;
+
+const elements = {
+    timer: document.getElementById('timer'),
+    quizScreen: document.getElementById('quiz-screen'),
+    resultScreen: document.getElementById('result-screen'),
+    progressText: document.getElementById('progress-text'),
+    questionText: document.getElementById('question-text'),
+    optionsContainer: document.getElementById('options-container'),
+    nextBtn: document.getElementById('next-btn'),
+    scoreDisplay: document.getElementById('score-display'),
+    reviewContainer: document.getElementById('review-container')
+};
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timerLeft--;
+        updateTimerDisplay();
+        
+        if (timerLeft <= 0) {
+            clearInterval(timerInterval);
+            finishQuiz();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timerLeft / 60);
+    const seconds = timerLeft % 60;
+    elements.timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    if (timerLeft < 300) { 
+        elements.timer.classList.add('warning');
+    }
+}
+
+function loadQuestion() {
+    const q = questions[currentQuestionIndex];
+    elements.progressText.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+    elements.questionText.textContent = q.q;
+
+    elements.optionsContainer.innerHTML = '';
+    q.options.forEach((opt, index) => {
+        const label = document.createElement('label');
+        label.className = 'option-label';
+        
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'option';
+        input.value = index;
+        
+        if (userAnswers[currentQuestionIndex] === index) {
+            input.checked = true;
+        }
+
+        input.onchange = () => { elements.nextBtn.disabled = false; };
+        
+        label.appendChild(input);
+        
+        const span = document.createElement('span');
+        span.textContent = opt;
+        label.appendChild(span);
+        
+        elements.optionsContainer.appendChild(label);
+    });
+
+    elements.nextBtn.textContent = currentQuestionIndex === questions.length - 1 ? 'Submit Assessment' : 'Next Question';
+    elements.nextBtn.disabled = userAnswers[currentQuestionIndex] === null;
+}
+
+function handleNext() {
+    const selected = document.querySelector('input[name="option"]:checked');
+    if (selected) {
+        userAnswers[currentQuestionIndex] = parseInt(selected.value);
+    }
+
+    if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+    } else {
+        finishQuiz();
+    }
+}
+
+function finishQuiz() {
+    clearInterval(timerInterval);
+    elements.quizScreen.style.display = 'none';
+    elements.resultScreen.style.display = 'block';
+    
+    score = userAnswers.reduce((total, answer, index) => {
+        return total + (answer === questions[index].answer ? 1 : 0);
+    }, 0);
+
+    elements.scoreDisplay.textContent = `${score} / ${questions.length}`;
+    elements.timer.style.display = 'none';
+
+    renderReview();
+}
+
+function renderReview() {
+    elements.reviewContainer.innerHTML = '';
+    
+    questions.forEach((q, i) => {
+        const userAnswer = userAnswers[i];
+        const isCorrect = userAnswer === q.answer;
+        
+        const reviewEl = document.createElement('div');
+        reviewEl.className = `review-item ${isCorrect ? 'correct' : ''}`;
+        
+        const statusBadge = `<span class="status-badge ${isCorrect ? 'correct' : 'incorrect'}">${isCorrect ? 'Correct' : 'Incorrect'}</span>`;
+        
+        let html = `
+            ${statusBadge}
+            <div class="question-text">${i + 1}. ${q.q}</div>
+            <div style="margin-bottom: 0.5rem"><strong>Your Answer:</strong> ${userAnswer !== null ? q.options[userAnswer] : '<em>Unanswered</em>'}</div>
+            <div style="margin-bottom: 0.5rem; color: var(--accent);"><strong>Correct Answer:</strong> ${q.options[q.answer]}</div>
+            <div class="theory-box"><strong>Rationale:</strong> ${q.theory}</div>
+        `;
+        
+        reviewEl.innerHTML = html;
+        elements.reviewContainer.appendChild(reviewEl);
+    });
+}
+
+// Initialize
+startTimer();
+loadQuestion();
+
+</script>
+</body>
+</html>
