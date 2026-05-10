@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Analytics PGCP-AI Assessment</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        
+        body { background-color: var(--bg); color: var(--text); line-height: 1.6; }
+        
+        .container { max-width: 850px; margin: 2rem auto; padding: 0 1rem; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 1.5rem 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); border-bottom: 4px solid var(--primary); }
+        
+        h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
+        .subtitle { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem; }
+        
+        .timer { font-size: 1.75rem; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; background: #0b1120; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #334155; }
+        .timer.warning { color: var(--danger); border-color: var(--danger); animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .card { background: var(--surface); padding: 2.5rem; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); margin-bottom: 2rem; }
+        
+        .progress-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #334155; padding-bottom: 1rem; }
+        .progress-text { font-size: 1rem; color: var(--primary); font-weight: 600; }
+        
+        .question-text { font-size: 1.2rem; font-weight: 500; margin-bottom: 1.5rem; color: #e2e8f0; }
+        
+        pre { background: #0b1120; padding: 1.25rem; border-radius: 8px; overflow-x: auto; margin-bottom: 1.5rem; border: 1px solid #334155; }
+        code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.95rem; color: #a5b4fc; }
+
+        .options-grid { display: grid; gap: 1rem; margin-bottom: 2rem; }
+        
+        .option-label { display: flex; align-items: flex-start; padding: 1.25rem; background: rgba(59, 130, 246, 0.05); border: 2px solid #334155; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+        .option-label:hover:not(.disabled) { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+        .option-label.disabled { cursor: not-allowed; opacity: 0.7; }
+        
+        .option-label.correct-reveal { border-color: var(--accent); background: rgba(16, 185, 129, 0.1); }
+        .option-label.wrong-reveal { border-color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+
+        input[type="radio"] { margin-right: 1rem; margin-top: 0.25rem; transform: scale(1.3); accent-color: var(--primary); flex-shrink: 0; cursor: inherit; }
+
+        /* Instant Feedback Section */
+        #instant-feedback { display: none; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; animation: slideDown 0.3s ease-out; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .feedback-correct { background: rgba(16, 185, 129, 0.1); border-left: 5px solid var(--accent); }
+        .feedback-wrong { background: rgba(239, 68, 68, 0.1); border-left: 5px solid var(--danger); }
+        
+        .feedback-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .feedback-correct .feedback-title { color: var(--accent); }
+        .feedback-wrong .feedback-title { color: var(--danger); }
+        .feedback-theory { font-size: 0.95rem; color: #cbd5e1; }
+
+        .btn-group { display: flex; gap: 1rem; justify-content: space-between; }
+        .btn { background: var(--primary); color: #fff; border: none; padding: 0.875rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; flex: 1; text-align: center; }
+        .btn:hover { background: var(--primary-hover); }
+        .btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+        .btn-secondary { background: #475569; }
+        .btn-secondary:hover { background: #334155; }
+
+        #result-screen { display: none; }
+        .score-display { text-align: center; font-size: 4rem; font-weight: 800; color: var(--primary); margin: 2rem 0; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        
+        .review-item { background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border-left: 4px solid var(--danger); }
+        .review-item.correct { border-left-color: var(--accent); }
+        .theory-box { background: #0b1120; padding: 1rem; border-radius: 8px; margin-top: 1rem; font-size: 0.9rem; border-left: 3px solid var(--primary); color: #cbd5e1;}
+        .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; }
+        .status-badge.correct { background: rgba(16, 185, 129, 0.2); color: var(--accent); }
+        .status-badge.incorrect { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Data Analytics Assessment</h1>
+            <div class="subtitle">PGCP-AI Syllabus (1 Hour | 40 Questions)</div>
+        </div>
+        <div class="timer" id="timer">60:00</div>
+    </header>
+
+    <div id="quiz-screen">
+        <div class="card">
+            <div class="progress-container">
+                <span class="progress-text" id="progress-text">Question 1 / 40</span>
+                <span style="color: var(--text-muted); font-size: 0.9rem;">Hard Mode: Instant Feedback Enabled</span>
+            </div>
+            
+            <div class="question-text" id="question-text"></div>
+            <pre id="code-snippet-container" style="display:none;"><code id="code-snippet"></code></pre>
+            
+            <div class="options-grid" id="options-container"></div>
+
+            <div id="instant-feedback">
+                <div class="feedback-title" id="feedback-title"></div>
+                <div class="feedback-theory" id="feedback-theory"></div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="prev-btn" onclick="handlePrev()">&#8592; Previous</button>
+                <button class="btn" id="next-btn" onclick="handleNext()">Next Question &#8594;</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <div class="card">
+            <h2 style="text-align: center; color: #fff;">Assessment Complete</h2>
+            <div class="score-display" id="score-display">0 / 40</div>
+            <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Review your full performance summary below.</p>
+            <div id="review-container"></div>
+            <button class="btn" style="width: 100%; margin-top: 2rem;" onclick="location.reload()">Restart Assessment</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// 40 Questions generated strictly from the provided Data Analytics PGCP-AI syllabus.
+const questions = [
+    {
+        q: "In the Data Analytics Life Cycle, during which phase do teams primarily evaluate if they have enough data to build the model, and identify potential risks and mitigation strategies?",
+        options: ["Data Preparation", "Discovery", "Model Planning", "Model Building Implementation"],
+        answer: 1,
+        theory: "In the Discovery phase, the team learns the business domain, frames the problem, assesses resources (including data availability), and identifies risks before moving to data prep."
+    },
+    {
+        q: "What is the expected output of this Pandas snippet when loading semi-structured data without explicit handling?",
+        code: "import pandas as pd\ndata = pd.read_csv('data.txt', sep='|')\n# 'data.txt' contains:\n# id|name|age\n# 1|Alice|25\n# 2|Bob",
+        options: ["Parses successfully with missing values filled as 0.", "Raises a ParserError due to inconsistent column counts.", "Parses successfully, assigning NaN to Bob's age.", "Drops the row containing 'Bob' automatically."],
+        answer: 2,
+        theory: "Pandas `read_csv` handles missing delimiters gracefully by assigning `NaN` to the missing fields in that row, making it robust for imperfect semi-structured data ingestion."
+    },
+    {
+        q: "Analytics goes beyond Reporting. If a dashboard showing monthly sales drops is considered 'Reporting', what characterizes 'Analytics'?",
+        options: ["Aggregating the monthly sales into an annual view.", "Sending automated email alerts when sales drop.", "Applying regression to identify *why* the drop occurred and predicting next month's sales.", "Exporting the dashboard to a PDF for management."],
+        answer: 2,
+        theory: "Reporting answers 'What happened?' (Hindsight). Analytics answers 'Why did it happen?' and 'What will happen?' (Insight and Foresight) using statistical and predictive tools."
+    },
+    {
+        q: "Which Seaborn visualization is most appropriate to explicitly discover the joint distribution and bi-variate relationship between two numerical variables?",
+        code: "import seaborn as sns\n# Which function should replace '???'\nsns.???(data=df, x='salary', y='experience')",
+        options: ["boxplot", "jointplot", "countplot", "barplot"],
+        answer: 1,
+        theory: "The `jointplot` in Seaborn plots the bi-variate relationship (scatter or hex) along with the marginal distributions (histograms/KDEs) on the axes, directly addressing joint and marginal probability concepts."
+    },
+    {
+        q: "When analyzing right-skewed income data, why is the Median considered a better measure of central tendency than the Mean?",
+        options: ["The Median calculation ignores all values below the 25th percentile.", "The Mean is disproportionately pulled toward the long tail of high-income outliers.", "The Median is mathematically equal to the mode in skewed data.", "The Mean cannot be calculated on continuous data."],
+        answer: 1,
+        theory: "In right-skewed data, extreme high values inflate the mean, making it a misleading representation of the 'typical' observation. The median remains robust to outliers."
+    },
+    {
+        q: "What is the difference in calculating variance using Pandas vs NumPy defaults?",
+        code: "import pandas as pd\nimport numpy as np\narr = [1, 2, 3, 4, 5]\nprint(pd.Series(arr).var() == np.var(arr))",
+        options: ["True, they use the exact same formula.", "False, Pandas uses sample variance (ddof=1) while NumPy uses population variance (ddof=0).", "False, Pandas uses population variance while NumPy uses sample variance.", "TypeError: Pandas Series cannot compute variance directly."],
+        answer: 1,
+        theory: "By default, Pandas `var()` uses Delta Degrees of Freedom (ddof) = 1 (Sample Variance), whereas NumPy `np.var()` uses ddof = 0 (Population Variance)."
+    },
+    {
+        q: "A medical test has a 90% true positive rate and a 5% false positive rate. If 1% of the population has the disease, what concept must be applied to find the probability that a person who tests positive actually has the disease?",
+        options: ["The Central Limit Theorem", "Joint Probability", "Bayes' Theorem", "Poisson Distribution"],
+        answer: 2,
+        theory: "Bayes' Theorem updates the prior probability (1% prevalence) with explicit evidence (test results) to calculate the posterior probability of having the disease given a positive test."
+    },
+    {
+        q: "Given a Scipy implementation of Naive Bayes, what does the model fundamentally assume about the dataset's features?",
+        code: "from sklearn.naive_bayes import GaussianNB\nmodel = GaussianNB()\nmodel.fit(X_train, y_train)",
+        options: ["Features are strongly correlated with each other.", "Features are conditionally independent given the class label.", "Features are identically uniformly distributed.", "Features must be categorical, not continuous."],
+        answer: 1,
+        theory: "The 'Naive' in Naive Bayes comes from the strong assumption that all informative attributes (features) are statistically independent of one another given the target class."
+    },
+    {
+        q: "Which probability distribution is most appropriate for modeling the number of fraudulent transactions occurring within a specific 24-hour timeframe?",
+        options: ["Normal Distribution", "Binomial Distribution", "Poisson Distribution", "Continuous Uniform Distribution"],
+        answer: 2,
+        theory: "The Poisson distribution models the probability of a given number of discrete events occurring in a fixed interval of time or space, assuming events occur with a known constant mean rate."
+    },
+    {
+        q: "According to the Central Limit Theorem (CLT), as the sample size increases, the sampling distribution of the sample mean approaches what?",
+        options: ["A Normal Distribution, regardless of the population's original distribution.", "A Binomial Distribution.", "The exact shape of the original population distribution.", "A Uniform Distribution."],
+        answer: 0,
+        theory: "The CLT states that the distribution of sample means approximates a normal distribution as the sample size gets larger, even if the underlying population distribution is skewed or non-normal."
+    },
+    {
+        q: "What does this NumPy snippet generate, assuming 'data' is normally distributed?",
+        code: "mean, std = np.mean(data), np.std(data)\nlower_bound = mean - 3*std\nupper_bound = mean + 3*std\noutliers = data[(data < lower_bound) | (data > upper_bound)]",
+        options: ["A 95% Confidence Interval.", "A Z-score transformation of the entire dataset.", "Identification of outliers using the Empirical Rule (68-95-99.7).", "The Interquartile Range (IQR)."],
+        answer: 2,
+        theory: "Using the Empirical Rule for normal distributions, ~99.7% of data falls within 3 standard deviations of the mean. Data outside this boundary are typically flagged as outliers."
+    },
+    {
+        q: "What is the primary difference between Pearson Correlation and Covariance?",
+        options: ["Covariance indicates both direction and strength, while Pearson only indicates direction.", "Pearson is scale-dependent, while Covariance is dimensionless.", "Pearson is standardized (bounded between -1 and +1), making it easier to interpret strength, while Covariance is scale-dependent.", "They are mathematically identical."],
+        answer: 2,
+        theory: "Covariance indicates the direction of the linear relationship but depends on the units of the variables. Pearson correlation standardizes covariance by dividing it by the product of standard deviations, bounding it between -1 and 1."
+    },
+    {
+        q: "When deciding whether to use a Z-Test or a Chi-Square test, which data profile necessitates the Chi-Square test?",
+        options: ["Comparing the sample mean of continuous data to a population mean when variance is known.", "Testing the goodness-of-fit or independence between two categorical variables.", "Testing for skewness in a continuous normal distribution.", "Evaluating the correlation coefficient of continuous paired data."],
+        answer: 1,
+        theory: "Chi-Square tests evaluate categorical data (e.g., assessing if observed frequencies match expected frequencies), whereas Z-tests are used for sample means of continuous data."
+    },
+    {
+        q: "If a Hypothesis Test yields a p-value of 0.02 and the significance level (alpha) is 0.05, what is the correct analytical conclusion?",
+        options: ["Accept the null hypothesis.", "Fail to reject the null hypothesis.", "Reject the null hypothesis, indicating statistical significance.", "The test is inconclusive due to sampling bias."],
+        answer: 2,
+        theory: "When the p-value is less than or equal to the significance level (alpha), the evidence is strong enough to reject the null hypothesis in favor of the alternative hypothesis."
+    },
+    {
+        q: "In Predictive Modeling, what is the purpose of 'Supervised Segmentation' in algorithms like Decision Trees?",
+        options: ["To randomly divide the dataset into training and testing sets.", "To group unlabeled data into clusters based on distance metrics.", "To partition the data based on informative attributes to maximize purity (e.g., using Entropy) regarding a specific target variable.", "To remove outliers from the continuous feature space."],
+        answer: 2,
+        theory: "Supervised segmentation (like in Trees) systematically splits data using attributes that yield the highest information gain or lowest Gini impurity regarding the known target labels."
+    },
+    {
+        q: "Which analytical paradigm answers the question: 'What is the optimal decision or action to take given the predictions and business constraints?'",
+        options: ["Descriptive Analytics", "Predictive Analytics", "Prescriptive Analytics", "Diagnostic Analytics"],
+        answer: 2,
+        theory: "Prescriptive modeling uses optimization and simulation to recommend actions based on predictive models, moving from 'what will happen' to 'what should we do about it'."
+    },
+    {
+        q: "In Multiple Linear Regression, how do you interpret a slope coefficient of 2.5 for feature X1?",
+        options: ["For every 1 unit increase in the target variable, X1 increases by 2.5 units.", "X1 explains 2.5% of the variance in the target variable.", "Holding all other features constant, a 1 unit increase in X1 results in a 2.5 unit increase in the predicted target.", "The target variable is 2.5 times larger than X1 on average."],
+        answer: 2,
+        theory: "In regression interpretation, a coefficient represents the expected change in the dependent variable for a one-unit change in the independent variable, assuming all other variables are held constant."
+    },
+    {
+        q: "What is a primary benefit of using Monte Carlo Simulation for Risk Analysis?",
+        options: ["It completely eliminates the variance in predictive models.", "It generates a range of possible outcomes and the probability of different losses or gains, rather than relying on a single-point estimate.", "It automatically determines the true null hypothesis.", "It forces nonlinear optimization problems to become linear."],
+        answer: 1,
+        theory: "Simulation helps in understanding uncertainty by running thousands of scenarios with random variables, providing a probabilistic distribution of risks instead of a static average estimate."
+    },
+    {
+        q: "Which technique is fundamentally used to prevent Overfitting during model induction?",
+        code: "from sklearn.model_selection import ???\nscore = ???(model, X, y, cv=5)",
+        options: ["Train on 100% of the data to ensure no data is lost.", "Using Cross-Validation to evaluate the model's generalization on unseen data splits.", "Increasing the complexity of the Decision Tree to map every data point perfectly.", "Using only Pearson correlation for feature selection."],
+        answer: 1,
+        theory: "Holdout evaluation and Cross-Validation (like `cross_val_score`) test the model on data it hasn't trained on, measuring generalization to detect if the model is memorizing noise (overfitting)."
+    },
+    {
+        q: "When evaluating classifiers in Decision Analytics, why is 'Accuracy' alone often misleading for fraud detection?",
+        options: ["Accuracy cannot be calculated for categorical predictions.", "Fraud datasets are highly imbalanced; a naive model predicting 'No Fraud' 100% of the time could still achieve 99% accuracy.", "Accuracy penalizes True Positives too heavily.", "Fraud requires Prescriptive modeling, where accuracy is irrelevant."],
+        answer: 1,
+        theory: "In imbalanced domains, baseline performance can be artificially high. Evaluation frameworks must use metrics like Precision, Recall, or F1-Score to truly measure effectiveness on the minority class."
+    },
+    {
+        q: "What is the primary goal of Factor Analysis in data analytics?",
+        options: ["To predict a continuous target variable.", "To discover unobserved underlying variables (factors) that explain the patterns of correlations within a set of observed variables.", "To test the hypothesis of two sample means.", "To segment data based on decision tree rules."],
+        answer: 1,
+        theory: "Factor Analysis is a dimensionality reduction technique used to identify underlying latent variables that explain the variance and covariance among observed variables."
+    },
+    {
+        q: "In the context of the analytics lifecycle workflow, what makes KNIME unique compared to writing pure Python code?",
+        options: ["It requires compiling code into C++ before execution.", "It is a low-code/no-code visual programming platform where workflows are built by connecting nodes representing data operations.", "It only supports descriptive statistics, not predictive models.", "It cannot handle unstructured data."],
+        answer: 1,
+        theory: "KNIME relies on a graphical interface where users drag, drop, and connect 'nodes' to create data pipelines and analytical workflows, making advanced analytics accessible with less coding."
+    },
+    {
+        q: "What is the result of using `pandas.DataFrame.dropna()` on a dataset with missing values?",
+        code: "import pandas as pd\ndf = pd.DataFrame({'A': [1, np.nan, 3], 'B': [4, 5, np.nan]})\nclean_df = df.dropna()",
+        options: ["Fills NaNs with the column mean.", "Fills NaNs with 0.", "Removes any row that contains at least one NaN value.", "Removes any column that contains at least one NaN value."],
+        answer: 2,
+        theory: "By default, `dropna(axis=0)` drops any row containing one or more missing (NaN) values. While effective, this can severely reduce dataset size if missing data is prevalent."
+    },
+    {
+        q: "Which probability concept measures the likelihood of two specific events happening simultaneously?",
+        options: ["Marginal Probability", "Joint Probability", "Conditional Probability", "Mutually Exclusive Probability"],
+        answer: 1,
+        theory: "Joint probability (P(A and B)) is the probability of two events occurring at the same time. Conditional probability (P(A|B)) is the probability of A occurring *given* B has occurred."
+    },
+    {
+        q: "In Scipy, what function is used to calculate the area under the Normal Distribution curve to the left of a specific z-score (Cumulative Distribution Function)?",
+        code: "import scipy.stats as stats\nprob = stats.norm.???(1.96)",
+        options: ["pdf", "pmf", "cdf", "rvs"],
+        answer: 2,
+        theory: "The Cumulative Distribution Function (`cdf`) returns the probability that a random variable taken from the distribution will be less than or equal to a specific value."
+    },
+    {
+        q: "If a business goal is to minimize the cost of shipping goods from multiple warehouses to multiple stores subject to capacity constraints, what analytical technique applies?",
+        options: ["Linear Optimization", "Z-Test", "Factor Analysis", "Classification Trees"],
+        answer: 0,
+        theory: "Linear Optimization (or Linear Programming) is used to find the best possible outcome (e.g., minimum cost) in a mathematical model whose requirements are represented by linear relationships/constraints."
+    },
+    {
+        q: "What does evaluating a classifier against a 'Baseline' model entail?",
+        options: ["Comparing the model's performance to the theoretical maximum accuracy of 100%.", "Comparing the model against a simple heuristic, such as predicting the majority class, to prove the model actually learned meaningful patterns.", "Running the model on the training data.", "Using a standard deviation of 0."],
+        answer: 1,
+        theory: "A baseline model provides a minimum threshold of performance. If a complex machine learning model cannot beat a simple rule (like 'always guess majority class'), the investment in data/modeling is not justified."
+    },
+    {
+        q: "When dealing with skewed data, how does the Interquartile Range (IQR) help in robust descriptive statistics?",
+        options: ["It transforms the data to a normal distribution.", "It calculates the distance between the mean and median.", "It measures dispersion by calculating the range of the middle 50% of the data, ignoring extreme outliers.", "It forces the variance to equal 1."],
+        answer: 2,
+        theory: "The IQR is the difference between the 75th percentile (Q3) and the 25th percentile (Q1). Because it only looks at the middle 50% of the data, it is a robust measure of dispersion unaffected by extreme outliers."
+    },
+    {
+        q: "In predictive modeling, identifying 'Informative Attributes' often utilizes which metric to evaluate how well an attribute separates the data into target classes?",
+        options: ["Pearson Correlation", "P-value", "Information Gain (Entropy)", "Standard Error"],
+        answer: 2,
+        theory: "In Supervised Segmentation (like Decision Trees), Information Gain measures the reduction in Entropy (uncertainty) achieved by partitioning the data on a specific attribute."
+    },
+    {
+        q: "What constitutes a 'spurious correlation' in data exploration?",
+        options: ["A correlation coefficient exactly equal to 0.", "A mathematical relationship where two variables move together due to coincidence or a hidden third variable, implying no direct causation.", "A correlation calculated on nominal categorical data.", "A negative correlation."],
+        answer: 1,
+        theory: "Spurious correlations occur when two variables appear to be causally related but are actually driven by a hidden confounder or pure coincidence. Correlation does not equal causation."
+    },
+    {
+        q: "How does the 'holdout evaluation' approach validate a model?",
+        options: ["It trains the model on the entire dataset and evaluates the error rate.", "It splits the data into separate training and testing sets, training the model on one and evaluating it on the other (the holdout).", "It holds the model parameters constant while changing the hyperparameters.", "It drops missing values before evaluating."],
+        answer: 1,
+        theory: "Holdout evaluation partitions data to simulate how the model will perform on unseen future data. Testing a model on the data it trained on yields an overly optimistic, biased performance metric."
+    },
+    {
+        q: "What characteristic distinguishes 'Directional Data Analytics'?",
+        options: ["It only applies to linear regression models predicting positive growth.", "It deals with data where observations are angles or directions (e.g., wind direction, time of day on a 24h clock), requiring circular statistics.", "It requires data to be perfectly normally distributed.", "It is another term for forward-stepwise feature selection."],
+        answer: 1,
+        theory: "Directional (or circular) data wraps around (e.g., 359 degrees and 1 degree are close to each other). Standard arithmetic means fail here, requiring specialized analytical techniques."
+    },
+    {
+        q: "Why might an analyst choose to 'cap' outliers instead of removing them entirely?",
+        code: "upper_limit = df['revenue'].quantile(0.99)\ndf['revenue'] = np.where(df['revenue'] > upper_limit, upper_limit, df['revenue'])",
+        options: ["To artificially increase the mean.", "To ensure the dataset size remains consistent while reducing the disproportionate impact of extreme values on regression coefficients.", "Because removing rows is syntactically impossible in Pandas.", "To convert continuous data into categorical bins."],
+        answer: 1,
+        theory: "Capping (or Winsorizing) limits the influence of extreme outliers on the model while preserving the observation (which may contain valid data in other features), preventing sample size reduction."
+    },
+    {
+        q: "In explicitly combining evidence with Bayes Rule, what role does the 'Prior Probability' play?",
+        options: ["It is the final calculated probability after observing the data.", "It is the probability of observing the evidence given the hypothesis is true.", "It represents the initial belief or baseline probability of an event before any new evidence is considered.", "It is the normalizing constant."],
+        answer: 2,
+        theory: "Bayesian reasoning updates beliefs. The Prior Probability is your starting baseline (e.g., historical default rate). As new explicit evidence arrives, it is updated to become the Posterior Probability."
+    },
+    {
+        q: "Which Scikit-Learn function is commonly used to standardize continuous features before applying distance-based models or factor analysis?",
+        code: "from sklearn.preprocessing import ???\nscaler = ???()\nX_scaled = scaler.fit_transform(X)",
+        options: ["LabelEncoder", "StandardScaler", "OneHotEncoder", "SimpleImputer"],
+        answer: 1,
+        theory: "StandardScaler transforms the data such that the mean is 0 and the standard deviation is 1 (Z-score normalization). This is critical for models sensitive to the scale of input features."
+    },
+    {
+        q: "When dashboards fail to answer business questions, what is typically the root cause in the analytics workflow?",
+        options: ["The dashboard is using Seaborn instead of Matplotlib.", "The workflow stopped at Reporting (Descriptive) and did not progress to Analysis/Analytics (Diagnostic/Predictive) to uncover root causes.", "The data is structured rather than unstructured.", "The median was used instead of the mean."],
+        answer: 1,
+        theory: "Dashboards generally provide descriptive reporting ('What'). When 'Why' or 'What next' is asked, analysts must apply statistical modeling, hypothesis testing, and predictive analytics."
+    },
+    {
+        q: "In Data Storytelling, what is a primary danger of a 'Misleading Visualization'?",
+        options: ["Using too many colors.", "Using a non-zero baseline on a bar chart, which visually exaggerates minor differences between categories.", "Displaying a legend on the left side instead of the right.", "Using a line chart for time-series data."],
+        answer: 1,
+        theory: "Truncating the Y-axis (starting it at a value other than 0) in bar charts is a common misleading visualization technique that manipulates the viewer's perception of the magnitude of change."
+    },
+    {
+        q: "What defines an 'Unstructured' data source in the context of the Intelligent Data Analysis workflow?",
+        options: ["Data stored in a strictly defined SQL relational database.", "Data existing in CSV formats.", "Data that lacks a predefined data model or schema, such as free-form text, images, or audio.", "Numerical arrays generated by NumPy."],
+        answer: 2,
+        theory: "Unstructured data does not fit neatly into relational tables. Analyzing it requires advanced techniques (like NLP or Factor Analysis) to extract structured features before traditional modeling."
+    },
+    {
+        q: "During model evaluation, what is the consequence of 'Sampling Bias' in the training dataset?",
+        options: ["The model becomes mathematically identical to the baseline.", "The model will generalize perfectly to all unseen data.", "The model learns patterns specific to the biased sample, leading to inaccurate predictions when deployed on the true population.", "The model requires more features to train."],
+        answer: 2,
+        theory: "If the sample does not represent the population (sampling bias), the model's learned parameters will be skewed. It will fail in deployment because real-world data distributions will differ from the training data."
+    },
+    {
+        q: "What is the primary function of 'Functional Data Analysis' (FDA)?",
+        options: ["Analyzing data that is expressed as discrete, categorical bins.", "Analyzing information on curves or functions over a continuum (like time or space), treating the entire curve as a single observation.", "Translating object-oriented code into functional programming languages.", "Calculating the p-value of a chi-square test."],
+        answer: 1,
+        theory: "Functional Data Analysis deals with data that provides information about curves, shapes, or functions over a continuum, rather than independent scalar data points."
+    }
+];
+
+let currentQ = 0;
+let score = 0;
+let userAnswers = new Array(questions.length).fill(null);
+let hasAnswered = new Array(questions.length).fill(false); // Tracks if the question is locked
+let timerLeft = 3600; // 60 mins
+let timerInterval;
+
+const els = {
+    timer: document.getElementById('timer'),
+    quizScreen: document.getElementById('quiz-screen'),
+    resultScreen: document.getElementById('result-screen'),
+    progressText: document.getElementById('progress-text'),
+    questionText: document.getElementById('question-text'),
+    snippetContainer: document.getElementById('code-snippet-container'),
+    snippetCode: document.getElementById('code-snippet'),
+    optionsContainer: document.getElementById('options-container'),
+    prevBtn: document.getElementById('prev-btn'),
+    nextBtn: document.getElementById('next-btn'),
+    feedbackBox: document.getElementById('instant-feedback'),
+    feedbackTitle: document.getElementById('feedback-title'),
+    feedbackTheory: document.getElementById('feedback-theory'),
+    scoreDisplay: document.getElementById('score-display'),
+    reviewContainer: document.getElementById('review-container')
+};
+
+function init() {
+    startTimer();
+    renderQuestion();
+}
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timerLeft--;
+        const m = Math.floor(timerLeft / 60).toString().padStart(2, '0');
+        const s = (timerLeft % 60).toString().padStart(2, '0');
+        els.timer.textContent = `${m}:${s}`;
+        
+        if (timerLeft < 300) els.timer.classList.add('warning');
+        if (timerLeft <= 0) finishQuiz();
+    }, 1000);
+}
+
+function renderQuestion() {
+    const q = questions[currentQ];
+    els.progressText.textContent = `Question ${currentQ + 1} / ${questions.length}`;
+    els.questionText.textContent = q.q;
+
+    els.prevBtn.style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+    els.nextBtn.textContent = currentQ === questions.length - 1 ? 'Submit Assessment' : 'Next Question \u2192';
+
+    if (q.code) {
+        els.snippetContainer.style.display = 'block';
+        els.snippetCode.textContent = q.code;
+    } else {
+        els.snippetContainer.style.display = 'none';
+    }
+
+    els.optionsContainer.innerHTML = '';
+    els.feedbackBox.style.display = 'none';
+
+    q.options.forEach((opt, idx) => {
+        const lbl = document.createElement('label');
+        lbl.className = 'option-label';
+        if (hasAnswered[currentQ]) lbl.classList.add('disabled');
+        
+        const inp = document.createElement('input');
+        inp.type = 'radio';
+        inp.name = 'opt';
+        inp.value = idx;
+        
+        if (userAnswers[currentQ] === idx) inp.checked = true;
+        if (hasAnswered[currentQ]) inp.disabled = true;
+
+        inp.addEventListener('change', () => selectOption(idx));
+        
+        lbl.appendChild(inp);
+        lbl.appendChild(document.createTextNode(opt));
+        els.optionsContainer.appendChild(lbl);
+    });
+
+    if (hasAnswered[currentQ]) {
+        showFeedback(userAnswers[currentQ]);
+        els.nextBtn.disabled = false;
+    } else {
+        els.nextBtn.disabled = true;
+    }
+}
+
+function selectOption(idx) {
+    if (hasAnswered[currentQ]) return; // Locked
+    
+    userAnswers[currentQ] = idx;
+    hasAnswered[currentQ] = true;
+    els.nextBtn.disabled = false;
+    
+    // Disable all inputs immediately
+    const labels = els.optionsContainer.querySelectorAll('.option-label');
+    labels.forEach(lbl => {
+        lbl.classList.add('disabled');
+        lbl.querySelector('input').disabled = true;
+    });
+
+    showFeedback(idx);
+}
+
+function showFeedback(selectedIdx) {
+    const q = questions[currentQ];
+    const isCorrect = selectedIdx === q.answer;
+    const labels = els.optionsContainer.querySelectorAll('.option-label');
+
+    // Visual styles for labels
+    labels[q.answer].classList.add('correct-reveal');
+    if (!isCorrect && selectedIdx !== null) {
+        labels[selectedIdx].classList.add('wrong-reveal');
+    }
+
+    // Show Feedback Box
+    els.feedbackBox.style.display = 'block';
+    els.feedbackBox.className = isCorrect ? 'feedback-correct' : 'feedback-wrong';
+    
+    els.feedbackTitle.textContent = isCorrect ? '✓ Correct' : '✗ Incorrect';
+    els.feedbackTheory.innerHTML = `<strong>Explanation:</strong> ${q.theory}`;
+}
+
+function handleNext() {
+    if (currentQ < questions.length - 1) {
+        currentQ++;
+        renderQuestion();
+    } else {
+        finishQuiz();
+    }
+}
+
+function handlePrev() {
+    if (currentQ > 0) {
+        currentQ--;
+        renderQuestion();
+    }
+}
+
+function finishQuiz() {
+    clearInterval(timerInterval);
+    els.quizScreen.style.display = 'none';
+    els.resultScreen.style.display = 'block';
+    
+    score = userAnswers.reduce((tot, ans, i) => tot + (ans === questions[i].answer ? 1 : 0), 0);
+    els.scoreDisplay.textContent = `${score} / ${questions.length}`;
+
+    buildReview();
+}
+
+function buildReview() {
+    els.reviewContainer.innerHTML = '';
+    questions.forEach((q, i) => {
+        const uAns = userAnswers[i];
+        const isC = uAns === q.answer;
+        
+        const div = document.createElement('div');
+        div.className = `review-item ${isC ? 'correct' : ''}`;
+        
+        let html = `<span class="status-badge ${isC ? 'correct' : 'incorrect'}">${isC ? 'Correct' : 'Incorrect'}</span>`;
+        html += `<div style="font-size:1.1rem; font-weight:600; margin-bottom:1rem;">${i + 1}. ${q.q}</div>`;
+        if (q.code) html += `<pre><code>${q.code}</code></pre>`;
+        
+        html += `<div style="margin-bottom:0.5rem; color:#94a3b8;"><strong>Your Answer:</strong> ${uAns !== null ? q.options[uAns] : '<em>None</em>'}</div>`;
+        html += `<div style="margin-bottom:1rem; color:var(--accent);"><strong>Correct Answer:</strong> ${q.options[q.answer]}</div>`;
+        html += `<div class="theory-box"><strong>Theory:</strong> ${q.theory}</div>`;
+        
+        div.innerHTML = html;
+        els.reviewContainer.appendChild(div);
+    });
+}
+
+init();
+</script>
+</body>
+</html>

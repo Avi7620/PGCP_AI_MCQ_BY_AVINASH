@@ -9,7 +9,7 @@ const stats = [
   {
     key: 'stat-subjects',
     icon: BookOpen,
-    value: 4,
+    value: 5,
     label: 'Subjects',
     suffix: '',
     color: 'text-primary',
@@ -18,7 +18,7 @@ const stats = [
   {
     key: 'stat-tests',
     icon: FlaskConical,
-    value: 36,
+    value: 40,
     label: 'Total Tests',
     suffix: '+',
     color: 'text-accent',

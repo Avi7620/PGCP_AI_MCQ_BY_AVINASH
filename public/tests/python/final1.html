@@ -8,6 +8,8 @@
         :root {
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
+            --secondary: #475569;
+            --secondary-hover: #334155;
             --bg: #0f172a;
             --surface: #1e293b;
             --text: #f8fafc;
@@ -38,16 +40,28 @@
         pre { background: #0b1120; padding: 1rem; border-radius: 8px; overflow-x: auto; margin-bottom: 1.5rem; border: 1px solid #334155; }
         code { font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9rem; color: #e2e8f0; }
 
-        .options-grid { display: grid; gap: 1rem; margin-bottom: 2rem; }
+        .options-grid { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
         
         .option-label { display: flex; align-items: center; padding: 1rem; background: #2dd4bf0a; border: 1px solid #334155; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
         .option-label:hover { border-color: var(--primary); background: #2563eb1a; }
         
         input[type="radio"] { margin-right: 1rem; transform: scale(1.2); accent-color: var(--primary); }
 
+        /* Button Layout Styles */
+        .btn-group { display: flex; gap: 1rem; margin-top: 1.5rem; }
+        
         .btn { background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center; width: 100%; }
         .btn:hover { background: var(--primary-hover); }
-        .btn:disabled { background: #475569; cursor: not-allowed; }
+        .btn:disabled { background: #334155; cursor: not-allowed; color: #94a3b8; }
+        
+        .btn-secondary { background: var(--secondary); }
+        .btn-secondary:hover:not(:disabled) { background: var(--secondary-hover); }
+
+        /* Inline Feedback Styles */
+        .inline-feedback { margin-bottom: 1.5rem; padding: 1rem; border-radius: 8px; display: none; background: #0b1120;}
+        .inline-feedback.correct { border-left: 4px solid var(--accent); background: #0596691a;}
+        .inline-feedback.incorrect { border-left: 4px solid var(--danger); background: #e11d481a;}
+        .feedback-header { font-weight: bold; margin-bottom: 0.5rem; font-size: 1.1rem; }
 
         #result-screen { display: none; }
         .score-display { text-align: center; font-size: 3rem; font-weight: bold; color: var(--accent); margin: 2rem 0; }
@@ -78,7 +92,12 @@
             <div class="options-grid" id="options-container">
                 </div>
 
-            <button class="btn" id="next-btn" onclick="handleNext()">Next Question</button>
+            <div id="inline-feedback" class="inline-feedback"></div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="prev-btn" onclick="handlePrev()">Previous</button>
+                <button class="btn" id="next-btn" onclick="handleNext()">Next Question</button>
+            </div>
         </div>
     </div>
 
@@ -97,291 +116,284 @@
 const questions = [
 {
     q: "What will be the output of the following tuple swapping code?",
-    code: `
-t1 = (11, 22)
-t2 = (99, 88)
-
-t1, t2 = t2, t1
-
-print(t1[0])
-    `,
+    code: `t1 = (11, 22)\nt2 = (99, 88)\n\nt1, t2 = t2, t1\n\nprint(t1[0])`,
     options: ["11", "22", "99", "88"],
     answer: 2,
     theory: "Tuple unpacking swaps references. After swapping, t1 becomes (99, 88), so t1[0] = 99."
 },
-    {
-        q: "How does inheriting from a class without `__slots__` affect a child class that defines `__slots__`?",
-        code: "class Base:\n    pass\n\nclass Child(Base):\n    __slots__ = ['x']\n\nc = Child()\nc.y = 10",
-        options: ["AttributeError is raised because 'y' is not in __slots__", "The instance creates a __dict__ alongside the slot, allowing 'y' to be assigned", "TypeError is raised at class creation", "Memory optimization is fully achieved as Base is ignored"],
-        answer: 1,
-        theory: "If a base class does not define `__slots__`, it automatically provides a `__dict__` to its instances. The child class will inherit this `__dict__`, rendering the memory optimization of its own `__slots__` largely useless, and allowing arbitrary attribute assignment."
-    },
-    {
-        q: "In CPython, what is the primary bottleneck preventing multi-threaded CPU-bound code from running concurrently on multiple cores?",
-        code: "import threading\ndef compute():\n    sum(i*i for i in range(10**7))\n\nt1 = threading.Thread(target=compute)\nt2 = threading.Thread(target=compute)",
-        options: ["The hardware context switching limit", "The Global Interpreter Lock (GIL)", "Python's reference counting garbage collector", "The OS scheduler prioritizing single processes"],
-        answer: 1,
-        theory: "The GIL (Global Interpreter Lock) prevents multiple native threads from executing Python bytecodes at once in CPython. This makes threading unsuitable for CPU-bound tasks, though it remains effective for I/O-bound tasks."
-    },
-    {
-        q: "What happens when you attempt to create a dictionary as a default argument in a function, and then mutate it?",
-        code: "def append_val(val, target=[]):\n    target.append(val)\n    return target\n\nprint(append_val(1))\nprint(append_val(2))",
-        options: ["[1] then [2]", "[1] then [1, 2]", "TypeError", "SyntaxError"],
-        answer: 1,
-        theory: "Default arguments are evaluated exactly once when the function is defined, not every time the function is called. Mutating a default list or dict persists that mutation across subsequent calls."
-    },
-    {
-        q: "Why is `collections.namedtuple` often preferred over standard dictionaries for structured data requiring millions of instances?",
-        code: "from collections import namedtuple\nPoint = namedtuple('Point', ['x', 'y'])\np = Point(1, 2)",
-        options: ["It bypasses the GIL", "It allows mutable state changes faster than dicts", "It avoids the per-instance __dict__ memory overhead, utilizing tuples underneath", "It compiles directly to C structs"],
-        answer: 2,
-        theory: "`namedtuple` instances do not have per-instance dictionaries (`__dict__`). They are subclasses of built-in tuples, significantly reducing the memory footprint when creating large numbers of objects."
-    },
-    {
-        q: "Which CPython garbage collection mechanism handles cyclic references (e.g., Node A points to Node B, and Node B points to Node A)?",
-        code: "class Node:\n    def __init__(self):\n        self.ref = None\n\na = Node()\nb = Node()\na.ref = b\nb.ref = a\ndel a\ndel b",
-        options: ["Reference counting automatically drops them to 0", "The generational cyclic garbage collector identifies and sweeps them", "The GIL prevents them from forming", "Memory leaks occur as CPython cannot handle cyclic references"],
-        answer: 1,
-        theory: "While CPython primarily uses reference counting, it cannot resolve circular references because the count never reaches 0. Python includes a background generational Garbage Collector specifically designed to detect and collect these cyclic isolates."
-    },
-    {
-        q: "What is the expected output when mutating a list nested inside a tuple?",
-        code: "t = (1, 2, [3, 4])\nt[2] += [5, 6]\nprint(t)",
-        options: ["(1, 2, [3, 4, 5, 6])", "TypeError: 'tuple' object does not support item assignment", "Both A and B: The list is mutated, but a TypeError is subsequently raised", "(1, 2, [3, 4])"],
-        answer: 2,
-        theory: "The `+=` operator on a list calls `__iadd__` (which extends the list in-place), but then attempts to reassign the result back to `t[2]`. The tuple rejects the assignment, raising a TypeError, but the in-place mutation of the list has already succeeded."
-    },
-    {
-        q: "When using `multiprocessing` in Python, how is memory sharing handled between child processes by default?",
-        code: "import multiprocessing\n\nx = [1, 2, 3]\ndef worker():\n    x.append(4)\n\np = multiprocessing.Process(target=worker)\np.start()\np.join()\nprint(x)",
-        options: ["[1, 2, 3, 4]", "[1, 2, 3]", "MemoryError", "AttributeError"],
-        answer: 1,
-        theory: "Unlike threads, processes have their own independent memory space. Modifying a global variable in a child process does not affect the variable in the parent process. Shared memory objects (like `Value` or `Array`) must be explicitly used."
-    },
-    {
-        q: "What does `sys.getswitchinterval()` represent in relation to the GIL?",
-        code: "import sys\nprint(sys.getswitchinterval())",
-        options: ["The time a thread is allowed to hold the GIL before yielding", "The time it takes context switch between OS processes", "The interval between garbage collection sweeps", "The time to switch between asynchronous coroutines"],
-        answer: 0,
-        theory: "In modern Python (>=3.2), the GIL is time-based. `getswitchinterval()` returns the duration (in seconds) a thread can run uninterrupted before it is forced to release the GIL, giving other threads a chance to acquire it."
-    },
-    {
-        q: "What is the consequence of defining multiple base classes that both define `__slots__`?",
-        code: "class A:\n    __slots__ = ['a']\nclass B:\n    __slots__ = ['b']\nclass C(A, B):\n    pass",
-        options: ["C inherits both slots successfully", "TypeError: multiple bases have instance lay-out conflict", "C ignores B's slots", "C creates a dictionary to merge them"],
-        answer: 1,
-        theory: "In Python, a class can only inherit `__slots__` from one base class. Inheriting from multiple base classes that have non-empty slots causes a 'multiple bases have instance lay-out conflict' TypeError."
-    },
-    {
-        q: "What is the output of this closure scoping trick?",
-        code: "funcs = [lambda: i for i in range(3)]\nprint([f() for f in funcs])",
-        options: ["[0, 1, 2]", "[2, 2, 2]", "[None, None, None]", "NameError"],
-        answer: 1,
-        theory: "Python closures are late-binding. The lambdas capture the variable `i` by reference, not by value. By the time the lambdas are executed, the loop has finished and `i` is 2."
-    },
-    {
-        q: "How do you enforce keyword-only arguments in a Python function definition?",
-        code: "def connect(host, port, *, secure=True):\n    pass",
-        options: ["Using the `/` parameter", "Using the `*` parameter as a separator", "Using `**kwargs` exclusively", "Decorating with `@keyword_only`"],
-        answer: 1,
-        theory: "The bare `*` in a function signature indicates that all subsequent parameters are keyword-only, meaning they cannot be passed positionally."
-    },
-    {
-        q: "What happens when an exception is raised inside a `__exit__` method of a context manager?",
-        code: "class CM:\n    def __enter__(self): return self\n    def __exit__(self, exc_type, exc_val, tb):\n        return True\n\nwith CM():\n    raise ValueError('Error!')",
-        options: ["The ValueError crashes the program", "The exception is suppressed because __exit__ returns True", "A ContextError is raised", "The exception is re-raised automatically after __exit__ finishes"],
-        answer: 1,
-        theory: "If a context manager's `__exit__` method returns a truthy value, any exception that occurred within the `with` block is suppressed, and execution continues normally after the `with` statement."
-    },
-    {
-        q: "What distinguishes a 'Data Descriptor' from a 'Non-Data Descriptor'?",
-        code: "class Descriptor:\n    def __get__(self, obj, objtype=None):\n        return 42",
-        options: ["Data descriptors only store strings", "Data descriptors define __set__ and/or __delete__", "Non-data descriptors cannot be used on classes", "Data descriptors bypass the GIL"],
-        answer: 1,
-        theory: "A descriptor defining both `__get__` and `__set__` is a data descriptor. If it only defines `__get__`, it's a non-data descriptor. This distinction dictates precedence over instance dictionaries during attribute lookup."
-    },
-    {
-        q: "Why is `functools.wraps` crucial when writing decorators?",
-        code: "def my_decorator(func):\n    def wrapper(*args, **kwargs):\n        return func(*args, **kwargs)\n    return wrapper",
-        options: ["It drastically improves execution speed", "It preserves the original function's metadata (__name__, __doc__)", "It allows decorators to take arguments", "It converts synchronous functions to asynchronous ones"],
-        answer: 1,
-        theory: "Without `@wraps`, the decorated function assumes the name and docstring of the `wrapper` function. `@wraps` copies the original function's `__name__`, `__doc__`, and other metadata to the wrapper."
-    },
-    {
-        q: "In asyncio, what is the primary difference between `asyncio.gather` and `asyncio.wait`?",
-        code: "import asyncio\n# asyncio.gather(*tasks)\n# asyncio.wait(tasks)",
-        options: ["`wait` blocks the event loop, `gather` does not", "`gather` returns results in order, `wait` returns two sets (done, pending)", "`gather` can only take two arguments", "There is no difference"],
-        answer: 1,
-        theory: "`gather` aggregates results in the exact order the awaitables were passed. `wait` provides finer-grained control, returning a tuple of sets `(done, pending)` and allowing conditions like `return_when=FIRST_COMPLETED`."
-    },
-    {
-        q: "What will `sys.getrefcount(x)` return immediately after `x = object()`?",
-        code: "import sys\nx = object()\nprint(sys.getrefcount(x))",
-        options: ["1", "2", "0", "None"],
-        answer: 1,
-        theory: "It returns 2. One reference is the variable `x` itself, and the second is the temporary reference created when passing `x` as an argument into the `sys.getrefcount()` function."
-    },
-    {
-        q: "What defines a generator in Python?",
-        code: "def get_data():\n    yield 1\n    yield 2",
-        options: ["The presence of the `yield` keyword in the function body", "Inheriting from the Generator class", "Using the @generator decorator", "Returning an iterable object"],
-        answer: 0,
-        theory: "The mere presence of the `yield` statement changes a normal function into a generator factory. When called, it doesn't execute the body but instead returns a generator object."
-    },
-    {
-        q: "How does `yield from` differ from a standard `yield` loop?",
-        code: "def chain(iter1, iter2):\n    yield from iter1\n    yield from iter2",
-        options: ["It executes faster because it bypasses the interpreter loop", "It establishes a transparent bidirectional channel for sending data/exceptions to a sub-generator", "It only works with lists", "It automatically handles asyncio tasks"],
-        answer: 1,
-        theory: "`yield from` is not just syntactic sugar for a `for` loop. It creates a direct pipe between the caller and the sub-generator, correctly delegating `send()`, `throw()`, and `close()` calls."
-    },
-    {
-        q: "What is the behavior of the `else` clause in a `try...except...else` block?",
-        code: "try:\n    x = 1 / 1\nexcept ZeroDivisionError:\n    print('A')\nelse:\n    print('B')\nfinally:\n    print('C')",
-        options: ["It runs if an exception IS raised but not caught", "It runs only if NO exception is raised in the try block", "It runs regardless of exceptions", "It is deprecated in Python 3"],
-        answer: 1,
-        theory: "The `else` block executes only if the `try` block succeeds without raising any exceptions. It is useful for code that should only run if the protected code succeeds, without adding more code to the `try` block itself."
-    },
-    {
-        q: "What is the purpose of the `__new__` dunder method compared to `__init__`?",
-        code: "class Singleton:\n    _instance = None\n    def __new__(cls):\n        if cls._instance is None:\n            cls._instance = super().__new__(cls)\n        return cls._instance",
-        options: ["`__new__` initializes instance variables, `__init__` allocates memory", "`__new__` is an instance method, `__init__` is a class method", "`__new__` allocates memory and returns the instance, `__init__` initializes its state", "`__new__` is only used for metaclasses"],
-        answer: 2,
-        theory: "`__new__` is a static-like method responsible for actual object creation (memory allocation) and must return an instance. `__init__` receives that instance as `self` to populate its initial state."
-    },
-    {
-        q: "Which object is explicitly required to resolve Circular Imports gracefully in Python?",
-        code: "# a.py imports b\n# b.py imports a",
-        options: ["The GIL", "The module cache `sys.modules`", "The `importlib` library", "`__slots__`"],
-        answer: 1,
-        theory: "When a module is first imported, Python creates an empty module object in `sys.modules` before executing the code. If a circular import happens, the second import finds the partially initialized module in `sys.modules`, preventing an infinite loop (though it may cause an AttributeError if used too early)."
-    },
-    {
-        q: "How does CPython optimize small integer memory allocation?",
-        code: "a = 256\nb = 256\nc = 257\nd = 257\nprint(a is b, c is d)",
-        options: ["False, False", "True, True", "True, False", "False, True"],
-        answer: 2,
-        theory: "CPython pre-allocates and 'interns' an array of small integers from -5 to 256. Variables assigned these values point to the same memory addresses (hence `is` returns True). Numbers outside this range create new objects."
-    },
-    {
-        q: "What is a 'Metaclass' in Python?",
-        code: "class MyMeta(type):\n    pass\nclass MyClass(metaclass=MyMeta):\n    pass",
-        options: ["A class that inherits from another class dynamically", "A class used exclusively for type hinting", "A 'class of a class' that defines how a class behaves and is instantiated", "A built-in decorator for data classes"],
-        answer: 2,
-        theory: "Just as an object is an instance of a class, a class is an instance of a metaclass (by default, `type`). Metaclasses allow you to intercept class creation, modify class dictionaries, or enforce coding standards."
-    },
-    {
-        q: "What is the primary difference between `is` and `==`?",
-        code: "x = [1, 2, 3]\ny = [1, 2, 3]\nprint(x == y, x is y)",
-        options: ["`==` compares memory addresses, `is` compares values", "`==` compares values, `is` compares memory addresses (identity)", "They are exactly the same", "`is` only works on strings"],
-        answer: 1,
-        theory: "`==` invokes the `__eq__` method to evaluate value equality. `is` evaluates object identity, meaning it checks if both variables point to the exact same object in memory."
-    },
-    {
-        q: "What happens if a dictionary key is mutated after insertion?",
-        code: "key = [1, 2]\nd = {tuple(key): 'value'}\n# keys must be hashable, but what if we bypass it via custom objects?",
-        options: ["Dictionaries track mutations and update hashes", "The dictionary raises a KeyError on next access", "If the object's hash changes, the dictionary can no longer reliably locate the value", "The GIL prevents dictionary mutation"],
-        answer: 2,
-        theory: "Dictionaries rely on an object's hash value to locate it in the hash table. If a mutable object is somehow used as a key and its state (and therefore its hash) changes, the dictionary looks in the wrong bucket, losing the value."
-    },
-    {
-        q: "Which keyword is used to modify a variable in the nearest enclosing scope that is not global?",
-        code: "def outer():\n    x = 1\n    def inner():\n        x = 2 # How to modify outer's x?\n    inner()",
-        options: ["global", "nonlocal", "super", "enclosing"],
-        answer: 1,
-        theory: "`nonlocal` binds a variable to the nearest enclosing scope (excluding the global scope). Without it, assigning to `x` inside `inner()` would simply create a new local variable shadowing the outer one."
-    },
-    {
-        q: "What does `collections.defaultdict` do when a requested key is missing?",
-        code: "from collections import defaultdict\nd = defaultdict(list)\nd['missing'].append(1)",
-        options: ["Raises a KeyError", "Returns None", "Calls the provided factory function to create a default value, inserts it, and returns it", "Raises an AttributeError"],
-        answer: 2,
-        theory: "Instead of raising a KeyError, `defaultdict` executes the callable passed to its constructor (like `list`, which returns `[]`), assigns that default value to the missing key, and returns it for immediate use."
-    },
-    {
-        q: "What is the time complexity of checking membership `x in obj` for a Python `set` versus a `list`?",
-        code: "s = {1, 2, 3}\nl = [1, 2, 3]",
-        options: ["O(N) for set, O(1) for list", "O(1) average for set, O(N) for list", "O(log N) for both", "O(1) for both"],
-        answer: 1,
-        theory: "Sets are implemented as hash tables, allowing for O(1) average case lookups. Lists are arrays, meaning a membership check requires an O(N) linear scan."
-    },
-    {
-        q: "What is a 'Weak Reference' in Python?",
-        code: "import weakref\nclass Object:\n    pass\nobj = Object()\nr = weakref.ref(obj)",
-        options: ["A reference that does not increase the reference count of an object", "A reference that is cleared on every garbage collection cycle", "A reference used exclusively for integers", "A pointer in C extensions"],
-        answer: 0,
-        theory: "Weak references (`weakref` module) allow you to reference an object without increasing its reference count. If the object has no strong references left, it is garbage collected, and the weakref returns `None`. Useful for caches."
-    },
-    {
-        q: "What is the function of `__call__` in a class definition?",
-        code: "class Multiplier:\n    def __init__(self, factor):\n        self.factor = factor\n    def __call__(self, val):\n        return val * self.factor",
-        options: ["It runs when the object is instantiated", "It makes the instances of the class callable like functions", "It handles attribute lookup failures", "It intercepts method calls on the class"],
-        answer: 1,
-        theory: "Defining `__call__` allows an instance of a class to be invoked directly like a function (`obj()`). This is widely used in creating stateful decorators or factory objects."
-    },
-    {
-        q: "How does `sys.setrecursionlimit()` affect Python's execution?",
-        code: "import sys\nsys.setrecursionlimit(2000)",
-        options: ["It increases available RAM", "It changes the depth limit of the C call stack to prevent stack overflows from infinite recursion", "It allows infinite loops to break automatically", "It optimizes tail-recursive functions"],
-        answer: 1,
-        theory: "Python does not optimize tail recursion. The recursion limit acts as a safety measure to prevent C stack overflows. Changing it allows deeper recursive calls but risks a hard C-level crash if it exceeds OS stack limits."
-    },
-    {
-        q: "What happens when you iterate over a generator after it has yielded all its values?",
-        code: "gen = (x for x in range(2))\nlist(gen)\nprint(list(gen))",
-        options: ["[0, 1]", "[]", "Raises StopIteration", "Raises TypeError"],
-        answer: 1,
-        theory: "Generators are single-pass iterators. Once exhausted, they raise `StopIteration` behind the scenes, which looping constructs like `list()` catch and interpret as an empty sequence."
-    },
-    {
-        q: "In what scenario is `__del__` (the finalizer) NOT guaranteed to run?",
-        code: "class MyObj:\n    def __del__(self):\n        print('Dying')\nobj = MyObj()",
-        options: ["When the object is involved in a cyclic reference that is collected at interpreter shutdown", "When `del obj` is called", "When the reference count reaches 0", "When it is removed from a list"],
-        answer: 0,
-        theory: "CPython does not guarantee that `__del__` methods will be called for objects that still exist when the interpreter exits, especially those in cyclic isolates. Critical cleanup should be handled by context managers, not `__del__`."
-    },
-    {
-        q: "What is the primary role of the `typing.Protocol` class?",
-        code: "from typing import Protocol\nclass Drawable(Protocol):\n    def draw(self) -> None: ...",
-        options: ["It enforces strict runtime type checking", "It defines structural subtyping (duck typing) for static type checkers", "It creates C extensions automatically", "It replaces the ABC (Abstract Base Class) module completely"],
-        answer: 1,
-        theory: "`Protocol` supports structural subtyping. A class doesn't need to explicitly inherit from a Protocol to be considered a subtype by static analyzers (like mypy); it just needs to implement the required methods."
-    },
-    {
-        q: "What is the output of modifying a class attribute through an instance?",
-        code: "class Config:\n    timeout = 10\n\nc1 = Config()\nc2 = Config()\nc1.timeout = 20\nprint(c2.timeout)",
-        options: ["20", "10", "AttributeError", "None"],
-        answer: 1,
-        theory: "Assigning `c1.timeout = 20` creates a new instance attribute on `c1` that shadows the class attribute. The class attribute `Config.timeout` remains unchanged, so `c2.timeout` still resolves to 10."
-    },
-    {
-        q: "What happens if a module defines `__all__`?",
-        code: "# utils.py\n__all__ = ['func1']\ndef func1(): pass\ndef func2(): pass",
-        options: ["It strictly hides func2 from being imported entirely", "It prevents func2 from executing", "It restricts what is imported when using `from utils import *`", "It compiles func1 to C"],
-        answer: 2,
-        theory: "`__all__` is a list of strings defining the public API of a module. It explicitly dictates what gets imported when a client uses the wildcard `from module import *`. Explicit imports (`import func2`) still work."
-    },
-    {
-        q: "Why is modifying a list while iterating over it generally a bad idea?",
-        code: "lst = [1, 2, 3, 4]\nfor item in lst:\n    if item == 2:\n        lst.remove(item)",
-        options: ["It causes an immediate MemoryError", "It shifts the indices, causing the iterator to skip elements", "It creates an infinite loop", "It converts the list to a tuple implicitly"],
-        answer: 1,
-        theory: "The iterator tracks its position via an internal index. When an item is removed, all subsequent items shift left. The iterator increments its index, completely skipping the item that shifted into the current position."
-    },
-    {
-        q: "What does the `@classmethod` decorator do differently than `@staticmethod`?",
-        code: "class MyClass:\n    @classmethod\n    def do_work(cls):\n        pass",
-        options: ["It passes the instance as the first argument", "It requires no initial argument", "It passes the class itself as the first implicit argument", "It prevents inheritance"],
-        answer: 2,
-        theory: "`@classmethod` binds the method to the class, passing the class type as the first argument (`cls`), allowing it to instantiate the class or alter class state. `@staticmethod` passes neither the instance nor the class."
-    },
-    {
-        q: "How does Python handle Multiple Inheritance of the same base class at different levels?",
-        code: "class A: pass\nclass B(A): pass\nclass C(A): pass\nclass D(B, C): pass",
-        options: ["It creates two separate instances of A (like C++)", "It uses MRO (C3 Linearization) to ensure A is initialized exactly once, at the end of the chain", "TypeError is thrown", "It ignores C's inheritance of A"],
-        answer: 1,
-        theory: "Unlike C++ which requires virtual inheritance to avoid the diamond problem, Python's C3 Linearization mathematically flattens the hierarchy, ensuring every base class is visited exactly once in a predictable order."
-    }
+{
+    q: "Why is `collections.namedtuple` often preferred over standard dictionaries for structured data requiring millions of instances?",
+    code: "from collections import namedtuple\nPoint = namedtuple('Point', ['x', 'y'])\np = Point(1, 2)",
+    options: ["It bypasses the GIL", "It allows mutable state changes faster than dicts", "It avoids the per-instance __dict__ memory overhead, utilizing tuples underneath", "It compiles directly to C structs"],
+    answer: 2,
+    theory: "`namedtuple` instances do not have per-instance dictionaries (`__dict__`). They are subclasses of built-in tuples, significantly reducing the memory footprint when creating large numbers of objects."
+},
+{
+    q: "Which CPython garbage collection mechanism handles cyclic references (e.g., Node A points to Node B, and Node B points to Node A)?",
+    code: "class Node:\n    def __init__(self):\n        self.ref = None\n\na = Node()\nb = Node()\na.ref = b\nb.ref = a\ndel a\ndel b",
+    options: ["Reference counting automatically drops them to 0", "The generational cyclic garbage collector identifies and sweeps them", "The GIL prevents them from forming", "Memory leaks occur as CPython cannot handle cyclic references"],
+    answer: 1,
+    theory: "While CPython primarily uses reference counting, it cannot resolve circular references because the count never reaches 0. Python includes a background generational Garbage Collector specifically designed to detect and collect these cyclic isolates."
+},
+{
+    q: "What is the expected output when mutating a list nested inside a tuple?",
+    code: "t = (1, 2, [3, 4])\nt[2] += [5, 6]\nprint(t)",
+    options: ["(1, 2, [3, 4, 5, 6])", "TypeError: 'tuple' object does not support item assignment", "Both A and B: The list is mutated, but a TypeError is subsequently raised", "(1, 2, [3, 4])"],
+    answer: 2,
+    theory: "The `+=` operator on a list calls `__iadd__` (which extends the list in-place), but then attempts to reassign the result back to `t[2]`. The tuple rejects the assignment, raising a TypeError, but the in-place mutation of the list has already succeeded."
+},
+{
+    q: "How does inheriting from a class without `__slots__` affect a child class that defines `__slots__`?",
+    code: "class Base:\n    pass\n\nclass Child(Base):\n    __slots__ = ['x']\n\nc = Child()\nc.y = 10",
+    options: ["AttributeError is raised because 'y' is not in __slots__", "The instance creates a __dict__ alongside the slot, allowing 'y' to be assigned", "TypeError is raised at class creation", "Memory optimization is fully achieved as Base is ignored"],
+    answer: 1,
+    theory: "If a base class does not define `__slots__`, it automatically provides a `__dict__` to its instances. The child class will inherit this `__dict__`, rendering the memory optimization of its own `__slots__` largely useless, and allowing arbitrary attribute assignment."
+},
+{
+    q: "In CPython, what is the primary bottleneck preventing multi-threaded CPU-bound code from running concurrently on multiple cores?",
+    code: "import threading\ndef compute():\n    sum(i*i for i in range(10**7))\n\nt1 = threading.Thread(target=compute)\nt2 = threading.Thread(target=compute)",
+    options: ["The hardware context switching limit", "The Global Interpreter Lock (GIL)", "Python's reference counting garbage collector", "The OS scheduler prioritizing single processes"],
+    answer: 1,
+    theory: "The GIL (Global Interpreter Lock) prevents multiple native threads from executing Python bytecodes at once in CPython. This makes threading unsuitable for CPU-bound tasks, though it remains effective for I/O-bound tasks."
+},
+{
+    q: "What happens when you attempt to create a dictionary as a default argument in a function, and then mutate it?",
+    code: "def append_val(val, target=[]):\n    target.append(val)\n    return target\n\nprint(append_val(1))\nprint(append_val(2))",
+    options: ["[1] then [2]", "[1] then [1, 2]", "TypeError", "SyntaxError"],
+    answer: 1,
+    theory: "Default arguments are evaluated exactly once when the function is defined, not every time the function is called. Mutating a default list or dict persists that mutation across subsequent calls."
+},
+{
+    q: "When using `multiprocessing` in Python, how is memory sharing handled between child processes by default?",
+    code: "import multiprocessing\n\nx = [1, 2, 3]\ndef worker():\n    x.append(4)\n\np = multiprocessing.Process(target=worker)\np.start()\np.join()\nprint(x)",
+    options: ["[1, 2, 3, 4]", "[1, 2, 3]", "MemoryError", "AttributeError"],
+    answer: 1,
+    theory: "Unlike threads, processes have their own independent memory space. Modifying a global variable in a child process does not affect the variable in the parent process. Shared memory objects (like `Value` or `Array`) must be explicitly used."
+},
+{
+    q: "What does `sys.getswitchinterval()` represent in relation to the GIL?",
+    code: "import sys\nprint(sys.getswitchinterval())",
+    options: ["The time a thread is allowed to hold the GIL before yielding", "The time it takes context switch between OS processes", "The interval between garbage collection sweeps", "The time to switch between asynchronous coroutines"],
+    answer: 0,
+    theory: "In modern Python (>=3.2), the GIL is time-based. `getswitchinterval()` returns the duration (in seconds) a thread can run uninterrupted before it is forced to release the GIL, giving other threads a chance to acquire it."
+},
+{
+    q: "What is the consequence of defining multiple base classes that both define `__slots__`?",
+    code: "class A:\n    __slots__ = ['a']\nclass B:\n    __slots__ = ['b']\nclass C(A, B):\n    pass",
+    options: ["C inherits both slots successfully", "TypeError: multiple bases have instance lay-out conflict", "C ignores B's slots", "C creates a dictionary to merge them"],
+    answer: 1,
+    theory: "In Python, a class can only inherit `__slots__` from one base class. Inheriting from multiple base classes that have non-empty slots causes a 'multiple bases have instance lay-out conflict' TypeError."
+},
+{
+    q: "What is the output of this closure scoping trick?",
+    code: "funcs = [lambda: i for i in range(3)]\nprint([f() for f in funcs])",
+    options: ["[0, 1, 2]", "[2, 2, 2]", "[None, None, None]", "NameError"],
+    answer: 1,
+    theory: "Python closures are late-binding. The lambdas capture the variable `i` by reference, not by value. By the time the lambdas are executed, the loop has finished and `i` is 2."
+},
+{
+    q: "How do you enforce keyword-only arguments in a Python function definition?",
+    code: "def connect(host, port, *, secure=True):\n    pass",
+    options: ["Using the `/` parameter", "Using the `*` parameter as a separator", "Using `**kwargs` exclusively", "Decorating with `@keyword_only`"],
+    answer: 1,
+    theory: "The bare `*` in a function signature indicates that all subsequent parameters are keyword-only, meaning they cannot be passed positionally."
+},
+{
+    q: "What happens when an exception is raised inside a `__exit__` method of a context manager?",
+    code: "class CM:\n    def __enter__(self): return self\n    def __exit__(self, exc_type, exc_val, tb):\n        return True\n\nwith CM():\n    raise ValueError('Error!')",
+    options: ["The ValueError crashes the program", "The exception is suppressed because __exit__ returns True", "A ContextError is raised", "The exception is re-raised automatically after __exit__ finishes"],
+    answer: 1,
+    theory: "If a context manager's `__exit__` method returns a truthy value, any exception that occurred within the `with` block is suppressed, and execution continues normally after the `with` statement."
+},
+{
+    q: "What distinguishes a 'Data Descriptor' from a 'Non-Data Descriptor'?",
+    code: "class Descriptor:\n    def __get__(self, obj, objtype=None):\n        return 42",
+    options: ["Data descriptors only store strings", "Data descriptors define __set__ and/or __delete__", "Non-data descriptors cannot be used on classes", "Data descriptors bypass the GIL"],
+    answer: 1,
+    theory: "A descriptor defining both `__get__` and `__set__` is a data descriptor. If it only defines `__get__`, it's a non-data descriptor. This distinction dictates precedence over instance dictionaries during attribute lookup."
+},
+{
+    q: "Why is `functools.wraps` crucial when writing decorators?",
+    code: "def my_decorator(func):\n    def wrapper(*args, **kwargs):\n        return func(*args, **kwargs)\n    return wrapper",
+    options: ["It drastically improves execution speed", "It preserves the original function's metadata (__name__, __doc__)", "It allows decorators to take arguments", "It converts synchronous functions to asynchronous ones"],
+    answer: 1,
+    theory: "Without `@wraps`, the decorated function assumes the name and docstring of the `wrapper` function. `@wraps` copies the original function's `__name__`, `__doc__`, and other metadata to the wrapper."
+},
+{
+    q: "In asyncio, what is the primary difference between `asyncio.gather` and `asyncio.wait`?",
+    code: "import asyncio\n# asyncio.gather(*tasks)\n# asyncio.wait(tasks)",
+    options: ["`wait` blocks the event loop, `gather` does not", "`gather` returns results in order, `wait` returns two sets (done, pending)", "`gather` can only take two arguments", "There is no difference"],
+    answer: 1,
+    theory: "`gather` aggregates results in the exact order the awaitables were passed. `wait` provides finer-grained control, returning a tuple of sets `(done, pending)` and allowing conditions like `return_when=FIRST_COMPLETED`."
+},
+{
+    q: "What will `sys.getrefcount(x)` return immediately after `x = object()`?",
+    code: "import sys\nx = object()\nprint(sys.getrefcount(x))",
+    options: ["1", "2", "0", "None"],
+    answer: 1,
+    theory: "It returns 2. One reference is the variable `x` itself, and the second is the temporary reference created when passing `x` as an argument into the `sys.getrefcount()` function."
+},
+{
+    q: "What defines a generator in Python?",
+    code: "def get_data():\n    yield 1\n    yield 2",
+    options: ["The presence of the `yield` keyword in the function body", "Inheriting from the Generator class", "Using the @generator decorator", "Returning an iterable object"],
+    answer: 0,
+    theory: "The mere presence of the `yield` statement changes a normal function into a generator factory. When called, it doesn't execute the body but instead returns a generator object."
+},
+{
+    q: "How does `yield from` differ from a standard `yield` loop?",
+    code: "def chain(iter1, iter2):\n    yield from iter1\n    yield from iter2",
+    options: ["It executes faster because it bypasses the interpreter loop", "It establishes a transparent bidirectional channel for sending data/exceptions to a sub-generator", "It only works with lists", "It automatically handles asyncio tasks"],
+    answer: 1,
+    theory: "`yield from` is not just syntactic sugar for a `for` loop. It creates a direct pipe between the caller and the sub-generator, correctly delegating `send()`, `throw()`, and `close()` calls."
+},
+{
+    q: "What is the behavior of the `else` clause in a `try...except...else` block?",
+    code: "try:\n    x = 1 / 1\nexcept ZeroDivisionError:\n    print('A')\nelse:\n    print('B')\nfinally:\n    print('C')",
+    options: ["It runs if an exception IS raised but not caught", "It runs only if NO exception is raised in the try block", "It runs regardless of exceptions", "It is deprecated in Python 3"],
+    answer: 1,
+    theory: "The `else` block executes only if the `try` block succeeds without raising any exceptions. It is useful for code that should only run if the protected code succeeds, without adding more code to the `try` block itself."
+},
+{
+    q: "What is the purpose of the `__new__` dunder method compared to `__init__`?",
+    code: "class Singleton:\n    _instance = None\n    def __new__(cls):\n        if cls._instance is None:\n            cls._instance = super().__new__(cls)\n        return cls._instance",
+    options: ["`__new__` initializes instance variables, `__init__` allocates memory", "`__new__` is an instance method, `__init__` is a class method", "`__new__` allocates memory and returns the instance, `__init__` initializes its state", "`__new__` is only used for metaclasses"],
+    answer: 2,
+    theory: "`__new__` is a static-like method responsible for actual object creation (memory allocation) and must return an instance. `__init__` receives that instance as `self` to populate its initial state."
+},
+{
+    q: "Which object is explicitly required to resolve Circular Imports gracefully in Python?",
+    code: "# a.py imports b\n# b.py imports a",
+    options: ["The GIL", "The module cache `sys.modules`", "The `importlib` library", "`__slots__`"],
+    answer: 1,
+    theory: "When a module is first imported, Python creates an empty module object in `sys.modules` before executing the code. If a circular import happens, the second import finds the partially initialized module in `sys.modules`, preventing an infinite loop (though it may cause an AttributeError if used too early)."
+},
+{
+    q: "How does CPython optimize small integer memory allocation?",
+    code: "a = 256\nb = 256\nc = 257\nd = 257\nprint(a is b, c is d)",
+    options: ["False, False", "True, True", "True, False", "False, True"],
+    answer: 2,
+    theory: "CPython pre-allocates and 'interns' an array of small integers from -5 to 256. Variables assigned these values point to the same memory addresses (hence `is` returns True). Numbers outside this range create new objects."
+},
+{
+    q: "What is a 'Metaclass' in Python?",
+    code: "class MyMeta(type):\n    pass\nclass MyClass(metaclass=MyMeta):\n    pass",
+    options: ["A class that inherits from another class dynamically", "A class used exclusively for type hinting", "A 'class of a class' that defines how a class behaves and is instantiated", "A built-in decorator for data classes"],
+    answer: 2,
+    theory: "Just as an object is an instance of a class, a class is an instance of a metaclass (by default, `type`). Metaclasses allow you to intercept class creation, modify class dictionaries, or enforce coding standards."
+},
+{
+    q: "What is the primary difference between `is` and `==`?",
+    code: "x = [1, 2, 3]\ny = [1, 2, 3]\nprint(x == y, x is y)",
+    options: ["`==` compares memory addresses, `is` compares values", "`==` compares values, `is` compares memory addresses (identity)", "They are exactly the same", "`is` only works on strings"],
+    answer: 1,
+    theory: "`==` invokes the `__eq__` method to evaluate value equality. `is` evaluates object identity, meaning it checks if both variables point to the exact same object in memory."
+},
+{
+    q: "What happens if a dictionary key is mutated after insertion?",
+    code: "key = [1, 2]\nd = {tuple(key): 'value'}\n# keys must be hashable, but what if we bypass it via custom objects?",
+    options: ["Dictionaries track mutations and update hashes", "The dictionary raises a KeyError on next access", "If the object's hash changes, the dictionary can no longer reliably locate the value", "The GIL prevents dictionary mutation"],
+    answer: 2,
+    theory: "Dictionaries rely on an object's hash value to locate it in the hash table. If a mutable object is somehow used as a key and its state (and therefore its hash) changes, the dictionary looks in the wrong bucket, losing the value."
+},
+{
+    q: "Which keyword is used to modify a variable in the nearest enclosing scope that is not global?",
+    code: "def outer():\n    x = 1\n    def inner():\n        x = 2 # How to modify outer's x?\n    inner()",
+    options: ["global", "nonlocal", "super", "enclosing"],
+    answer: 1,
+    theory: "`nonlocal` binds a variable to the nearest enclosing scope (excluding the global scope). Without it, assigning to `x` inside `inner()` would simply create a new local variable shadowing the outer one."
+},
+{
+    q: "What does `collections.defaultdict` do when a requested key is missing?",
+    code: "from collections import defaultdict\nd = defaultdict(list)\nd['missing'].append(1)",
+    options: ["Raises a KeyError", "Returns None", "Calls the provided factory function to create a default value, inserts it, and returns it", "Raises an AttributeError"],
+    answer: 2,
+    theory: "Instead of raising a KeyError, `defaultdict` executes the callable passed to its constructor (like `list`, which returns `[]`), assigns that default value to the missing key, and returns it for immediate use."
+},
+{
+    q: "What is the time complexity of checking membership `x in obj` for a Python `set` versus a `list`?",
+    code: "s = {1, 2, 3}\nl = [1, 2, 3]",
+    options: ["O(N) for set, O(1) for list", "O(1) average for set, O(N) for list", "O(log N) for both", "O(1) for both"],
+    answer: 1,
+    theory: "Sets are implemented as hash tables, allowing for O(1) average case lookups. Lists are arrays, meaning a membership check requires an O(N) linear scan."
+},
+{
+    q: "What is a 'Weak Reference' in Python?",
+    code: "import weakref\nclass Object:\n    pass\nobj = Object()\nr = weakref.ref(obj)",
+    options: ["A reference that does not increase the reference count of an object", "A reference that is cleared on every garbage collection cycle", "A reference used exclusively for integers", "A pointer in C extensions"],
+    answer: 0,
+    theory: "Weak references (`weakref` module) allow you to reference an object without increasing its reference count. If the object has no strong references left, it is garbage collected, and the weakref returns `None`. Useful for caches."
+},
+{
+    q: "What is the function of `__call__` in a class definition?",
+    code: "class Multiplier:\n    def __init__(self, factor):\n        self.factor = factor\n    def __call__(self, val):\n        return val * self.factor",
+    options: ["It runs when the object is instantiated", "It makes the instances of the class callable like functions", "It handles attribute lookup failures", "It intercepts method calls on the class"],
+    answer: 1,
+    theory: "Defining `__call__` allows an instance of a class to be invoked directly like a function (`obj()`). This is widely used in creating stateful decorators or factory objects."
+},
+{
+    q: "How does `sys.setrecursionlimit()` affect Python's execution?",
+    code: "import sys\nsys.setrecursionlimit(2000)",
+    options: ["It increases available RAM", "It changes the depth limit of the C call stack to prevent stack overflows from infinite recursion", "It allows infinite loops to break automatically", "It optimizes tail-recursive functions"],
+    answer: 1,
+    theory: "Python does not optimize tail recursion. The recursion limit acts as a safety measure to prevent C stack overflows. Changing it allows deeper recursive calls but risks a hard C-level crash if it exceeds OS stack limits."
+},
+{
+    q: "What happens when you iterate over a generator after it has yielded all its values?",
+    code: "gen = (x for x in range(2))\nlist(gen)\nprint(list(gen))",
+    options: ["[0, 1]", "[]", "Raises StopIteration", "Raises TypeError"],
+    answer: 1,
+    theory: "Generators are single-pass iterators. Once exhausted, they raise `StopIteration` behind the scenes, which looping constructs like `list()` catch and interpret as an empty sequence."
+},
+{
+    q: "In what scenario is `__del__` (the finalizer) NOT guaranteed to run?",
+    code: "class MyObj:\n    def __del__(self):\n        print('Dying')\nobj = MyObj()",
+    options: ["When the object is involved in a cyclic reference that is collected at interpreter shutdown", "When `del obj` is called", "When the reference count reaches 0", "When it is removed from a list"],
+    answer: 0,
+    theory: "CPython does not guarantee that `__del__` methods will be called for objects that still exist when the interpreter exits, especially those in cyclic isolates. Critical cleanup should be handled by context managers, not `__del__`."
+},
+{
+    q: "What is the primary role of the `typing.Protocol` class?",
+    code: "from typing import Protocol\nclass Drawable(Protocol):\n    def draw(self) -> None: ...",
+    options: ["It enforces strict runtime type checking", "It defines structural subtyping (duck typing) for static type checkers", "It creates C extensions automatically", "It replaces the ABC (Abstract Base Class) module completely"],
+    answer: 1,
+    theory: "`Protocol` supports structural subtyping. A class doesn't need to explicitly inherit from a Protocol to be considered a subtype by static analyzers (like mypy); it just needs to implement the required methods."
+},
+{
+    q: "What is the output of modifying a class attribute through an instance?",
+    code: "class Config:\n    timeout = 10\n\nc1 = Config()\nc2 = Config()\nc1.timeout = 20\nprint(c2.timeout)",
+    options: ["20", "10", "AttributeError", "None"],
+    answer: 1,
+    theory: "Assigning `c1.timeout = 20` creates a new instance attribute on `c1` that shadows the class attribute. The class attribute `Config.timeout` remains unchanged, so `c2.timeout` still resolves to 10."
+},
+{
+    q: "What happens if a module defines `__all__`?",
+    code: "# utils.py\n__all__ = ['func1']\ndef func1(): pass\ndef func2(): pass",
+    options: ["It strictly hides func2 from being imported entirely", "It prevents func2 from executing", "It restricts what is imported when using `from utils import *`", "It compiles func1 to C"],
+    answer: 2,
+    theory: "`__all__` is a list of strings defining the public API of a module. It explicitly dictates what gets imported when a client uses the wildcard `from module import *`. Explicit imports (`import func2`) still work."
+},
+{
+    q: "Why is modifying a list while iterating over it generally a bad idea?",
+    code: "lst = [1, 2, 3, 4]\nfor item in lst:\n    if item == 2:\n        lst.remove(item)",
+    options: ["It causes an immediate MemoryError", "It shifts the indices, causing the iterator to skip elements", "It creates an infinite loop", "It converts the list to a tuple implicitly"],
+    answer: 1,
+    theory: "The iterator tracks its position via an internal index. When an item is removed, all subsequent items shift left. The iterator increments its index, completely skipping the item that shifted into the current position."
+},
+{
+    q: "What does the `@classmethod` decorator do differently than `@staticmethod`?",
+    code: "class MyClass:\n    @classmethod\n    def do_work(cls):\n        pass",
+    options: ["It passes the instance as the first argument", "It requires no initial argument", "It passes the class itself as the first implicit argument", "It prevents inheritance"],
+    answer: 2,
+    theory: "`@classmethod` binds the method to the class, passing the class type as the first argument (`cls`), allowing it to instantiate the class or alter class state. `@staticmethod` passes neither the instance nor the class."
+},
+{
+    q: "How does Python handle Multiple Inheritance of the same base class at different levels?",
+    code: "class A: pass\nclass B(A): pass\nclass C(A): pass\nclass D(B, C): pass",
+    options: ["It creates two separate instances of A (like C++)", "It uses MRO (C3 Linearization) to ensure A is initialized exactly once, at the end of the chain", "TypeError is thrown", "It ignores C's inheritance of A"],
+    answer: 1,
+    theory: "Unlike C++ which requires virtual inheritance to avoid the diamond problem, Python's C3 Linearization mathematically flattens the hierarchy, ensuring every base class is visited exactly once in a predictable order."
+}
 ];
 
 let currentQuestionIndex = 0;
@@ -399,9 +411,11 @@ const elements = {
     snippetContainer: document.getElementById('code-snippet-container'),
     snippetCode: document.getElementById('code-snippet'),
     optionsContainer: document.getElementById('options-container'),
+    prevBtn: document.getElementById('prev-btn'),
     nextBtn: document.getElementById('next-btn'),
     scoreDisplay: document.getElementById('score-display'),
-    reviewContainer: document.getElementById('review-container')
+    reviewContainer: document.getElementById('review-container'),
+    inlineFeedback: document.getElementById('inline-feedback')
 };
 
 function startTimer() {
@@ -421,7 +435,7 @@ function updateTimerDisplay() {
     const seconds = timerLeft % 60;
     elements.timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     
-    if (timerLeft < 300) { // Under 5 minutes
+    if (timerLeft < 300) { 
         elements.timer.classList.add('warning');
     }
 }
@@ -431,6 +445,13 @@ function loadQuestion() {
     elements.progressText.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
     elements.questionText.textContent = q.q;
     
+    // Manage Prev Button State
+    elements.prevBtn.disabled = currentQuestionIndex === 0;
+
+    // Reset Inline Feedback
+    elements.inlineFeedback.style.display = 'none';
+    elements.inlineFeedback.className = 'inline-feedback';
+
     if (q.code) {
         elements.snippetContainer.style.display = 'block';
         elements.snippetCode.textContent = q.code;
@@ -450,9 +471,14 @@ function loadQuestion() {
         
         if (userAnswers[currentQuestionIndex] === index) {
             input.checked = true;
+            showInlineFeedback(index);
         }
 
-        input.onchange = () => { elements.nextBtn.disabled = false; };
+        input.onchange = () => { 
+            userAnswers[currentQuestionIndex] = index;
+            elements.nextBtn.disabled = false; 
+            showInlineFeedback(index);
+        };
         
         label.appendChild(input);
         label.appendChild(document.createTextNode(opt));
@@ -463,12 +489,31 @@ function loadQuestion() {
     elements.nextBtn.disabled = userAnswers[currentQuestionIndex] === null;
 }
 
-function handleNext() {
-    const selected = document.querySelector('input[name="option"]:checked');
-    if (selected) {
-        userAnswers[currentQuestionIndex] = parseInt(selected.value);
-    }
+function showInlineFeedback(selectedIndex) {
+    const q = questions[currentQuestionIndex];
+    const isCorrect = selectedIndex === q.answer;
+    
+    elements.inlineFeedback.style.display = 'block';
+    elements.inlineFeedback.className = `inline-feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+    
+    const statusText = isCorrect ? '✅ Correct' : '❌ Incorrect';
+    const statusColor = isCorrect ? 'var(--accent)' : 'var(--danger)';
 
+    elements.inlineFeedback.innerHTML = `
+        <div class="feedback-header" style="color: ${statusColor}">${statusText}</div>
+        <div style="margin-bottom: 0.75rem;"><strong>Correct Answer:</strong> ${q.options[q.answer]}</div>
+        <div style="font-size: 0.95rem; color: #cbd5e1;"><strong>Theory:</strong> ${q.theory}</div>
+    `;
+}
+
+function handlePrev() {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        loadQuestion();
+    }
+}
+
+function handleNext() {
     if (currentQuestionIndex < questions.length - 1) {
         currentQuestionIndex++;
         loadQuestion();

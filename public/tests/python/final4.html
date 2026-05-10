@@ -39,16 +39,24 @@
         pre { background: #0b1120; padding: 1rem; border-radius: 8px; overflow-x: auto; margin-bottom: 1.5rem; border: 1px solid #334155; }
         code { font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.9rem; color: #e2e8f0; }
 
-        .options-grid { display: grid; gap: 1rem; margin-bottom: 2rem; }
+        .options-grid { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
         
         .option-label { display: flex; align-items: flex-start; padding: 1rem; background: rgba(245, 158, 11, 0.05); border: 1px solid #334155; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
         .option-label:hover { border-color: var(--primary); background: rgba(245, 158, 11, 0.1); }
         
         input[type="radio"] { margin-right: 1rem; margin-top: 0.25rem; transform: scale(1.2); accent-color: var(--primary); flex-shrink: 0; }
 
+        .btn-group { display: flex; gap: 1rem; margin-top: 1.5rem; }
         .btn { background: var(--primary); color: #0f172a; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; display: inline-flex; align-items: center; justify-content: center; width: 100%; }
         .btn:hover { background: var(--primary-hover); }
         .btn:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
+        .btn-secondary { background: #334155; color: #f8fafc; }
+        .btn-secondary:hover { background: #475569; }
+
+        /* Instant Feedback Styles */
+        .instant-feedback { margin-top: 1.5rem; padding: 1rem; border-radius: 8px; font-size: 0.95rem; display: none; transition: all 0.3s ease; }
+        .feedback-correct { background: #05966922; border-left: 4px solid var(--accent); }
+        .feedback-incorrect { background: #e11d4822; border-left: 4px solid var(--danger); }
 
         #result-screen { display: none; }
         .score-display { text-align: center; font-size: 3rem; font-weight: bold; color: var(--accent); margin: 2rem 0; }
@@ -68,7 +76,7 @@
     <header>
         <div>
             <h1>Advanced Programming using Python</h1>
-            <div class="subtitle">PGCP-AI February 2026 Assessment [cite: 5, 6]</div>
+            <div class="subtitle">PGCP-AI Assessment Review</div>
         </div>
         <div class="timer" id="timer">60:00</div>
     </header>
@@ -78,8 +86,15 @@
             <span class="progress-text" id="progress-text">Question 1 of 40</span>
             <div class="question-text" id="question-text"></div>
             <pre id="code-snippet-container" style="display:none;"><code id="code-snippet"></code></pre>
+            
             <div class="options-grid" id="options-container"></div>
-            <button class="btn" id="next-btn" onclick="handleNext()">Next Question</button>
+
+            <div id="instant-feedback" class="instant-feedback"></div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="prev-btn" onclick="handlePrev()" style="display: none;">Previous</button>
+                <button class="btn" id="next-btn" onclick="handleNext()">Next Question</button>
+            </div>
         </div>
     </div>
 
@@ -87,265 +102,266 @@
         <div class="card">
             <h2>Assessment Complete</h2>
             <div class="score-display" id="score-display">0 / 40</div>
-            <p style="text-align: center; margin-bottom: 2rem;">Review your answers below.</p>
+            <p style="text-align: center; margin-bottom: 2rem;">Review your full summary below.</p>
             <div id="review-container"></div>
         </div>
     </div>
 </div>
 
 <script>
+// Re-using the same 40 robust questions provided earlier
 const questions = [
     {
         q: "What is the expected output of the following control flow snippet utilizing `break`?",
         code: "for i in range(3):\n    if i == 2:\n        break\n    print(i, end='')\nelse:\n    print('Done')",
         options: ["01", "012", "01Done", "012Done"],
         answer: 0,
-        theory: "The uses of Break & Continue dictate flow control[cite: 44, 45]. In Python, the `else` block of a loop executes only if the loop terminates normally without encountering a `break`. Since it breaks at `i == 2`, 'Done' is never printed."
+        theory: "The uses of Break & Continue dictate flow control. In Python, the `else` block of a loop executes only if the loop terminates normally without encountering a `break`. Since it breaks at `i == 2`, 'Done' is never printed."
     },
     {
         q: "When using string slices, what is the output of the following code?",
         code: "text = 'PGCP-AI'\nprint(text[-1:-4:-1])",
         options: ["-AI", "IA-", "IA", "P-I"],
         answer: 1,
-        theory: "String slices can use negative step values[cite: 66]. The slice `[-1:-4:-1]` starts at the last character ('I'), stops before the -4th character ('P'), stepping backwards, resulting in 'IA-'."
+        theory: "String slices can use negative step values. The slice `[-1:-4:-1]` starts at the last character ('I'), stops before the -4th character ('P'), stepping backwards, resulting in 'IA-'."
     },
     {
         q: "Based on assigning multiple values at once, what happens in this tuple assignment?",
         code: "a, b = 1, 2\na, b = b, a + b\nprint(a, b)",
         options: ["2, 3", "2, 4", "1, 2", "SyntaxError"],
         answer: 0,
-        theory: "Assigning multiple values at once evaluates the right side entirely before making assignments[cite: 64]. `a` becomes the old `b` (2), and `b` becomes the old `a` + old `b` (1+2=3)."
+        theory: "Assigning multiple values at once evaluates the right side entirely before making assignments. `a` becomes the old `b` (2), and `b` becomes the old `a` + old `b` (1+2=3)."
     },
     {
         q: "When modifying dictionaries, what happens if you mutate a dictionary while iterating over it?",
         code: "d = {'a': 1, 'b': 2}\nfor k in d:\n    if k == 'a':\n        del d[k]",
         options: ["The dictionary removes 'a' gracefully.", "RuntimeError: dictionary changed size during iteration", "KeyError", "It enters an infinite loop."],
         answer: 1,
-        theory: "Deleting items from dictionaries [cite: 91] while iterating over them natively raises a RuntimeError. You must iterate over a copy of the keys (e.g., `list(d.keys())`) to delete items safely."
+        theory: "Deleting items from dictionaries while iterating over them natively raises a RuntimeError. You must iterate over a copy of the keys (e.g., `list(d.keys())`) to delete items safely."
     },
     {
         q: "What is the output of mapping lists with list comprehension in this snippet?",
         code: "lst = [1, 2, 3]\nres = [x * 2 for x in lst if x > 1]\nprint(res)",
         options: ["[2, 4, 6]", "[4, 6]", "[2, 3]", "TypeError"],
         answer: 1,
-        theory: "Mapping lists [cite: 124] using comprehensions applies the condition first. Only 2 and 3 are > 1, so they are multiplied by 2, yielding 4 and 6."
+        theory: "Mapping lists using comprehensions applies the condition first. Only 2 and 3 are > 1, so they are multiplied by 2, yielding 4 and 6."
     },
     {
         q: "When defining a function with optional and named arguments, what is the pitfall of the following default argument?",
         code: "def append_val(val, target=[]):\n    target.append(val)\n    return target\nprint(append_val(1))\nprint(append_val(2))",
         options: ["[1], [2]", "[1], [1, 2]", "[1, 2], [1, 2]", "TypeError"],
         answer: 1,
-        theory: "When using Optional and Named Arguments[cite: 143], mutable default arguments (like `[]`) are evaluated only once at definition time. The list is shared across all calls."
+        theory: "When using Optional and Named Arguments, mutable default arguments (like `[]`) are evaluated only once at definition time. The list is shared across all calls."
     },
     {
         q: "Regarding global and local variables, what will this code print?",
         code: "x = 10\ndef modify():\n    global x\n    x = 20\nmodify()\nprint(x)",
         options: ["10", "20", "UnboundLocalError", "SyntaxError"],
         answer: 1,
-        theory: "Global and local variables [cite: 142] are strictly scoped. The `global` keyword allows a function to explicitly modify a variable in the module's global scope, changing 10 to 20."
+        theory: "Global and local variables are strictly scoped. The `global` keyword allows a function to explicitly modify a variable in the module's global scope, changing 10 to 20."
     },
     {
         q: "What is the output of this anonymous function (lambda) inside a map operation?",
         code: "funcs = list(map(lambda x: x**2, [1, 2, 3]))\nprint(funcs)",
         options: ["[1, 4, 9]", "<map object>", "[1, 2, 3]", "SyntaxError"],
         answer: 0,
-        theory: "Anonymous functions [cite: 141] like `lambda` can be used inline. `map` returns an iterator, but wrapping it in `list()` eagerly evaluates it, returning the squared elements [1, 4, 9]."
+        theory: "Anonymous functions like `lambda` can be used inline. `map` returns an iterator, but wrapping it in `list()` eagerly evaluates it, returning the squared elements [1, 4, 9]."
     },
     {
         q: "In the context of the ROT-13 cipher assignment, which dictionary method is most appropriate to retrieve a value and provide a fallback if the key isn't found?",
         options: ["key.fetch()", "key.get(char, char)", "key.setdefault()", "key.find()"],
         answer: 1,
-        theory: "When defining dictionaries for a Caesar cipher[cite: 92, 95], `dict.get(key, default)` safely returns the encrypted character or the original character (like spaces/punctuation) if the key is absent."
+        theory: "When defining dictionaries for a Caesar cipher, `dict.get(key, default)` safely returns the encrypted character or the original character (like spaces/punctuation) if the key is absent."
     },
     {
         q: "How does Python handle Method Resolution Order (MRO) when implementing inheritance?",
         options: ["Depth-first, right-to-left.", "Depth-first, left-to-right.", "C3 Linearization algorithm (which ensures monotonicity).", "Breadth-first search."],
         answer: 2,
-        theory: "When using attributes and inheritance[cite: 189], Python 3 strictly uses the C3 Linearization algorithm to determine the Method Resolution Order (MRO) to prevent diamond inheritance conflicts."
+        theory: "When using attributes and inheritance, Python 3 strictly uses the C3 Linearization algorithm to determine the Method Resolution Order (MRO) to prevent diamond inheritance conflicts."
     },
     {
         q: "According to Python's data hiding conventions, how are 'private' instance variables properly declared?",
         options: ["By using the `private` keyword.", "By prefixing the variable name with a single underscore (e.g., `_var`).", "By prefixing the variable name with double underscores (e.g., `__var`), triggering name mangling.", "By using the `@private` decorator."],
         answer: 2,
-        theory: "Data hiding [cite: 191] in Python is implemented via name mangling. Prefixing an attribute with double underscores `__` changes its internal name to `_ClassName__attribute` to prevent accidental access."
+        theory: "Data hiding in Python is implemented via name mangling. Prefixing an attribute with double underscores `__` changes its internal name to `_ClassName__attribute` to prevent accidental access."
     },
     {
         q: "What happens when a `return` statement executes inside the `finally` clause of a `try` block?",
         options: ["It raises a SyntaxError.", "It executes only if no exception was raised.", "It completely overrides any exception raised or return statement executed in the `try` clause.", "It is ignored if the `try` block already returned a value."],
         answer: 2,
-        theory: "If there is a 'return' statement in both the try clause and finally clause[cite: 244], the `finally` block's return statement overrides any exception or previous return, silently swallowing errors."
+        theory: "If there is a 'return' statement in both the try clause and finally clause, the `finally` block's return statement overrides any exception or previous return, silently swallowing errors."
     },
     {
         q: "In Object Oriented Python, what is the output of the following overriding behavior?",
         code: "class Parent:\n    def show(self): return 'P'\nclass Child(Parent):\n    def show(self): return super().show() + 'C'\nprint(Child().show())",
         options: ["P", "C", "PC", "TypeError"],
         answer: 2,
-        theory: "Overloading & Overriding [cite: 190] allows child classes to extend parent functionality. `super().show()` calls the parent's method ('P') and appends 'C'."
+        theory: "Overloading & Overriding allows child classes to extend parent functionality. `super().show()` calls the parent's method ('P') and appends 'C'."
     },
     {
         q: "How do Decorators modify the behavior of a function?",
         options: ["By recompiling the function into C code.", "By taking the function as an argument and returning a new wrapper function that extends its behavior.", "By inheriting the function into a new class.", "By parsing regular expressions inside the function."],
         answer: 1,
-        theory: "Decorators [cite: 188] are higher-order functions that wrap another function, allowing you to execute code before and after the wrapped function runs without modifying its source code."
+        theory: "Decorators are higher-order functions that wrap another function, allowing you to execute code before and after the wrapped function runs without modifying its source code."
     },
     {
         q: "When splitting strings into individual grades, which method removes leading and trailing whitespace?",
         options: ["strip()", "trim()", "clean()", "split()"],
         answer: 0,
-        theory: "When splitting strings and converting to integers[cite: 242], strings often contain whitespace. The `.strip()` method is the standard built-in function to remove leading/trailing whitespace."
+        theory: "When splitting strings and converting to integers, strings often contain whitespace. The `.strip()` method is the standard built-in function to remove leading/trailing whitespace."
     },
     {
         q: "What does the `pass` statement do?",
         options: ["It skips the current loop iteration.", "It terminates the program.", "It is a null operation used as a placeholder where a statement is syntactically required.", "It forces a variable to bypass local scoping."],
         answer: 2,
-        theory: "The `pass` statement [cite: 59] is a null operation. It does nothing and is used when a statement is required syntactically but no code needs to be executed."
+        theory: "The `pass` statement is a null operation. It does nothing and is used when a statement is required syntactically but no code needs to be executed."
     },
     {
         q: "What is the result of using a built-in function like `dir()` on a newly instantiated object?",
         options: ["It lists the memory address of the object.", "It returns the string representation of the object.", "It returns a list of valid attributes and methods belonging to the object.", "It deletes the object from memory."],
         answer: 2,
-        theory: "Using type, str, dir, and Other Built-In Functions[cite: 144], the `dir()` function is heavily used for debugging. It returns a sorted list of names representing the object's attributes and methods."
+        theory: "Using type, str, dir, and Other Built-In Functions, the `dir()` function is heavily used for debugging. It returns a sorted list of names representing the object's attributes and methods."
     },
     {
         q: "What is the expected behavior of this recursive factorial algorithm?",
         code: "def fact(n):\n    if n == 0: return 1\n    return n * fact(n-1)\nprint(fact(3))",
         options: ["3", "6", "9", "RecursionError"],
         answer: 1,
-        theory: "Writing a program for factorial using recursion [cite: 260] requires a base case. Here `fact(0)` returns 1. The calls unfold as 3 * 2 * 1 * 1 = 6."
+        theory: "Writing a program for factorial using recursion requires a base case. Here `fact(0)` returns 1. The calls unfold as 3 * 2 * 1 * 1 = 6."
     },
     {
         q: "When working with Numpy arrays versus Python lists, what is a primary advantage of Numpy?",
         options: ["Numpy arrays can hold mixed data types simultaneously.", "Numpy arrays support vectorized member-wise operations without explicit looping.", "Numpy lists are strictly immutable.", "Numpy does not require importing libraries."],
         answer: 1,
-        theory: "Understanding NumPy arrays VS Python lists [cite: 276] reveals that NumPy provides efficient vectorization, allowing member wise addition, multiplication, and subtraction [cite: 269] directly on the array."
+        theory: "Understanding NumPy arrays VS Python lists reveals that NumPy provides efficient vectorization, allowing member wise addition, multiplication, and subtraction directly on the array."
     },
     {
         q: "In Pandas, what does the `pd.read_table()` function default to if `sep` is not explicitly provided?",
         options: ["Comma (,)", "Pipe (|)", "Tab (\\t)", "Space ( )"],
         answer: 2,
-        theory: "Working with Pandas and loading datasets [cite: 265, 272] uses `read_table`. Unlike `read_csv` which defaults to commas, `read_table` defaults to tab-separated values."
+        theory: "Working with Pandas and loading datasets uses `read_table`. Unlike `read_csv` which defaults to commas, `read_table` defaults to tab-separated values."
     },
     {
         q: "When grouping data in Pandas to find average views, which method chain is correct?",
         options: ["df.groupby('profession')['views'].mean()", "df.aggregate('profession', 'views')", "df.group('profession').average('views')", "df.mean('views').groupby('profession')"],
         answer: 0,
-        theory: "Performing grouping and aggregation operations [cite: 287] in Pandas uses the `.groupby()` method followed by selecting the target column and applying the aggregation function like `.mean()`."
+        theory: "Performing grouping and aggregation operations in Pandas uses the `.groupby()` method followed by selecting the target column and applying the aggregation function like `.mean()`."
     },
     {
         q: "What is the primary difference between Seaborn and standard Matplotlib?",
         options: ["Seaborn is exclusively for 3D plotting.", "Seaborn provides a high-level statistical interface over Matplotlib, automatically handling complex aggregations and attractive defaults.", "Matplotlib is an interactive framework, while Seaborn is static.", "Seaborn cannot run in a Jupyter Notebook."],
         answer: 1,
-        theory: "Comparing static (Matplotlib) and statistical (Seaborn) visualizations[cite: 302], Seaborn builds on Matplotlib to provide a higher-level, statistically-oriented API with built-in themes."
+        theory: "Comparing static (Matplotlib) and statistical (Seaborn) visualizations, Seaborn builds on Matplotlib to provide a higher-level, statistically-oriented API with built-in themes."
     },
     {
         q: "What is Plotly primarily known for compared to Matplotlib?",
         options: ["It renders plots entirely in C++.", "It generates interactive, web-browser friendly visualisations.", "It is only compatible with R.", "It strictly requires a paid license for basic charts."],
         answer: 1,
-        theory: "Working with ggplot, plotly [cite: 291] introduces interactive plotting. Plotly generates interactive HTML/JS widgets allowing users to hover, zoom, and pan[cite: 302]."
+        theory: "Working with ggplot, plotly introduces interactive plotting. Plotly generates interactive HTML/JS widgets allowing users to hover, zoom, and pan."
     },
     {
         q: "When executing SQL commands using a Python database connector (like `sqlite3`), what is required to permanently save an `INSERT` operation?",
         options: ["cursor.execute()", "db.close()", "db.commit()", "cursor.fetch()"],
         answer: 2,
-        theory: "Working on DB using Python [cite: 307] and performing basic CRUD operations [cite: 317] requires calling `.commit()` on the connection object to persist data modifications safely."
+        theory: "Working on DB using Python and performing basic CRUD operations requires calling `.commit()` on the connection object to persist data modifications safely."
     },
     {
         q: "What distinguishes Flask from Django in Python web development?",
         options: ["Django is a lightweight API framework, Flask is full-stack.", "Flask is a lightweight microframework, while Django is a full-stack framework with built-in ORM and Admin panels.", "Flask only supports static HTML.", "Django is no longer supported in Python 3."],
         answer: 1,
-        theory: "Web based frameworks: Flask and Django [cite: 331] serve different needs. The syllabus explicitly highlights understanding the difference between Lightweight APIs (Flask) and Full-stack frameworks (Django)[cite: 337, 338]."
+        theory: "Web based frameworks: Flask and Django serve different needs. The syllabus explicitly highlights understanding the difference between Lightweight APIs (Flask) and Full-stack frameworks (Django)."
     },
     {
         q: "What is the primary purpose of the `requests` library in Python?",
         options: ["To parse complex XML documents.", "To create web server endpoints.", "To send HTTP requests easily and receive responses.", "To bypass firewalls."],
         answer: 2,
-        theory: "Request and URL-Lib [cite: 342] are used to collect data from external web sources[cite: 347]. `requests` abstracts the complexities of making HTTP calls."
+        theory: "Request and URL-Lib are used to collect data from external web sources. `requests` abstracts the complexities of making HTTP calls."
     },
     {
         q: "What design pattern does the Scrapy framework utilize to parse websites efficiently?",
         options: ["Synchronous blocking loops.", "Asynchronous spiders that yield HTTP requests and parsed items.", "A built-in headless Chrome browser instance.", "Manual string slicing strictly without regular expressions."],
         answer: 1,
-        theory: "Working with scrappy [cite: 343] (Scrapy) involves building 'Spiders'. These spiders work asynchronously to crawl web pages, extract data, and follow links efficiently."
+        theory: "Working with scrappy (Scrapy) involves building 'Spiders'. These spiders work asynchronously to crawl web pages, extract data, and follow links efficiently."
     },
     {
         q: "Which built-in Python module is commonly used to write regular expressions?",
         options: ["regex", "re", "regexp", "parse"],
         answer: 1,
-        theory: "Regular Expressions Using python [cite: 145] rely on the built-in `re` module, which provides functions like `re.match()`, `re.search()`, and `re.sub()`."
+        theory: "Regular Expressions Using python rely on the built-in `re` module, which provides functions like `re.match()`, `re.search()`, and `re.sub()`."
     },
     {
         q: "What will this nested loop snippet output?",
         code: "for i in range(2):\n    for j in range(2):\n        if i == j:\n            continue\n        print(f'{i}{j}', end=' ')",
         options: ["00 11", "01 10", "01 10 11", "SyntaxError"],
         answer: 1,
-        theory: "Nested loops [cite: 43] combined with `continue`[cite: 45]. When `i == j` (at 0,0 and 1,1), `continue` skips the print. It only prints when i != j (01, 10)."
+        theory: "Nested loops combined with `continue`. When `i == j` (at 0,0 and 1,1), `continue` skips the print. It only prints when i != j (01, 10)."
     },
     {
         q: "When formatting strings, what does `f'{x:.2f}'` do if x is 3.14159?",
         options: ["Truncates to 3", "Rounds to 3.14", "Pads to 3.1415900", "Raises a formatting error"],
         answer: 1,
-        theory: "Formatting Strings [cite: 65] with f-strings allows precise format specifiers. `:.2f` instructs Python to format the float to exactly two decimal places, rounding 3.14159 to 3.14."
+        theory: "Formatting Strings with f-strings allows precise format specifiers. `:.2f` instructs Python to format the float to exactly two decimal places, rounding 3.14159 to 3.14."
     },
     {
         q: "What happens if you define a User Defined Exception but do not inherit from the base `Exception` class?",
         options: ["It functions normally.", "It raises a TypeError when you try to 'raise' it.", "It defaults to inheriting from Exception automatically.", "It becomes a Warning instead of an Error."],
         answer: 1,
-        theory: "User Defined Exceptions [cite: 239] must inherit from the `BaseException` class (usually `Exception`). Raising an object that doesn't inherit from this hierarchy causes a TypeError."
+        theory: "User Defined Exceptions must inherit from the `BaseException` class (usually `Exception`). Raising an object that doesn't inherit from this hierarchy causes a TypeError."
     },
     {
         q: "In Object-Oriented Programming, what does the term 'Polymorphism' refer to in Python?",
         options: ["The ability to inherit from multiple parent classes.", "Data hiding using double underscores.", "The ability of different objects to respond to the same method call in their own specific way.", "The ability to define multiple functions with the same name but different parameter counts."],
         answer: 2,
-        theory: "Native Data types and OOPs concepts [cite: 183, 185] heavily rely on Polymorphism. Overriding [cite: 190] enables child classes to implement methods differently, yet be called uniformly."
+        theory: "Native Data types and OOPs concepts heavily rely on Polymorphism. Overriding enables child classes to implement methods differently, yet be called uniformly."
     },
     {
         q: "What built-in function allows you to quickly evaluate whether an object belongs to a specific class?",
         options: ["is_type()", "isinstance()", "typeof()", "checkclass()"],
         answer: 1,
-        theory: "When working with Class and object Object References[cite: 187, 188], `isinstance(obj, Class)` is the standard, safe way to check types, respecting inheritance hierarchies."
+        theory: "When working with Class and object Object References, `isinstance(obj, Class)` is the standard, safe way to check types, respecting inheritance hierarchies."
     },
     {
         q: "What is a core benefit of using a 'Tuple' over a 'List'?",
         options: ["Tuples have a larger set of built-in methods.", "Tuples are immutable, making them hashable and usable as dictionary keys.", "Tuples can store unlimited elements, unlike lists.", "Tuples natively support multi-threading."],
         answer: 1,
-        theory: "Working with Tuples [cite: 168] reveals they are immutable. This immutability ensures they are hashable, which is a strict requirement for serving as keys in Python Dictionaries[cite: 86]."
+        theory: "Working with Tuples reveals they are immutable. This immutability ensures they are hashable, which is a strict requirement for serving as keys in Python Dictionaries."
     },
     {
         q: "When dealing with data integrity in databases, what SQL constraint prevents duplicate email registrations?",
         options: ["PRIMARY KEY", "UNIQUE", "NOT NULL", "Both A and B"],
         answer: 3,
-        theory: "Recognizing common data integrity issues [cite: 328] requires database constraints. Both PRIMARY KEY and UNIQUE constraints enforce uniqueness, preventing duplicate entries during insert operations[cite: 327]."
+        theory: "Recognizing common data integrity issues requires database constraints. Both PRIMARY KEY and UNIQUE constraints enforce uniqueness, preventing duplicate entries during insert operations."
     },
     {
         q: "What is a primary ethical consideration when engaging in web scraping?",
         options: ["Using the fastest possible connection.", "Parsing HTML instead of XML.", "Respecting the website's robots.txt file and avoiding DDOS-like request rates.", "Only scraping dark-mode websites."],
         answer: 2,
-        theory: "Learning ethical considerations and limitations of web scraping [cite: 348] is critical. Ignoring `robots.txt` or spamming servers with requests can cause legal issues and server outages."
+        theory: "Learning ethical considerations and limitations of web scraping is critical. Ignoring `robots.txt` or spamming servers with requests can cause legal issues and server outages."
     },
     {
         q: "When loading real-world datasets from URLs using Pandas, how does Pandas determine the file format?",
         options: ["It exclusively reads CSVs.", "It infers the format from the URL extension or parses standard text formats automatically, but allows explicit engines to be defined.", "It downloads the file as a PDF.", "It strictly requires a local file path."],
         answer: 1,
-        theory: "Loading real-world datasets from URLs [cite: 278] is natively supported by Pandas functions like `read_csv` or `read_table`[cite: 272], which seamlessly handle HTTP streams and infer formatting."
+        theory: "Loading real-world datasets from URLs is natively supported by Pandas functions like `read_csv` or `read_table`, which seamlessly handle HTTP streams and infer formatting."
     },
     {
         q: "Which module from the Python standard library is used to capture and record detailed runtime events and errors instead of using standard print statements?",
         options: ["record", "sys", "logging", "debug"],
         answer: 2,
-        theory: "Logging using Python [cite: 258] is facilitated by the `logging` module, which categorizes events by severity (DEBUG, INFO, WARNING, ERROR, CRITICAL) for better maintenance."
+        theory: "Logging using Python is facilitated by the `logging` module, which categorizes events by severity (DEBUG, INFO, WARNING, ERROR, CRITICAL) for better maintenance."
     },
     {
         q: "When calculating the Net Salary for a Salaried Employee as per the assignment, what is the correct formula sequence?",
         options: ["Net sal = sal + Da - Hra - Pf", "Net sal = sal + Da + Hra - Pf", "Net sal = sal - Da - Hra - Pf", "Net sal = sal * Da * Hra / Pf"],
         answer: 1,
-        theory: "The specific formula provided in the lab assignments [cite: 231] states: `Net sal=sal+da+hra-pf`. It adds the allowances and subtracts the provident fund deduction."
+        theory: "The specific formula provided in the lab assignments states: `Net sal=sal+da+hra-pf`. It adds the allowances and subtracts the provident fund deduction."
     },
     {
         q: "How do you correctly swap two tuple variables in Python?",
         code: "tuple1 = (11, 22)\ntuple2 = (99, 88)\n# Insert swap code here",
         options: ["tuple1.swap(tuple2)", "tuple1, tuple2 = tuple2, tuple1", "swap(tuple1, tuple2)", "tuple1 = tuple2.copy(); tuple2 = tuple1.copy()"],
         answer: 1,
-        theory: "Swapping tuples [cite: 173, 175] utilizes Python's tuple packing and unpacking mechanism, effectively assigning multiple values at once [cite: 64] without needing a temporary variable."
+        theory: "Swapping tuples utilizes Python's tuple packing and unpacking mechanism, effectively assigning multiple values at once without needing a temporary variable."
     }
 ];
 
@@ -364,7 +380,9 @@ const elements = {
     snippetContainer: document.getElementById('code-snippet-container'),
     snippetCode: document.getElementById('code-snippet'),
     optionsContainer: document.getElementById('options-container'),
+    prevBtn: document.getElementById('prev-btn'),
     nextBtn: document.getElementById('next-btn'),
+    feedbackContainer: document.getElementById('instant-feedback'),
     scoreDisplay: document.getElementById('score-display'),
     reviewContainer: document.getElementById('review-container')
 };
@@ -396,6 +414,12 @@ function loadQuestion() {
     elements.progressText.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
     elements.questionText.textContent = q.q;
 
+    // Handle Prev Button visibility
+    elements.prevBtn.style.display = currentQuestionIndex === 0 ? 'none' : 'inline-flex';
+
+    // Hide feedback initially for the new question
+    elements.feedbackContainer.style.display = 'none';
+
     if (q.code) {
         elements.snippetContainer.style.display = 'block';
         elements.snippetCode.textContent = q.code;
@@ -407,6 +431,7 @@ function loadQuestion() {
     q.options.forEach((opt, index) => {
         const label = document.createElement('label');
         label.className = 'option-label';
+        label.id = `option-label-${index}`;
         
         const input = document.createElement('input');
         input.type = 'radio';
@@ -417,7 +442,12 @@ function loadQuestion() {
             input.checked = true;
         }
 
-        input.onchange = () => { elements.nextBtn.disabled = false; };
+        input.onchange = (e) => { 
+            const selectedVal = parseInt(e.target.value);
+            userAnswers[currentQuestionIndex] = selectedVal;
+            elements.nextBtn.disabled = false; 
+            showInstantFeedback(selectedVal);
+        };
         
         label.appendChild(input);
         
@@ -430,19 +460,58 @@ function loadQuestion() {
 
     elements.nextBtn.textContent = currentQuestionIndex === questions.length - 1 ? 'Submit Assessment' : 'Next Question';
     elements.nextBtn.disabled = userAnswers[currentQuestionIndex] === null;
+
+    // If already answered (via returning from previous), show the feedback immediately
+    if (userAnswers[currentQuestionIndex] !== null) {
+        showInstantFeedback(userAnswers[currentQuestionIndex]);
+    }
+}
+
+function showInstantFeedback(selectedIndex) {
+    const q = questions[currentQuestionIndex];
+    const isCorrect = selectedIndex === q.answer;
+    
+    // Display feedback container
+    elements.feedbackContainer.style.display = 'block';
+    elements.feedbackContainer.className = `instant-feedback ${isCorrect ? 'feedback-correct' : 'feedback-incorrect'}`;
+    
+    // Inject HTML
+    let feedbackHtml = `<div style="font-weight: bold; margin-bottom: 0.5rem; color: ${isCorrect ? 'var(--accent)' : 'var(--danger)'}">
+        ${isCorrect ? '✓ Correct!' : '✗ Incorrect.'}
+    </div>`;
+    feedbackHtml += `<div><strong>Explanation:</strong> ${q.theory}</div>`;
+    
+    elements.feedbackContainer.innerHTML = feedbackHtml;
+
+    // Highlight the labels visually
+    const labels = elements.optionsContainer.querySelectorAll('.option-label');
+    labels.forEach((label, idx) => {
+        if (idx === q.answer) {
+            label.style.borderColor = 'var(--accent)';
+            label.style.background = 'rgba(16, 185, 129, 0.1)';
+        } else if (idx === selectedIndex && !isCorrect) {
+            label.style.borderColor = 'var(--danger)';
+            label.style.background = 'rgba(239, 68, 68, 0.1)';
+        } else {
+            label.style.borderColor = '#334155';
+            label.style.background = 'rgba(245, 158, 11, 0.05)';
+        }
+    });
 }
 
 function handleNext() {
-    const selected = document.querySelector('input[name="option"]:checked');
-    if (selected) {
-        userAnswers[currentQuestionIndex] = parseInt(selected.value);
-    }
-
     if (currentQuestionIndex < questions.length - 1) {
         currentQuestionIndex++;
         loadQuestion();
     } else {
         finishQuiz();
+    }
+}
+
+function handlePrev() {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        loadQuestion();
     }
 }
 

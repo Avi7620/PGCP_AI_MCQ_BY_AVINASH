@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Analytics PGCP-AI: Advanced MCQ Exam</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .timer {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #d32f2f;
+        }
+        .question-number {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .question-text {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+        .snippet {
+            background-color: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: Consolas, monospace;
+            white-space: pre-wrap;
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1em;
+            text-align: left;
+        }
+        .option:hover:not(:disabled) {
+            background: #eceff1;
+            border-color: #cfd8dc;
+        }
+        .option:disabled {
+            cursor: not-allowed;
+        }
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .option.wrong {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-left: 5px solid #007bff;
+            border-radius: 4px;
+            display: none;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        button.nav-btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button.nav-btn:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+        button.nav-btn:disabled {
+            background-color: #b0bec5;
+            cursor: not-allowed;
+        }
+        .review-section {
+            display: none;
+        }
+        .review-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="quiz-container">
+    <header>
+        <h2>Data Analytics PGCP-AI Exam</h2>
+        <div class="timer" id="timer">Time Left: 60:00</div>
+    </header>
+
+    <div id="quiz-body">
+        <div class="question-number" id="q-num">Question 1 of 40</div>
+        <div class="question-text" id="q-text"></div>
+        <div id="q-snippet-container"></div>
+        <div class="options" id="options-container"></div>
+        <div class="explanation" id="explanation"></div>
+
+        <div class="navigation">
+            <button class="nav-btn" id="prev-btn" onclick="prevQuestion()" disabled>Previous</button>
+            <button class="nav-btn" id="next-btn" onclick="nextQuestion()">Next</button>
+            <button class="nav-btn" id="submit-btn" onclick="submitQuiz()" style="display:none; background-color: #28a745;">Submit Quiz</button>
+        </div>
+    </div>
+</div>
+
+<div class="container review-section" id="review-container">
+    <h2>Exam Review</h2>
+    <h3 id="final-score"></h3>
+    <div id="review-list"></div>
+    <button class="nav-btn" onclick="location.reload()" style="margin-top: 20px;">Restart Quiz</button>
+</div>
+
+<script>
+    const questions = [
+        {
+            text: "During which phase of the Data Analytics Lifecycle do you assess whether you have the necessary resources, data, and compute power to execute the project?",
+            snippet: "",
+            options: ["Data Preparation", "Discovery", "Model Planning", "Acceptance and Operation"],
+            correct: 1,
+            explanation: "Discovery is the first phase where the team learns the business domain, assesses resources, frames the business problem, and formulates initial hypotheses."
+        },
+        {
+            text: "Analyze the following Pandas snippet. What will be the output format of `result`?",
+            snippet: "import pandas as pd\ndf = pd.DataFrame({'A': ['foo', 'bar', 'foo'], 'B': [1, 2, 3]})\nresult = df.groupby('A').agg(['mean', 'sum'])",
+            options: ["A Series with a MultiIndex", "A DataFrame with a single column index", "A DataFrame with a hierarchical column index (MultiIndex)", "A flat DataFrame with concatenated column names"],
+            correct: 2,
+            explanation: "Using .agg() with a list of functions on a groupby object results in a DataFrame with a MultiIndex on the columns (e.g., ('B', 'mean') and ('B', 'sum'))."
+        },
+        {
+            text: "Why might a dashboard fail to answer complex business questions compared to an analytics model?",
+            snippet: "",
+            options: ["Dashboards use unstructured data, whereas analytics uses structured data.", "Dashboards primarily offer descriptive reporting (what happened), lacking prescriptive or deep diagnostic capabilities.", "Dashboards inherently suffer from higher sampling bias than machine learning models.", "Dashboards cannot connect to SQL databases directly."],
+            correct: 1,
+            explanation: "Reporting/Dashboards focus on summarizing historical data (descriptive). Analytics delves into why it happened, what will happen (predictive), and what to do (prescriptive)."
+        },
+        {
+            text: "You want to encode an ordinal categorical variable (e.g., 'Low', 'Medium', 'High') for a linear regression model. Which Scikit-Learn class is most appropriate?",
+            snippet: "from sklearn.preprocessing import _____",
+            options: ["OneHotEncoder", "LabelEncoder", "OrdinalEncoder", "TargetEncoder"],
+            correct: 2,
+            explanation: "OrdinalEncoder is designed for categorical features that have a logical ordering. LabelEncoder is strictly meant for the target variable (y)."
+        },
+        {
+            text: "Review the Matplotlib code. What is the consequence of sharing the y-axis (sharey=True)?",
+            snippet: "fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)\nax1.plot(x, y1)\nax2.plot(x, y2)",
+            options: ["Both plots will overlay on the same axes.", "The y-axis limits will automatically scale to the global minimum and maximum of both y1 and y2.", "ax2 will not display a y-axis at all.", "It will force both plots to use a logarithmic scale."],
+            correct: 1,
+            explanation: "sharey=True links the y-axes of the subplots, ensuring they share the same scale and limits, making side-by-side visual comparison accurate."
+        },
+        {
+            text: "When dealing with a highly skewed dataset (e.g., income distribution), which measure of central tendency is most robust and why?",
+            snippet: "",
+            options: ["Mean, because it incorporates all data points.", "Mode, because it represents the most frequent occurrence.", "Median, because it is resistant to extreme outliers in the tails.", "Standard Deviation, because it measures the spread effectively."],
+            correct: 2,
+            explanation: "The median represents the 50th percentile. Unlike the mean, it is not artificially inflated or deflated by extreme outlier values common in skewed data."
+        },
+        {
+            text: "What does the following Pandas code calculate?",
+            snippet: "Q1 = df['salary'].quantile(0.25)\nQ3 = df['salary'].quantile(0.75)\nIQR = Q3 - Q1\nlower_bound = Q1 - 1.5 * IQR\nupper_bound = Q3 + 1.5 * IQR",
+            options: ["The standard deviation of the salary column.", "The confidence interval for a Z-test.", "The boundaries for identifying outliers using the Tukey method.", "The variance and coefficient of variation."],
+            correct: 2,
+            explanation: "This is the classic Interquartile Range (IQR) method for detecting outliers. Values below the lower_bound or above the upper_bound are typically flagged as outliers."
+        },
+        {
+            text: "Which of the following best describes the difference between variance and the coefficient of variation (CV)?",
+            snippet: "",
+            options: ["Variance is standardized; CV is in the original units.", "Variance measures spread in squared units; CV measures relative variability as a ratio of standard deviation to the mean.", "Variance is used for samples; CV is used exclusively for populations.", "There is no difference; they are mathematical inverses."],
+            correct: 1,
+            explanation: "Variance is the average of squared differences from the mean (units squared). CV is unitless (StdDev / Mean), allowing comparison of variability between datasets with different scales."
+        },
+        {
+            text: "In the context of the Naive Bayes classifier, what is the 'naive' assumption?",
+            snippet: "from sklearn.naive_bayes import GaussianNB\nmodel = GaussianNB()",
+            options: ["It assumes the data is normally distributed without exceptions.", "It assumes all features are conditionally independent given the class label.", "It assumes the prior probability of all classes is exactly equal.", "It assumes the dataset contains no missing values."],
+            correct: 1,
+            explanation: "Naive Bayes calculates probabilities by assuming that the presence of a particular feature in a class is unrelated (independent) to the presence of any other feature, which is rarely perfectly true in real life (hence 'naive')."
+        },
+        {
+            text: "Using Bayes' Theorem, if P(Disease)=0.01, P(Positive|Disease)=0.90, and P(Positive|No Disease)=0.05, what is the denominator (Probability of a Positive Test) needed to find P(Disease|Positive)?",
+            snippet: "P(A|B) = [P(B|A) * P(A)] / P(B)",
+            options: ["0.009", "0.0495", "0.0585", "0.90"],
+            correct: 2,
+            explanation: "Total Probability P(Pos) = [P(Pos|Disease) * P(Disease)] + [P(Pos|No Disease) * P(No Disease)] = (0.90 * 0.01) + (0.05 * 0.99) = 0.009 + 0.0495 = 0.0585."
+        },
+        {
+            text: "What does this SciPy function compute?",
+            snippet: "from scipy.stats import binom\nprob = binom.pmf(k=3, n=10, p=0.5)",
+            options: ["The cumulative probability of getting 3 or fewer successes in 10 trials.", "The exact probability of getting exactly 3 successes in 10 independent trials with a 50% success rate.", "The mean expected number of successes.", "The z-score for 3 successes."],
+            correct: 1,
+            explanation: "pmf stands for Probability Mass Function, which gives the exact probability of observing exactly 'k' successes in 'n' binomial trials with probability 'p'."
+        },
+        {
+            text: "When should you model a scenario using a Poisson distribution rather than a Binomial distribution?",
+            snippet: "",
+            options: ["When counting the number of successes in a fixed number of trials.", "When measuring the time between two consecutive events.", "When counting the number of events occurring in a fixed interval of time or space, where the events occur independently.", "When predicting a continuous numeric variable."],
+            correct: 2,
+            explanation: "Poisson applies to count data over a continuous interval (e.g., number of emails received in an hour). Binomial applies to discrete counts of successes in a fixed, finite number of trials."
+        },
+        {
+            text: "According to the Central Limit Theorem (CLT), as the sample size (n) increases, the sampling distribution of the sample mean approaches what?",
+            snippet: "",
+            options: ["A uniform distribution.", "The true population distribution, regardless of its shape.", "A normal distribution, regardless of the population's underlying distribution.", "A binomial distribution."],
+            correct: 2,
+            explanation: "The CLT states that the distribution of sample means will approximate a normal distribution as sample size gets larger, even if the underlying population is skewed or non-normal."
+        },
+        {
+            text: "Examine the following code. How does Pandas handle missing values (NaNs) when computing the Pearson correlation matrix?",
+            snippet: "correlation_matrix = df.corr(method='pearson')",
+            options: ["It throws an error requiring explicit imputation first.", "It treats NaNs as zeros.", "It uses pairwise deletion, excluding NaNs only for the specific pair of columns being calculated.", "It drops any row containing a NaN across the entire DataFrame (listwise deletion)."],
+            correct: 2,
+            explanation: "By default, Pandas `.corr()` uses pairwise deletion. It computes the correlation for each pair of columns using only the rows where both columns have non-null values."
+        },
+        {
+            text: "What is a primary danger of finding a 'spurious correlation' in exploratory data analysis?",
+            snippet: "",
+            options: ["It indicates that the data has too many outliers.", "It leads to the assumption of causation between two variables that are only correlated by coincidence or a hidden third variable.", "It prevents the mathematical calculation of covariance.", "It causes models to heavily underfit the training data."],
+            correct: 1,
+            explanation: "Spurious correlations occur when two variables seem related but aren't causally linked. Acting on them in business can lead to entirely misguided strategies."
+        },
+        {
+            text: "In hypothesis testing, what does the p-value represent?",
+            snippet: "from scipy.stats import ttest_ind\nstat, p_val = ttest_ind(group1, group2)",
+            options: ["The probability that the null hypothesis is true.", "The probability of observing the data, or something more extreme, assuming the null hypothesis is true.", "The probability of making a Type II error.", "The significance level (alpha) chosen by the researcher."],
+            correct: 1,
+            explanation: "The p-value is the probability of obtaining test results at least as extreme as the observed results, under the assumption that the null hypothesis is correct. It is NOT the probability that the null hypothesis itself is true."
+        },
+        {
+            text: "You want to test if there is a significant association between a customer's region (North, South, East, West) and their preferred payment method (Credit, Debit, Cash). Which statistical test is appropriate?",
+            snippet: "",
+            options: ["Z-Test", "Pearson Correlation", "Chi-Square Test of Independence", "Two-sample T-test"],
+            correct: 2,
+            explanation: "The Chi-Square Test of Independence is used to determine if there is a significant relationship between two categorical variables."
+        },
+        {
+            text: "If a dataset has a negative skewness, what does this indicate about the distribution's tail?",
+            snippet: "skew = df['revenue'].skew()",
+            options: ["The left tail is longer or fatter than the right tail.", "The right tail is longer or fatter than the left tail.", "The distribution is perfectly symmetrical.", "The data has no variance."],
+            correct: 0,
+            explanation: "Negative skewness indicates a distribution skewed to the left, meaning the long tail is on the negative (left) side of the peak."
+        },
+        {
+            text: "Which of the following accurately differentiates Predictive Analytics from Prescriptive Analytics?",
+            snippet: "",
+            options: ["Predictive explains why something happened; Prescriptive predicts what will happen.", "Predictive forecasts future outcomes; Prescriptive recommends specific actions to optimize those outcomes.", "Predictive focuses purely on optimization algorithms; Prescriptive uses random forests.", "There is no functional difference; they are synonymous marketing terms."],
+            correct: 1,
+            explanation: "Predictive answers 'What will happen?' (e.g., predicting sales). Prescriptive answers 'What should we do about it?' (e.g., optimizing supply chain logistics based on the prediction)."
+        },
+        {
+            text: "In Decision Tree segmentation, what is the role of 'Information Gain' or 'Entropy'?",
+            snippet: "model = DecisionTreeClassifier(criterion='entropy')",
+            options: ["To determine the learning rate of the gradient descent algorithm.", "To evaluate how well a split separates the data into homogeneous classes.", "To handle missing data dynamically during tree traversal.", "To define the depth limit of the tree to prevent overfitting."],
+            correct: 1,
+            explanation: "Entropy measures impurity. Information Gain calculates the reduction in entropy achieved by splitting the data on a specific feature. The tree uses this to pick the best splits."
+        },
+        {
+            text: "What is a major limitation of using a Single Decision Tree for predictive modeling?",
+            snippet: "",
+            options: ["They cannot handle categorical data natively.", "They are essentially black boxes and impossible to interpret.", "They are highly prone to overfitting the training data, leading to poor generalization.", "They require extensive feature scaling (standardization/normalization) to work."],
+            correct: 2,
+            explanation: "Decision trees, especially deep ones, tend to memorize the training data (overfit). This is why ensemble methods like Random Forests are often preferred. They also do not require feature scaling."
+        },
+        {
+            text: "Review the cross-validation code. Why is `cross_val_score` preferred over a single train/test split (holdout method)?",
+            snippet: "from sklearn.model_selection import cross_val_score\nscores = cross_val_score(model, X, y, cv=5)",
+            options: ["It is computationally faster than a single split.", "It provides a more reliable estimate of model generalization by averaging performance across multiple different splits.", "It automatically tunes hyperparameters without needing GridSearchCV.", "It completely eliminates the possibility of underfitting."],
+            correct: 1,
+            explanation: "Cross-validation rotates the train and validation sets (e.g., 5 folds). This reduces variance in the evaluation metric, giving a better estimate of how the model will perform on unseen data."
+        },
+        {
+            text: "In a medical diagnosis scenario where predicting a healthy patient as sick (False Positive) is acceptable, but predicting a sick patient as healthy (False Negative) is fatal, which evaluation metric should you optimize?",
+            snippet: "from sklearn.metrics import recall_score, precision_score",
+            options: ["Precision", "Recall (Sensitivity)", "Specificity", "Overall Accuracy"],
+            correct: 1,
+            explanation: "Recall is True Positives / (True Positives + False Negatives). Optimizing recall minimizes False Negatives, ensuring as many sick patients as possible are identified."
+        },
+        {
+            text: "What does an ROC AUC score of 0.5 imply about a binary classifier?",
+            snippet: "",
+            options: ["The model is perfect.", "The model makes predictions perfectly backwards (100% wrong).", "The model has no discrimination capability, performing no better than random guessing.", "The model suffers from extreme data leakage."],
+            correct: 2,
+            explanation: "An Area Under the ROC Curve (AUC) of 0.5 means the classifier's True Positive Rate and False Positive Rate are equal across all thresholds, identical to a random coin flip."
+        },
+        {
+            text: "What does the coefficients in a Multiple Linear Regression model represent?",
+            snippet: "model = LinearRegression()\nmodel.fit(X, y)\nprint(model.coef_)",
+            options: ["The probability of the target variable belonging to a specific class.", "The expected change in the target variable (y) for a one-unit change in the predictor (x), holding all other predictors constant.", "The percentage error of the prediction for that specific feature.", "The correlation coefficient between the independent variables."],
+            correct: 1,
+            explanation: "In multiple linear regression, a coefficient indicates the size and direction of the effect a specific independent variable has on the dependent variable, assuming other variables are constant."
+        },
+        {
+            text: "Which optimization technique is most appropriate when objectives and constraints are represented by straight-line relationships (e.g., maximizing profit given resource constraints)?",
+            snippet: "",
+            options: ["Nonlinear Optimization", "Linear Programming", "Monte Carlo Simulation", "Factor Analysis"],
+            correct: 1,
+            explanation: "Linear Programming (Linear Optimization) is used precisely when the objective function and the constraints are linear mathematical expressions."
+        },
+        {
+            text: "What is the primary purpose of Factor Analysis in data analytics?",
+            snippet: "from sklearn.decomposition import FactorAnalysis",
+            options: ["To predict a continuous target variable.", "To classify text data into sentiment categories.", "To reduce dimensionality by describing variability among correlated observed variables in terms of fewer unobserved, latent variables (factors).", "To optimize a supply chain network."],
+            correct: 2,
+            explanation: "Factor Analysis is a dimensionality reduction technique. It groups highly correlated variables together, assuming they are influenced by common underlying 'factors'."
+        },
+        {
+            text: "What characterizes 'Directional Data Analytics'?",
+            snippet: "",
+            options: ["Analyzing data that involves forecasting future stock market trends purely via time series.", "Analyzing data where measurements are angles, directions, or cyclical time (e.g., wind direction, hours of the day), requiring specialized statistics.", "Analyzing text sequences sequentially from left to right.", "A business framework for aligning KPI metrics with corporate strategy."],
+            correct: 1,
+            explanation: "Directional statistics (or circular statistics) deals with data distributed on manifolds like circles or spheres. Standard arithmetic (like mean) fails here (e.g., the mean of 359 degrees and 1 degree is not 180 degrees, but 0/360 degrees)."
+        },
+        {
+            text: "KNIME is heavily emphasized as a modern data analytics tool. What is its primary interface characteristic?",
+            snippet: "",
+            options: ["It requires writing exclusively in C++.", "It is a command-line-only interface for big data pipelines.", "It is a low-code/no-code visual programming platform where users drag and drop nodes to build workflows.", "It is a cloud database system akin to Snowflake."],
+            correct: 2,
+            explanation: "KNIME Analytics Platform allows users to visually create data flows, execute selected analysis steps, and inspect the results, models, and interactive views without requiring deep coding skills."
+        },
+        {
+            text: "According to case studies, what is a leading reason why data analytics projects fail to deliver business value?",
+            snippet: "",
+            options: ["Using Python instead of R.", "Poor data quality, misaligned business goals, and lack of stakeholder buy-in.", "Using too many visualizations in the final report.", "Over-reliance on open-source libraries."],
+            correct: 1,
+            explanation: "The majority of analytics failures stem from the 'Discovery' phase: unclear goals, dirty/inaccessible data, and failure to align the model's output with actual business processes or stakeholder needs."
+        },
+        {
+            text: "In probability, what does Joint Probability refer to?",
+            snippet: "",
+            options: ["The probability of Event A occurring given that Event B has already occurred.", "The probability of Event A or Event B occurring.", "The probability of two events occurring together at the same time: P(A and B).", "The probability of an event occurring independent of all other factors."],
+            correct: 2,
+            explanation: "Joint probability is the likelihood of two (or more) events happening simultaneously or together."
+        },
+        {
+            text: "If you want to handle outliers by establishing an upper and lower limit and replacing values outside those limits with the limit values, you are applying:",
+            snippet: "",
+            options: ["Data deletion (Dropping)", "Logarithmic transformation", "Capping / Winsorization", "Z-score scaling"],
+            correct: 2,
+            explanation: "Capping (often called Winsorizing) retains the data points but bounds them at a specific percentile or calculated limit to reduce the distortion of extreme outliers."
+        },
+        {
+            text: "When conducting a Hypothesis Test, a Type I error occurs when:",
+            snippet: "",
+            options: ["You fail to reject a false null hypothesis.", "You reject a true null hypothesis.", "You choose the wrong test statistic for the data type.", "Your sample size is too small to achieve statistical significance."],
+            correct: 1,
+            explanation: "A Type I error is a 'False Positive'—concluding there is an effect or difference when none actually exists (rejecting the true null hypothesis)."
+        },
+        {
+            text: "Which Pandas function is most appropriate for handling missing data by filling it with a calculated value, like the mean?",
+            snippet: "df['Age']._____ (df['Age'].mean(), inplace=True)",
+            options: ["dropna()", "replace()", "fillna()", "impute()"],
+            correct: 2,
+            explanation: "The fillna() function is used in Pandas to replace missing (NaN) values with a specified scalar value, dictionary, or method."
+        },
+        {
+            text: "What is Functional Data Analysis (FDA)?",
+            snippet: "",
+            options: ["Analyzing data using purely functional programming languages like Haskell.", "A branch of statistics that analyzes data providing information about curves, surfaces, or anything varying over a continuum (like time or spatial position).", "A framework for analyzing the human resources functions within a business.", "A method to test software functions automatically."],
+            correct: 1,
+            explanation: "FDA deals with the observation of continuous processes. Instead of isolated data points, the data are viewed as continuous functions (like a temperature curve over a day)."
+        },
+        {
+            text: "Which of the following describes 'Explicit Evidence Combination with Bayes Rule'?",
+            snippet: "",
+            options: ["Using Bayes rule to update the probability of a hypothesis as multiple new, independent pieces of evidence arrive sequentially.", "Combining standard deviation with variance to find the ultimate margin of error.", "Merging two Pandas DataFrames based on a shared Bayesian key.", "Ignoring prior probabilities when evaluating new evidence."],
+            correct: 0,
+            explanation: "Bayesian reasoning allows for the sequential updating of beliefs. As new evidence (E1, E2) comes in, the posterior probability from the first update becomes the prior for the second."
+        },
+        {
+            text: "Why is 'Holdout Evaluation' (a single train/test split) sometimes insufficient compared to Cross-Validation?",
+            snippet: "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)",
+            options: ["It leaks target data into the training set.", "The evaluation metric depends heavily on which specific data points randomly ended up in the test set, leading to high variance in the performance estimate.", "It requires too much computational power.", "It cannot be used for classification problems."],
+            correct: 1,
+            explanation: "A single split might luckily contain easy-to-predict instances in the test set, or unluckily contain outliers. CV mitigates this randomness."
+        },
+        {
+            text: "What is the primary mechanism of 'Simulation and Risk Analysis' in business analytics?",
+            snippet: "",
+            options: ["Calculating the exact single-point profit a company will make next year.", "Using methods like Monte Carlo simulation to input probability distributions instead of static values, generating a range of possible outcomes and their probabilities.", "Analyzing the physical risks of hardware failure in data centers.", "Using Decision Trees to find the shortest path in a graph."],
+            correct: 1,
+            explanation: "Risk analysis simulation acknowledges uncertainty by modeling inputs as distributions (e.g., sales will be normally distributed around 10k) to output a probability curve of risks and returns."
+        },
+        {
+            text: "Which of the following is an example of Unstructured Data?",
+            snippet: "",
+            options: ["A SQL database table of customer transactions.", "A CSV file containing sensor readings with timestamps.", "Customer review text fields and uploaded audio logs from a call center.", "A JSON file with strictly enforced key-value schemas."],
+            correct: 2,
+            explanation: "Text, audio, and video are unstructured data. They do not conform to a predefined data model or tabular structure."
+        },
+        {
+            text: "What is a 'Baseline Model' in the context of evaluating classifiers?",
+            snippet: "",
+            options: ["The most mathematically complex model you can build.", "A simple heuristic or dummy model (e.g., always predicting the majority class) used as a minimum benchmark that a machine learning model must beat.", "A model trained on purely uncleaned, raw data.", "The final deployed model in production."],
+            correct: 1,
+            explanation: "A baseline provides a point of reference. If a complex neural network achieves 90% accuracy, but a dummy model that simply guesses the most common class also gets 90%, your complex model has no real analytical value."
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timerSeconds = 3600; // 1 hour
+    let timerInterval;
+    let userAnswers = new Array(questions.length).fill(null);
+
+    // Elements
+    const qNumEl = document.getElementById('q-num');
+    const qTextEl = document.getElementById('q-text');
+    const qSnippetContainer = document.getElementById('q-snippet-container');
+    const optionsContainer = document.getElementById('options-container');
+    const explanationEl = document.getElementById('explanation');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const timerEl = document.getElementById('timer');
+    const quizBody = document.getElementById('quiz-body');
+    const reviewContainer = document.getElementById('review-container');
+
+    function initQuiz() {
+        startTimer();
+        renderQuestion();
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            timerSeconds--;
+            let m = Math.floor(timerSeconds / 60);
+            let s = timerSeconds % 60;
+            timerEl.innerText = `Time Left: ${m}:${s < 10 ? '0'+s : s}`;
+            
+            if (timerSeconds <= 0) {
+                clearInterval(timerInterval);
+                submitQuiz();
+            }
+        }, 1000);
+    }
+
+    function renderQuestion() {
+        const q = questions[currentQuestionIndex];
+        qNumEl.innerText = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+        qTextEl.innerText = q.text;
+
+        // Handle Snippet
+        if (q.snippet) {
+            qSnippetContainer.innerHTML = `<div class="snippet">${escapeHtml(q.snippet)}</div>`;
+        } else {
+            qSnippetContainer.innerHTML = '';
+        }
+
+        // Render Options
+        optionsContainer.innerHTML = '';
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option';
+            btn.innerText = opt;
+            
+            // If already answered
+            if (userAnswers[currentQuestionIndex] !== null) {
+                btn.disabled = true;
+                if (index === q.correct) {
+                    btn.classList.add('correct');
+                } else if (index === userAnswers[currentQuestionIndex]) {
+                    btn.classList.add('wrong');
+                }
+            } else {
+                btn.onclick = () => selectOption(index);
+            }
+            optionsContainer.appendChild(btn);
+        });
+
+        // Handle Explanation
+        if (userAnswers[currentQuestionIndex] !== null) {
+            explanationEl.style.display = 'block';
+            explanationEl.innerHTML = `<strong>Explanation:</strong> ${q.explanation}`;
+        } else {
+            explanationEl.style.display = 'none';
+        }
+
+        // Navigation state
+        prevBtn.disabled = currentQuestionIndex === 0;
+        
+        if (currentQuestionIndex === questions.length - 1) {
+            nextBtn.style.display = 'none';
+            submitBtn.style.display = 'inline-block';
+        } else {
+            nextBtn.style.display = 'inline-block';
+            submitBtn.style.display = 'none';
+        }
+    }
+
+    function selectOption(index) {
+        if (userAnswers[currentQuestionIndex] !== null) return; // Prevent double clicking
+
+        const q = questions[currentQuestionIndex];
+        userAnswers[currentQuestionIndex] = index;
+
+        if (index === q.correct) {
+            score++;
+        }
+
+        renderQuestion(); // Re-render to show colors and explanation
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function submitQuiz() {
+        clearInterval(timerInterval);
+        document.getElementById('quiz-container').style.display = 'none';
+        reviewContainer.style.display = 'block';
+        
+        const finalScoreEl = document.getElementById('final-score');
+        finalScoreEl.innerText = `You scored ${score} out of ${questions.length} (${((score/questions.length)*100).toFixed(2)}%)`;
+
+        const reviewList = document.getElementById('review-list');
+        reviewList.innerHTML = '';
+
+        questions.forEach((q, idx) => {
+            const uAns = userAnswers[idx];
+            const isCorrect = uAns === q.correct;
+            let statusHtml = '';
+
+            if (uAns === null) {
+                statusHtml = `<span style="color: #f39c12; font-weight: bold;">Unanswered</span>`;
+            } else if (isCorrect) {
+                statusHtml = `<span style="color: #28a745; font-weight: bold;">Correct</span>`;
+            } else {
+                statusHtml = `<span style="color: #dc3545; font-weight: bold;">Incorrect</span>`;
+            }
+
+            const revHtml = `
+                <div class="review-item" style="border-left: 5px solid ${isCorrect ? '#28a745' : (uAns===null ? '#f39c12' : '#dc3545')}">
+                    <p><strong>Q${idx + 1}: ${q.text}</strong></p>
+                    ${q.snippet ? `<div class="snippet" style="padding: 10px; font-size: 0.9em;">${escapeHtml(q.snippet)}</div>` : ''}
+                    <p>Status: ${statusHtml}</p>
+                    <p>Your Answer: <em>${uAns !== null ? q.options[uAns] : 'None'}</em></p>
+                    <p>Correct Answer: <em>${q.options[q.correct]}</em></p>
+                    <p style="background: #f8f9fa; padding: 10px; border-radius: 4px;"><strong>Explanation:</strong> ${q.explanation}</p>
+                </div>
+            `;
+            reviewList.innerHTML += revHtml;
+        });
+    }
+
+    function escapeHtml(unsafe) {
+        return unsafe
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    }
+
+    // Start
+    window.onload = initQuiz;
+</script>
+
+</body>
+</html>

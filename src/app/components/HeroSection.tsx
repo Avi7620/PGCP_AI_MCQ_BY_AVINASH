@@ -69,8 +69,8 @@ export default function HeroSection() {
               ${mounted ? 'animate-slide-up stagger-3' : 'opacity-0'}
             `}
           >
-            Practice Python, Java, Data Analytics, and Machine Learning with structured
-            tests designed by your college faculty. Timed, graded, and ready when you are.
+            Practice DAI & Math, Python, Java, Data Analytics, and Machine Learning with structured
+            tests.
           </p>
 
           {/* CTA Buttons */}
@@ -115,7 +115,7 @@ export default function HeroSection() {
               ${mounted ? 'animate-slide-up stagger-5' : 'opacity-0'}
             `}
           >
-            {['Python 3.x', 'Java OOPs', 'Pandas & NumPy', 'Scikit-learn', 'Mock Tests', 'Final Exams']?.map((tag) => (
+            {['DAI & Math','PML','Python', 'Java OOPs', 'Pandas & NumPy','Final Exams']?.map((tag) => (
               <span
                 key={`tag-${tag}`}
                 className="text-[11px] font-500 px-2.5 py-1 rounded-full bg-muted/60 border border-border text-muted-foreground"

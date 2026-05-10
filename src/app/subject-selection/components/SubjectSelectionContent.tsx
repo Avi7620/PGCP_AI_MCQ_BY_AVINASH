@@ -15,11 +15,42 @@ import {
   ChevronRight,
   X,
   Filter,
+  BrainCircuit
 } from 'lucide-react';
 import Icon from '@/components/ui/AppIcon';
 
 
 const subjects = [
+  
+{
+  key: 'subj-ai-math',
+  id: 'ai-math',
+  name: 'DAI & Math',
+  fullName: 'Fundamentals of AI & Mathematics for AI',
+  tagline: 'Linear Algebra, Calculus & AI concepts',
+  description:
+    'Strong foundation in Artificial Intelligence and Mathematics including search algorithms, logic, probability, linear algebra, and optimization techniques used in machine learning and deep learning.',
+  icon: BrainCircuit,
+  gradient: 'gradient-bg-indigo',
+  cardBorder: 'border-indigo-500/20 hover:border-indigo-500/60',
+  glowClass: 'glow-indigo',
+  badgeColor: 'bg-indigo-400/20 text-indigo-400 border-indigo-400/30',
+  topics: [
+    'AI History & Ethics',
+    'Search Algorithms (BFS, DFS, A*)',
+    'Logic & Knowledge Representation',
+    'Probability & Bayes Theorem',
+    'Vectors & Matrix Operations',
+    'Eigenvalues & Eigenvectors',
+    'Gradient & Derivatives',
+    'Optimization Techniques (Gradient Descent)',
+  ],
+  questions: 40,
+  tests: 4,
+  duration: '60 min',
+  difficulty: 'Intermediate–Advanced',
+  difficultyColor: 'text-indigo-400 bg-indigo-400/10',
+},
   {
     key: 'subj-python',
     id: 'python',
@@ -43,7 +74,7 @@ const subjects = [
       'Exception Handling',
       'List Comprehensions',
     ],
-    questions: 60,
+    questions: 40,
     tests: 4,
     duration: '60 min',
     difficulty: 'Beginner–Advanced',
@@ -73,7 +104,7 @@ const subjects = [
       'JDBC',
       'Exception Handling',
     ],
-    questions: 60,
+    questions: 40,
     tests: 4,
     duration: '35 min avg',
     difficulty: 'Intermediate',
@@ -103,7 +134,7 @@ const subjects = [
       'Data Aggregation',
       'EDA',
     ],
-    questions: 60,
+    questions: 40,
     tests: 4,
     duration: '60 min',
     difficulty: 'Intermediate',
@@ -134,7 +165,7 @@ const subjects = [
       'Neural Networks',
       'Model Evaluation',
     ],
-    questions: 60,
+    questions: 40,
     tests: 4,
     duration: '60 min',
     difficulty: 'Advanced',

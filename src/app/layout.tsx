@@ -18,7 +18,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'PGCP-AI',
 description:
-  'Practice MCQs for Python, Java, Data Analytics, and Machine Learning. Timed tests, mock exams, and final test prep — all in one portal.',
+  'Practice MCQs for ,DAI & Math, Python, Java, Data Analytics, and Machine Learning. Timed tests, mock exams, and final test prep — all in one portal.',
 icons: {
   icon: [{ url: '/index.jpg', type: 'image/jpeg' }],
 },

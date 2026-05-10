@@ -9,13 +9,17 @@
             --primary-color: #2c3e50;
             --accent-color: #3498db;
             --accent-hover: #2980b9;
+            --secondary-color: #7f8c8d;
+            --secondary-hover: #95a5a6;
             --bg-color: #ecf0f1;
             --card-bg: #ffffff;
             --text-main: #333333;
             --text-muted: #7f8c8d;
             --border-color: #bdc3c7;
             --success-color: #27ae60;
+            --success-bg: #eafaf1;
             --danger-color: #e74c3c;
+            --danger-bg: #fdedec;
         }
 
         body {
@@ -119,6 +123,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            margin-bottom: 20px;
         }
 
         .option {
@@ -150,10 +155,33 @@
             cursor: pointer;
         }
 
+        /* Feedback Styles */
+        .feedback-box {
+            display: none;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .feedback-box.correct {
+            display: block;
+            background-color: var(--success-bg);
+            color: var(--success-color);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .feedback-box.incorrect {
+            display: block;
+            background-color: var(--danger-bg);
+            color: var(--danger-color);
+            border-left: 4px solid var(--danger-color);
+        }
+
         .controls {
-            margin-top: 30px;
             display: flex;
             justify-content: flex-end;
+            gap: 15px;
             border-top: 1px solid var(--border-color);
             padding-top: 20px;
         }
@@ -175,9 +203,17 @@
         }
 
         button:disabled {
-            background-color: #95a5a6;
+            background-color: #bdc3c7;
             cursor: not-allowed;
             opacity: 0.7;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--secondary-hover);
         }
 
         /* Results Screen */
@@ -233,8 +269,11 @@
     
     <div class="options-container" id="options-container">
         </div>
+
+    <div id="feedback-box" class="feedback-box"></div>
     
     <div class="controls">
+        <button id="prev-btn" class="btn-secondary" onclick="prevQuestion()" disabled>Previous</button>
         <button id="next-btn" onclick="nextQuestion()" disabled>Next Question</button>
     </div>
 </div>
@@ -248,6 +287,12 @@
 
 <script>
     const questions = [
+                {
+            q: `What is the result of this expression?<br>
+<pre><code>bool('False') == bool(False)</code></pre>`,
+            options: ["True", "False", "TypeError", "ValueError"],
+            answer: 1
+        },
         // Flow Control & Basics
         {
             q: `What will be the output of the following code snippet?<br>
@@ -279,12 +324,7 @@ print(s[::-2])</code></pre>`,
             options: ["nohtyP", "nhy", "Pto", "TypeError"],
             answer: 1
         },
-        {
-            q: `What is the result of this expression?<br>
-<pre><code>bool('False') == bool(False)</code></pre>`,
-            options: ["True", "False", "TypeError", "ValueError"],
-            answer: 1
-        },
+
         // Functions & Lambdas
         {
             q: `Consider the following function definition. What will be printed?<br>
@@ -510,8 +550,8 @@ s = requests.Session()</code></pre>`,
     ];
 
     let currentQuestionIndex = 0;
-    let score = 0;
-    let selectedOptionIndex = null;
+    // Array to hold user answers so state persists when going backwards/forwards
+    let userAnswers = new Array(questions.length).fill(null);
     let timeLeft = 3600; // 1 Hour in seconds
     let timerInterval;
 
@@ -521,6 +561,8 @@ s = requests.Session()</code></pre>`,
     const progressBar = document.getElementById('progress-bar');
     const questionText = document.getElementById('question-text');
     const optionsContainer = document.getElementById('options-container');
+    const feedbackBox = document.getElementById('feedback-box');
+    const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const quizContainer = document.getElementById('quiz-container');
     const resultScreen = document.getElementById('result-screen');
@@ -549,61 +591,91 @@ s = requests.Session()</code></pre>`,
     function loadQuestion() {
         const q = questions[currentQuestionIndex];
         
-        // Reset state
-        selectedOptionIndex = null;
-        nextBtn.disabled = true;
-        optionsContainer.innerHTML = '';
-        
-        // Update Header & Progress
+        // Update Headers, Progress, & Buttons
         progressText.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
         const progressPercent = ((currentQuestionIndex) / questions.length) * 100;
         progressBar.style.width = `${progressPercent}%`;
         
+        prevBtn.disabled = currentQuestionIndex === 0;
+        nextBtn.textContent = currentQuestionIndex === questions.length - 1 ? 'Submit Assessment' : 'Next Question';
+        
+        // Reset Feedback Box visibility
+        feedbackBox.className = 'feedback-box'; 
+
         // Populate Question
         questionText.innerHTML = `${currentQuestionIndex + 1}. ${q.q}`;
         
         // Populate Options
+        optionsContainer.innerHTML = '';
         q.options.forEach((optText, index) => {
             const label = document.createElement('label');
             label.className = 'option';
-            label.innerHTML = `
-                <input type="radio" name="answer" value="${index}">
-                <span>${optText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>
-            `;
             
-            // Revert basic HTML escaping for the span if option contained it (optional depending on needs, but safe above)
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.name = 'answer';
+            input.value = index;
             
-            label.addEventListener('click', () => {
-                // Clear previous selection styling
-                document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
-                // Add selection styling
+            const span = document.createElement('span');
+            span.innerHTML = optText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            
+            // Check if user has already answered this question
+            if (userAnswers[currentQuestionIndex] === index) {
                 label.classList.add('selected');
-                label.querySelector('input').checked = true;
-                
-                selectedOptionIndex = index;
+                input.checked = true;
                 nextBtn.disabled = false;
+                evaluateAnswer(index, q); // Show feedback for previously selected answer
+            } else if (userAnswers[currentQuestionIndex] === null) {
+                nextBtn.disabled = true;
+            }
+
+            label.appendChild(input);
+            label.appendChild(span);
+            
+            // Click Event Listener
+            label.addEventListener('click', () => {
+                document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+                label.classList.add('selected');
+                input.checked = true;
+                
+                // Save the answer globally
+                userAnswers[currentQuestionIndex] = index;
+                nextBtn.disabled = false;
+                
+                // Trigger Instant Feedback
+                evaluateAnswer(index, q);
             });
             
             optionsContainer.appendChild(label);
         });
+    }
 
-        // Change button text on last question
-        if (currentQuestionIndex === questions.length - 1) {
-            nextBtn.textContent = 'Submit Assessment';
+    function evaluateAnswer(selectedIndex, currentQuestionObj) {
+        const correctIndex = currentQuestionObj.answer;
+        
+        if (selectedIndex === correctIndex) {
+            feedbackBox.innerHTML = `✅ <strong>Correct!</strong> Well done.`;
+            feedbackBox.className = 'feedback-box correct';
+        } else {
+            // Re-escape the text to prevent HTML rendering issues inside the feedback box
+            const correctText = currentQuestionObj.options[correctIndex].replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            feedbackBox.innerHTML = `❌ <strong>Incorrect.</strong> The correct answer is: <br><em>${correctText}</em>`;
+            feedbackBox.className = 'feedback-box incorrect';
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            loadQuestion();
         }
     }
 
     function nextQuestion() {
-        if (selectedOptionIndex === null) return;
+        if (userAnswers[currentQuestionIndex] === null) return;
 
-        // Check Answer
-        if (selectedOptionIndex === questions[currentQuestionIndex].answer) {
-            score++;
-        }
-
-        currentQuestionIndex++;
-
-        if (currentQuestionIndex < questions.length) {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
             loadQuestion();
         } else {
             showResults();
@@ -616,9 +688,14 @@ s = requests.Session()</code></pre>`,
         quizContainer.style.display = 'none';
         resultScreen.style.display = 'block';
         
-        scoreDisplay.textContent = `${score}/${questions.length}`;
+        // Calculate Score dynamically
+        let finalScore = userAnswers.reduce((total, answer, index) => {
+            return total + (answer === questions[index].answer ? 1 : 0);
+        }, 0);
         
-        const percentage = (score / questions.length) * 100;
+        scoreDisplay.textContent = `${finalScore}/${questions.length}`;
+        
+        const percentage = (finalScore / questions.length) * 100;
         
         if (percentage >= 80) {
             resultSubtext.textContent = "Excellent job! You have a strong grasp of Advanced Python.";

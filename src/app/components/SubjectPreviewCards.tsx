@@ -2,11 +2,26 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Code2, Coffee, BarChart3, Brain, ArrowRight } from 'lucide-react';
+import { Code2, Coffee, BarChart3, Brain, ArrowRight ,BrainCircuit} from 'lucide-react';
 import Icon from '@/components/ui/AppIcon';
 
 
 const subjects = [
+  {
+  key: 'preview-daimath',
+  id: 'ai-math',
+  name: 'AI & Math',
+  tagline: 'Linear Algebra, Calculus & AI foundations',
+  icon: BrainCircuit,
+  gradient: 'gradient-bg-indigo',
+  iconBg: 'bg-indigo-500/20',
+  iconColor: 'text-indigo-400',
+  questions: 40,
+  tests: 4,
+  difficulty: 'Intermediate–Advanced',
+  difficultyColor: 'text-indigo-400',
+  accentBorder: 'hover:border-indigo-500/60',
+},
   {
     key: 'preview-python',
     id: 'python',

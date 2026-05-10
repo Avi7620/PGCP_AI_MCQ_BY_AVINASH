@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI & Mathematics PGCP-AI Final Exam</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --correct: #16a34a;
+            --incorrect: #dc2626;
+            --snippet-bg: #1e1e1e;
+            --snippet-text: #d4d4d4;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .timer {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--incorrect);
+            background: #fee2e2;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+        .progress {
+            color: #64748b;
+            font-weight: 600;
+        }
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+        .snippet {
+            background-color: var(--snippet-bg);
+            color: var(--snippet-text);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+        }
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .option-btn {
+            background: var(--bg);
+            border: 2px solid #cbd5e1;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text);
+        }
+        .option-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+            border-color: #94a3b8;
+        }
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+        .option-btn.correct {
+            background: #dcfce7;
+            border-color: var(--correct);
+            color: #14532d;
+        }
+        .option-btn.incorrect {
+            background: #fee2e2;
+            border-color: var(--incorrect);
+            color: #7f1d1d;
+        }
+        .feedback {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .feedback.correct-bg { background: #dcfce7; border-left: 5px solid var(--correct); }
+        .feedback.incorrect-bg { background: #fee2e2; border-left: 5px solid var(--incorrect); }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn:hover:not(:disabled) { background: var(--primary-hover); }
+        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+        .btn-submit { background: var(--correct); }
+        .btn-submit:hover { background: #15803d; }
+        
+        #review-section { display: none; }
+        .review-card {
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .score-display {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: var(--primary);
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="container" id="quiz-app">
+    <div class="header">
+        <div class="progress" id="progress-text">Question 1 of 40</div>
+        <div class="timer" id="timer-display">60:00</div>
+    </div>
+
+    <div id="question-container">
+        <div class="question-text" id="q-text"></div>
+        <div id="q-snippet-container"></div>
+        <div class="options-container" id="options-box"></div>
+        <div class="feedback" id="feedback-box"></div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="btn-prev" onclick="navigate(-1)">Previous</button>
+        <button class="btn" id="btn-next" onclick="navigate(1)">Next</button>
+        <button class="btn btn-submit" id="btn-submit" onclick="showReview()" style="display: none;">Submit Exam</button>
+    </div>
+</div>
+
+<div class="container" id="review-section">
+    <div class="score-display" id="final-score"></div>
+    <h2>Detailed Review</h2>
+    <div id="review-list"></div>
+    <button class="btn" onclick="location.reload()" style="margin-top: 20px; width: 100%;">Restart Exam</button>
+</div>
+
+<script>
+const questions = [
+    // --- NUMERICAL MATH SNIPPETS & THEORY (7+ questions as requested) ---
+    {
+        text: "Given the vectors $v_1 = [3, 0, 4]$, $v_2 = [-1, 0, 7]$, and $v_3 = [2, 9, 11]$. Which of the following statements about their linear independence is true?",
+        snippet: "import numpy as np\nv1, v2, v3 = np.array([3,0,4]), np.array([-1,0,7]), np.array([2,9,11])\nmatrix = np.column_stack((v1, v2, v3))\ndet = np.linalg.det(matrix)",
+        options: [
+            "They are linearly dependent because the determinant of their matrix is 0.",
+            "They are linearly independent because the determinant is non-zero.",
+            "They form an orthonormal basis for R3.",
+            "They are linearly dependent because the second component of v1 and v2 is 0."
+        ],
+        answer: 1,
+        explanation: "By calculating the determinant of the 3x3 matrix formed by these vectors, $3(0 - 63) - 0 + 4(-9 - 0) = -189 - 36 = -225$. Since the determinant is non-zero ($-225$), the vectors are linearly independent and span $\\mathbb{R}^3$."
+    },
+    {
+        text: "Calculate the trace of the Hadamard product of matrices A and B.",
+        snippet: "A = [[1, 2],    B = [[0, 1],\n     [3, 4]]         [1, 0]]\n\nC = A * B  # Hadamard product\nprint(np.trace(C))",
+        options: ["0", "5", "10", "4"],
+        answer: 0,
+        explanation: "The Hadamard product is element-wise multiplication. $C_{11} = 1(0) = 0$, $C_{12} = 2(1) = 2$, $C_{21} = 3(1) = 3$, $C_{22} = 4(0) = 0$. So $C = \\begin{bmatrix} 0 & 2 \\\\ 3 & 0 \\end{bmatrix}$. The trace is the sum of diagonal elements: $0 + 0 = 0$."
+    },
+    {
+        text: "In Singular Value Decomposition (SVD), $A = U \\Sigma V^T$. If $A^T A = \\begin{bmatrix} 9 & 0 \\\\ 0 & 4 \\end{bmatrix}$, what are the non-zero singular values of matrix A?",
+        snippet: "from scipy.linalg import svd\n# Singular values are the diagonal entries of Sigma",
+        options: ["9 and 4", "81 and 16", "3 and 2", "1.5 and 1"],
+        answer: 2,
+        explanation: "The singular values of $A$ (the diagonal elements of $\\Sigma$) are the square roots of the non-zero eigenvalues of $A^T A$. Since $A^T A$ is diagonal, its eigenvalues are 9 and 4. The singular values are $\\sqrt{9} = 3$ and $\\sqrt{4} = 2$."
+    },
+    {
+        text: "Find the directional derivative of $f(x,y,z) = xy e^{x^2+z^2-5}$ at the point $(1, 3, -2)$ in the direction of the vector $v = (3, -1, 4)$. (Assume $v$ is not yet normalized; calculate $\\nabla f \\cdot v$ prior to normalization for the raw dot product).",
+        snippet: "Point P = (1, 3, -2)\nVector v = (3, -1, 4)\nf(x,y,z) = xy * exp(x^2 + z^2 - 5)",
+        options: [
+            "Gradient is [9, 1, -12]. Raw dot product is -22.",
+            "Gradient is [3, 1, -4]. Raw dot product is 0.",
+            "Gradient is [9, 1, 12]. Raw dot product is 74.",
+            "Gradient is [3, 3, -2]. Raw dot product is -2."
+        ],
+        answer: 0,
+        explanation: "At $(1,3,-2)$, the exponent is $1^2 + (-2)^2 - 5 = 1+4-5=0$, so $e^0=1$.<br> $f_x = y e^{\\dots} + xy(2x)e^{\\dots} = 3(1) + 3(2) = 9$.<br>$f_y = x e^{\\dots} = 1(1) = 1$.<br>$f_z = xy(2z)e^{\\dots} = 3(-4) = -12$.<br>Gradient $\\nabla f = [9, 1, -12]$.<br> Raw dot product with $v = [3, -1, 4]$ is $(9)(3) + (1)(-1) + (-12)(4) = 27 - 1 - 48 = -22$."
+    },
+    {
+        text: "Calculate the eigenvalues for the matrix $A = \\begin{bmatrix} 4 & 1 \\\\ 2 & 3 \\end{bmatrix}$.",
+        snippet: "det(A - λI) = 0",
+        options: ["λ = 4, λ = 3", "λ = 5, λ = 2", "λ = 1, λ = 6", "λ = 0, λ = 7"],
+        answer: 1,
+        explanation: "Characteristic equation: $(4-\\lambda)(3-\\lambda) - (1)(2) = 0 \\implies \\lambda^2 - 7\\lambda + 12 - 2 = 0 \\implies \\lambda^2 - 7\\lambda + 10 = 0$. Factoring gives $(\\lambda - 5)(\\lambda - 2) = 0$. Eigenvalues are 5 and 2."
+    },
+    {
+        text: "Find the vector projection of $u = [3, 4]$ onto $v = [1, 0]$.",
+        snippet: "proj_v(u) = ((u · v) / (v · v)) * v",
+        options: ["[0, 4]", "[3, 0]", "[1.5, 2]", "[1, 0]"],
+        answer: 1,
+        explanation: "Dot product $u \\cdot v = (3)(1) + (4)(0) = 3$. Magnitude squared of $v$ is $1^2 + 0^2 = 1$. The scalar multiplier is $3 / 1 = 3$. Multiplying by vector $v$ gives $3[1, 0] = [3, 0]$."
+    },
+    {
+        text: "Determine if the symmetric matrix $A = \\begin{bmatrix} 2 & -1 \\\\ -1 & 2 \\end{bmatrix}$ is positive definite.",
+        snippet: "A matrix is positive definite if all its eigenvalues are strictly positive,\nor if all leading principal minors are positive.",
+        options: [
+            "Yes, because det(A) = 3 > 0 and A_11 = 2 > 0.",
+            "No, because the off-diagonal elements are negative.",
+            "Yes, because trace(A) = 4, which is positive.",
+            "No, because its determinant is 0."
+        ],
+        answer: 0,
+        explanation: "Using Sylvester's criterion for positive-definiteness: the first leading principal minor is $2 > 0$. The second leading principal minor (the determinant of $A$) is $(2)(2) - (-1)(-1) = 4 - 1 = 3 > 0$. Since all leading principal minors are positive, it is positive definite."
+    },
+    // --- AI THEORY & SEARCH ---
+    {
+        text: "In the context of the Turing Test, what philosophical argument proposed by John Searle suggests that simulating intelligent behavior (like parsing syntax) does not equate to true understanding (semantics)?",
+        snippet: "",
+        options: ["The Singularity Hypothesis", "The Chinese Room Argument", "The Halting Problem", "The Frame Problem"],
+        answer: 1,
+        explanation: "Searle's Chinese Room argument posits that a program simply matching symbols according to rules (syntax) does not actually 'understand' the meaning (semantics) of what it is processing, challenging strong AI."
+    },
+    {
+        text: "When representing an AI problem in State-Space Representation, what determines the space complexity of Breadth-First Search (BFS)?",
+        snippet: "Let b = branching factor\nLet d = depth of the shallowest goal node",
+        options: ["O(bd)", "O(b^d)", "O(d^b)", "O(b + d)"],
+        answer: 1,
+        explanation: "BFS explores all nodes at the current depth before moving deeper. The number of nodes at depth $d$ is $b^d$. Therefore, it must store all these nodes in memory, resulting in an exponential space complexity of $O(b^d)$."
+    },
+    {
+        text: "In Informed Search, an A* heuristic $h(n)$ is considered 'admissible' if:",
+        snippet: "f(n) = g(n) + h(n)",
+        options: [
+            "It strictly overestimates the actual cost to reach the goal.",
+            "It never overestimates the actual cost to reach the goal.",
+            "It is mathematically equal to the path cost g(n).",
+            "It changes dynamically based on the depth of the tree."
+        ],
+        answer: 1,
+        explanation: "An admissible heuristic is optimistic; it never overestimates the true cost to reach the goal node. This guarantees that A* will find the optimal path."
+    },
+    {
+        text: "During Adversarial Search using the Minimax algorithm with Alpha-Beta pruning, when can a branch be pruned?",
+        snippet: "def max_value(state, alpha, beta):\n    if terminal_test(state): return utility(state)\n    v = -infinity\n    for action in actions(state):\n        v = max(v, min_value(result(state, action), alpha, beta))\n        if v >= beta: return v  # Pruning condition\n        alpha = max(alpha, v)\n    return v",
+        options: [
+            "When alpha becomes greater than or equal to beta.",
+            "When the search reaches the maximum depth limit only.",
+            "When alpha is strictly less than beta.",
+            "When the utility is 0."
+        ],
+        answer: 0,
+        explanation: "Alpha represents the best (highest) choice for MAX along the path, and Beta is the best (lowest) choice for MIN. If $\\alpha \\ge \\beta$, the current node will never be reached in actual play, so the remaining branches can be pruned."
+    },
+    {
+        text: "In Propositional Logic, what is the 'Resolution' principle used for?",
+        snippet: "(P ∨ Q) ∧ (¬P ∨ R) ⊢ (Q ∨ R)",
+        options: [
+            "To resolve ambiguous natural language queries.",
+            "A rule of inference leading to a complete theorem-proving technique by showing a set of clauses is unsatisfiable.",
+            "To increase the image resolution of computer vision models.",
+            "To translate Predicate logic into Propositional logic."
+        ],
+        answer: 1,
+        explanation: "Resolution is a sound and complete inference rule that takes two clauses containing complementary literals (e.g., $P$ and $\\neg P$) and produces a new clause (the resolvent). It's primarily used in proof by contradiction (resolution refutation)."
+    },
+    {
+        text: "How does First-Order (Predicate) Logic fundamentally differ from Propositional Logic?",
+        snippet: "∀x (King(x) ∧ Greedy(x) ⇒ Evil(x))",
+        options: [
+            "Propositional logic uses True/False; Predicate logic uses continuous probabilities.",
+            "Predicate logic introduces Objects, Relations, and Quantifiers (∀, ∃).",
+            "Propositional logic can handle infinite domains, while Predicate logic cannot.",
+            "Predicate logic is purely unsupervised, unlike propositional logic."
+        ],
+        answer: 1,
+        explanation: "While propositional logic deals only with simple declarative facts that are True or False, First-Order Logic allows us to represent the world in terms of objects, their properties, relations between them, and quantifiers (For All, There Exists)."
+    },
+    {
+        text: "Which of the following best defines 'Emergent Behavior' in Artificial Life and Complex AI Systems?",
+        snippet: "e.g., Conway's Game of Life, Boids flocking algorithm",
+        options: [
+            "Behavior that is explicitly hardcoded by the programmer.",
+            "Complex, system-wide patterns arising from the interaction of simple individual agents following basic local rules.",
+            "When an AI system unexpectedly crashes due to memory overflow.",
+            "The extraction of rules from a human expert to build a knowledge base."
+        ],
+        answer: 1,
+        explanation: "Emergence occurs when simple entities operating purely on local rules interact to produce highly complex, coordinated, and unpredictable global behavior, like a flock of birds or cellular automata."
+    },
+    {
+        text: "In Rule-Based Expert Systems, what is the primary function of the 'Inference Engine'?",
+        snippet: "Components:\n1. Knowledge Base\n2. Inference Engine\n3. User Interface",
+        options: [
+            "To store domain-specific facts and IF-THEN rules.",
+            "To process user input and format the output.",
+            "To apply logical rules to the knowledge base to deduce new information or make decisions.",
+            "To update the weights of a neural network using backpropagation."
+        ],
+        answer: 2,
+        explanation: "The Knowledge Base stores the facts and rules. The Inference Engine is the 'brain' that processes this data using forward or backward chaining to derive conclusions."
+    },
+    {
+        text: "Regarding Big Data in AI, which concept explains the need for processing streaming data (like sensor readings) in real-time?",
+        snippet: "The 3 Vs of Big Data: Volume, Velocity, Variety",
+        options: ["Volume", "Velocity", "Variety", "Veracity"],
+        answer: 1,
+        explanation: "Velocity refers to the speed at which new data is generated and the speed at which it must be processed to be useful. Real-time streaming requires handling high velocity data."
+    },
+    {
+        text: "Consider a Constraint Satisfaction Problem (CSP). What does 'Arc Consistency' ensure?",
+        snippet: "A -> B\nDomain of A: {1, 2, 3}\nDomain of B: {1, 2, 3}\nConstraint: A < B",
+        options: [
+            "That every variable in the graph is connected.",
+            "That for every value in a variable's domain, there is some consistent value in the domains of all its neighbors.",
+            "That the heuristic function is admissible.",
+            "That no parallel searches are initiated."
+        ],
+        answer: 1,
+        explanation: "A variable $X$ is arc-consistent with respect to $Y$ if for every value in the current domain of $X$, there is some value in the domain of $Y$ that satisfies the binary constraint between $X$ and $Y$."
+    },
+    // --- MATH THEORY & SNIPPETS (Calculus, Gradients, Matrices) ---
+    {
+        text: "What does the Rank of a matrix represent conceptually?",
+        snippet: "A = [[1, 2, 3],\n     [2, 4, 6],\n     [3, 6, 9]]",
+        options: [
+            "The sum of the diagonal elements.",
+            "The maximum number of linearly independent column (or row) vectors in the matrix.",
+            "The product of its eigenvalues.",
+            "The condition number of the matrix."
+        ],
+        answer: 1,
+        explanation: "The rank is the dimension of the vector space spanned by its columns. In the snippet, rows 2 and 3 are multiples of row 1, meaning there is only 1 linearly independent vector. Thus, the rank is 1."
+    },
+    {
+        text: "What defines an Affine Space compared to a Vector Space?",
+        snippet: "L = p + v",
+        options: [
+            "An affine space has no concept of an origin (zero vector); it consists of a set of points and a vector space acting on them.",
+            "An affine space only allows matrices of rank 1.",
+            "An affine space is purely infinite-dimensional.",
+            "An affine space only allows orthogonal vectors."
+        ],
+        answer: 0,
+        explanation: "A vector space requires a defined origin (the zero vector). An affine space is like a vector space that has 'forgotten' its origin; you can subtract two points to get a vector, or add a vector to a point to get another point, but points themselves cannot be added."
+    },
+    {
+        text: "Which of the following is a key property of an Orthogonal Matrix $Q$?",
+        snippet: "Q^T Q = ?",
+        options: ["Q^T = -Q", "Q^T Q = I (Identity Matrix)", "Det(Q) is always 0", "All eigenvalues are 0"],
+        answer: 1,
+        explanation: "An orthogonal matrix is a square matrix whose columns and rows are orthogonal unit vectors (orthonormal). A key property is that its transpose is equal to its inverse, meaning $Q^T Q = Q Q^T = I$."
+    },
+    {
+        text: "In Principal Component Analysis (PCA), what do the eigenvectors of the data's covariance matrix represent?",
+        snippet: "eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)",
+        options: [
+            "The variance of the original features.",
+            "The directions of maximum variance (principal components) in the data.",
+            "The mean coordinates of the dataset.",
+            "The gradient of the loss function."
+        ],
+        answer: 1,
+        explanation: "In PCA, the eigenvectors of the covariance matrix point in the directions of maximum variance (the principal axes), and their corresponding eigenvalues indicate the magnitude of that variance."
+    },
+    {
+        text: "If you compute the SVD of a real matrix $A$ as $A = U \\Sigma V^T$, what are the matrices $U$ and $V$?",
+        snippet: "U, Sigma, VT = np.linalg.svd(A)",
+        options: [
+            "U and V are diagonal matrices.",
+            "U and V are symmetric positive definite matrices.",
+            "U and V are orthogonal matrices.",
+            "U and V contain the singular values."
+        ],
+        answer: 2,
+        explanation: "In SVD, $U$ contains the left singular vectors and $V$ contains the right singular vectors. Both $U$ and $V$ are orthogonal matrices ($U^T U = I$ and $V^T V = I$). $\\Sigma$ contains the singular values."
+    },
+    {
+        text: "What is the Jacobian Matrix?",
+        snippet: "f(x) = [f1(x1, x2), f2(x1, x2)]",
+        options: [
+            "A matrix containing second-order partial derivatives of a scalar function.",
+            "A matrix of all first-order partial derivatives of a vector-valued function.",
+            "A diagonal matrix used to normalize vectors.",
+            "The inverse of the Hessian matrix."
+        ],
+        answer: 1,
+        explanation: "While the gradient is for a scalar-valued function, the Jacobian matrix represents the first-order partial derivatives of a vector-valued function. It describes the linear approximation of the function."
+    },
+    {
+        text: "When optimizing using Gradient Descent, what is the consequence of setting the Learning Rate ($\\alpha$) too high?",
+        snippet: "x_new = x_old - alpha * gradient(x_old)",
+        options: [
+            "The model will converge too slowly and get stuck in local minima.",
+            "The algorithm will require more data to run.",
+            "The algorithm may overshoot the minimum, causing divergence and loss explosion.",
+            "The gradient will become strictly zero immediately."
+        ],
+        answer: 2,
+        explanation: "The learning rate controls the step size. If it's too high, the updates will be too large, repeatedly overshooting the bottom of the error valley, causing the loss to oscillate or diverge to infinity."
+    },
+    {
+        text: "In Constrained Optimization, what mathematical tool allows us to optimize a function subject to equality constraints?",
+        snippet: "Maximize f(x, y) subject to g(x, y) = c",
+        options: ["Hadamard Product", "Lagrange Multipliers", "Singular Value Decomposition", "Mini-Batch Descent"],
+        answer: 1,
+        explanation: "The method of Lagrange multipliers allows finding the local maxima/minima of a function subject to equality constraints by solving $\\nabla f(x, y) = \\lambda \\nabla g(x, y)$."
+    },
+    {
+        text: "Why is Convex Optimization highly desirable in Machine Learning?",
+        snippet: "A function is convex if the line segment between any two points on the graph lies entirely above or on the graph.",
+        options: [
+            "Because any local minimum of a convex function is guaranteed to be the global minimum.",
+            "Because it does not require calculating derivatives.",
+            "Because it only applies to categorical data.",
+            "Because convex functions have a determinant of 1."
+        ],
+        answer: 0,
+        explanation: "Convex functions look like a single bowl. They have no 'valleys' or 'hills' other than the single lowest point. Therefore, gradient descent on a convex function will always find the absolute best (global) minimum."
+    },
+    {
+        text: "What mathematical structure is used to determine if a critical point is a local minimum, local maximum, or a saddle point?",
+        snippet: "For a scalar function f(x, y)",
+        options: ["The Jacobian Matrix", "The Adjacency Matrix", "The Hessian Matrix", "The State-Space Matrix"],
+        answer: 2,
+        explanation: "The Hessian matrix contains the second-order partial derivatives. The eigenvalues of the Hessian evaluated at a critical point tell us its nature (all positive = local min, all negative = local max, mixed = saddle point)."
+    },
+    {
+        text: "What is the key difference between Stochastic Gradient Descent (SGD) and Batch Gradient Descent?",
+        snippet: "SGD vs Batch GD",
+        options: [
+            "SGD uses the entire dataset to compute the gradient per step; Batch uses one sample.",
+            "SGD updates parameters using a single random training example per step, leading to noisy but faster updates.",
+            "SGD calculates second-order derivatives, while Batch only uses first-order.",
+            "SGD guarantees finding the exact global minimum in non-convex spaces."
+        ],
+        answer: 1,
+        explanation: "Batch GD calculates the gradient over the entire dataset before making one update. SGD computes the gradient and updates the weights for each individual training sample, making it faster per iteration but highly stochastic (noisy path)."
+    },
+    {
+        text: "Calculate the Cosine Similarity between vectors $A = [1, 1]$ and $B = [-1, -1]$.",
+        snippet: "cosine_sim(A, B) = (A · B) / (||A|| ||B||)",
+        options: ["1", "0", "-1", "0.5"],
+        answer: 2,
+        explanation: "Dot product is $(1)(-1) + (1)(-1) = -2$. The magnitudes are both $\\sqrt{2}$. The denominator is $\\sqrt{2} \\times \\sqrt{2} = 2$. Similarity is $-2 / 2 = -1$. Geometrically, they point in exactly opposite directions (180 degrees)."
+    },
+    {
+        text: "What is the determinant of an orthogonal matrix?",
+        snippet: "Let Q be an orthogonal matrix.",
+        options: ["Always 0", "Always 1", "Always +1 or -1", "Depends on the trace"],
+        answer: 2,
+        explanation: "For an orthogonal matrix $Q$, $Q^T Q = I$. Taking determinants: $\\det(Q^T)\\det(Q) = \\det(I)$. Since $\\det(Q^T) = \\det(Q)$ and $\\det(I) = 1$, we get $(\\det(Q))^2 = 1$. Therefore, $\\det(Q)$ is either 1 or -1."
+    },
+    {
+        text: "In Neural Networks, Backpropagation relies heavily on which fundamental calculus rule to compute gradients of composite functions?",
+        snippet: "z = f(y) and y = g(x) \ndz/dx = (dz/dy) * (dy/dx)",
+        options: ["The Product Rule", "The Quotient Rule", "L'Hôpital's Rule", "The Chain Rule"],
+        answer: 3,
+        explanation: "Backpropagation is essentially the systematic application of the Chain Rule from calculus, calculating the gradient of the loss with respect to each weight by multiplying local derivatives backwards through the network graph."
+    },
+    {
+        text: "How does the Hadamard product differ from standard matrix multiplication?",
+        snippet: "A @ B vs A * B in NumPy",
+        options: [
+            "Hadamard product requires the inner dimensions to match (m x n and n x p).",
+            "Hadamard product is element-wise multiplication, requiring both matrices to have the exact same dimensions.",
+            "Hadamard product is the dot product of vectors.",
+            "There is no difference."
+        ],
+        answer: 1,
+        explanation: "Standard matrix multiplication involves row-by-column dot products. The Hadamard product is strictly element-wise multiplication, meaning $C_{ij} = A_{ij} \\times B_{ij}$, which requires $A$ and $B$ to have identical shapes."
+    },
+    {
+        text: "Which of the following describes 'Matrix Phylogeny'?",
+        snippet: "",
+        options: [
+            "The study of matrix approximations using SVD.",
+            "The classification and hierarchy of different matrix types (e.g., symmetric implies square).",
+            "The genetic algorithms used to optimize matrices.",
+            "A type of norm used to regularize networks."
+        ],
+        answer: 1,
+        explanation: "Matrix Phylogeny refers to the relationships, properties, and hierarchy among different types of matrices. For example, an orthogonal matrix must be square, a positive definite matrix must be symmetric, etc."
+    },
+    {
+        text: "A Saddle Point in multivariate calculus is defined as:",
+        snippet: "Consider the surface z = x^2 - y^2 at (0,0)",
+        options: [
+            "A point where the gradient is zero, and it is a minimum in one direction and a maximum in another.",
+            "The absolute global maximum of a convex function.",
+            "A point where the function is undefined.",
+            "A point where the Hessian matrix determinant is positive."
+        ],
+        answer: 0,
+        explanation: "At a saddle point, the first derivative (gradient) is zero, but it is not a local extremum. It curves upwards in one cross-section and downwards in another. The eigenvalues of the Hessian have mixed signs."
+    },
+    {
+        text: "Which combination best represents taking the derivative of a Vector-Valued Function with respect to a Vector?",
+        snippet: "y = f(x)\nwhere x ∈ R^n and y ∈ R^m",
+        options: ["A Scalar (Gradient)", "A Matrix (Jacobian)", "A 3D Tensor", "A single Vector"],
+        answer: 1,
+        explanation: "Differentiating an m-dimensional vector function with respect to an n-dimensional vector variable results in an $m \\times n$ matrix known as the Jacobian matrix."
+    },
+    {
+        text: "What is Matrix Approximation using SVD commonly used for?",
+        snippet: "A_k = U_k * Sigma_k * V_k^T",
+        options: [
+            "Converting continuous matrices into discrete logic gates.",
+            "Image compression and dimensionality reduction by keeping only the top k singular values.",
+            "Guaranteeing that non-invertible matrices can be exactly inverted.",
+            "Solving adversarial search problems."
+        ],
+        answer: 1,
+        explanation: "By keeping only the largest $k$ singular values and setting the rest to zero (Truncated SVD), we get the best rank-$k$ approximation of the original matrix. This is widely used in data compression and noise reduction."
+    },
+    {
+        text: "What characterizes an Orthonormal set of vectors?",
+        snippet: "Vectors v1, v2, ..., vn",
+        options: [
+            "They are mutually perpendicular (dot product is 0) and each has a magnitude of 1.",
+            "They all point in the same direction and have a magnitude of 1.",
+            "Their cross product is strictly 0.",
+            "They are linearly dependent."
+        ],
+        answer: 0,
+        explanation: "Orthonormal = Orthogonal + Normal. They are orthogonal to each other ($v_i \\cdot v_j = 0$ for $i \\neq j$) and they are normalized unit vectors ($v_i \\cdot v_i = 1$)."
+    },
+    {
+        text: "In the context of AI and Big Data, what does 'Structured Data' mean?",
+        snippet: "Structured vs Unstructured",
+        options: [
+            "Data that requires deep learning to interpret, like raw images.",
+            "Data that resides in fixed fields within a record or file, like SQL databases.",
+            "Audio files that have a specific beat or rhythm.",
+            "Data that has been processed by a graph database."
+        ],
+        answer: 1,
+        explanation: "Structured data is highly organized and formatted so that it's easily searchable in relational databases (rows and columns). Unstructured data includes text, audio, and video."
+    },
+    {
+        text: "If matrix $X = [0, 1, 3]^T$ and $Y = [2, 4, 0]^T$, describe the intersection of the subspaces spanned by $X$ and $Y$ (assuming they each span a 1D line in $R^3$).",
+        snippet: "V = span(X), W = span(Y)",
+        options: [
+            "A plane in R3.",
+            "The entire R3 space.",
+            "Only the zero vector [0, 0, 0]^T.",
+            "A line passing through [2, 5, 3]^T."
+        ],
+        answer: 2,
+        explanation: "The two vectors are clearly not scalar multiples of each other. They span two distinct 1D lines through the origin in $\\mathbb{R}^3$. The intersection of two distinct lines through the origin is only the origin (the zero vector)."
+    },
+    {
+        text: "What is the primary implication of 'Ethics of AI' concerning biased algorithms?",
+        snippet: "Responsible AI Practices",
+        options: [
+            "Bias makes algorithms run mathematically slower.",
+            "Algorithms trained on historical data may inherit and scale human prejudices, leading to unfair treatment.",
+            "Biased algorithms cannot be compiled in Python.",
+            "Bias guarantees the algorithm passes the Turing Test."
+        ],
+        answer: 1,
+        explanation: "AI models learn from data. If historical data contains societal biases, the model will learn, replicate, and often amplify these biases at scale, raising massive ethical and legal concerns."
+    },
+    {
+        text: "In Unsupervised Learning, what is the primary goal?",
+        snippet: "e.g., K-Means, DBSCAN",
+        options: [
+            "To map input data to known output labels.",
+            "To maximize a reward signal in an environment.",
+            "To discover hidden patterns, groupings, or structures in unlabeled data.",
+            "To perfectly separate data using hyperplanes."
+        ],
+        answer: 2,
+        explanation: "Unlike supervised learning (which uses labeled data) or reinforcement learning (rewards), unsupervised learning explores data without explicit target labels to find inherent clusters, associations, or reduced representations."
+    },
+    {
+        text: "Which of the following is an example of an combinatorial optimization problem commonly addressed in AI?",
+        snippet: "Given a set of cities and the distances between each pair...",
+        options: [
+            "Calculating the derivative of a sigmoid function.",
+            "The Traveling Salesperson Problem (TSP).",
+            "Translating French to English using Transformers.",
+            "Image classification using CNNs."
+        ],
+        answer: 1,
+        explanation: "TSP requires finding the shortest possible route that visits every city exactly once and returns to the origin city. The discrete nature and factorial explosion of possible routes makes it a classic combinatorial optimization problem."
+    }
+];
+
+let currentIndex = 0;
+let userAnswers = new Array(questions.length).fill(null);
+let timeRemaining = 3600; // 60 minutes in seconds
+let timerInterval;
+
+const elements = {
+    progressText: document.getElementById('progress-text'),
+    timerDisplay: document.getElementById('timer-display'),
+    qText: document.getElementById('q-text'),
+    snippetContainer: document.getElementById('q-snippet-container'),
+    optionsBox: document.getElementById('options-box'),
+    feedbackBox: document.getElementById('feedback-box'),
+    btnPrev: document.getElementById('btn-prev'),
+    btnNext: document.getElementById('btn-next'),
+    btnSubmit: document.getElementById('btn-submit'),
+    quizApp: document.getElementById('quiz-app'),
+    reviewSection: document.getElementById('review-section'),
+    finalScore: document.getElementById('final-score'),
+    reviewList: document.getElementById('review-list')
+};
+
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+}
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timeRemaining--;
+        elements.timerDisplay.innerText = formatTime(timeRemaining);
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            showReview();
+        }
+    }, 1000);
+}
+
+function renderQuestion() {
+    const q = questions[currentIndex];
+    elements.progressText.innerText = `Question ${currentIndex + 1} of ${questions.length}`;
+    elements.qText.innerHTML = q.text;
+
+    // Render snippet if exists
+    if (q.snippet && q.snippet.trim() !== "") {
+        elements.snippetContainer.innerHTML = `<div class="snippet">${escapeHtml(q.snippet)}</div>`;
+    } else {
+        elements.snippetContainer.innerHTML = "";
+    }
+
+    // Render options
+    elements.optionsBox.innerHTML = "";
+    q.options.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.innerHTML = opt;
+        
+        // If already answered
+        if (userAnswers[currentIndex] !== null) {
+            btn.disabled = true;
+            if (idx === q.answer) {
+                btn.classList.add("correct");
+            } else if (idx === userAnswers[currentIndex]) {
+                btn.classList.add("incorrect");
+            }
+        } else {
+            btn.onclick = () => handleSelect(idx);
+        }
+        elements.optionsBox.appendChild(btn);
+    });
+
+    // Handle feedback display
+    if (userAnswers[currentIndex] !== null) {
+        showFeedback(userAnswers[currentIndex] === q.answer, q.explanation);
+    } else {
+        elements.feedbackBox.style.display = "none";
+    }
+
+    // Nav buttons
+    elements.btnPrev.disabled = currentIndex === 0;
+    if (currentIndex === questions.length - 1) {
+        elements.btnNext.style.display = "none";
+        elements.btnSubmit.style.display = "block";
+    } else {
+        elements.btnNext.style.display = "block";
+        elements.btnSubmit.style.display = "none";
+    }
+
+    // Render MathJax
+    if (window.MathJax) {
+        MathJax.typesetPromise();
+    }
+}
+
+function handleSelect(selectedIndex) {
+    if (userAnswers[currentIndex] !== null) return; // Prevent double click
+    
+    userAnswers[currentIndex] = selectedIndex;
+    const q = questions[currentIndex];
+    const isCorrect = selectedIndex === q.answer;
+    
+    renderQuestion(); // Re-render to show colors and disable buttons
+    showFeedback(isCorrect, q.explanation);
+}
+
+function showFeedback(isCorrect, explanation) {
+    elements.feedbackBox.style.display = "block";
+    elements.feedbackBox.className = `feedback ${isCorrect ? 'correct-bg' : 'incorrect-bg'}`;
+    elements.feedbackBox.innerHTML = `
+        <strong>${isCorrect ? 'Correct!' : 'Incorrect.'}</strong><br>
+        ${explanation}
+    `;
+    if (window.MathJax) MathJax.typesetPromise([elements.feedbackBox]);
+}
+
+function navigate(dir) {
+    if ((dir === -1 && currentIndex > 0) || (dir === 1 && currentIndex < questions.length - 1)) {
+        currentIndex += dir;
+        renderQuestion();
+    }
+}
+
+function showReview() {
+    clearInterval(timerInterval);
+    elements.quizApp.style.display = "none";
+    elements.reviewSection.style.display = "block";
+
+    let score = 0;
+    userAnswers.forEach((ans, idx) => {
+        if (ans === questions[idx].answer) score++;
+    });
+
+    elements.finalScore.innerText = `You scored ${score} out of ${questions.length} (${((score/questions.length)*100).toFixed(1)}%)`;
+
+    elements.reviewList.innerHTML = "";
+    questions.forEach((q, idx) => {
+        const ans = userAnswers[idx];
+        const isCorrect = ans === q.answer;
+        const statusStr = ans === null ? '<span style="color:orange">Unanswered</span>' : (isCorrect ? '<span style="color:green">Correct</span>' : '<span style="color:red">Incorrect</span>');
+        
+        let userAnsStr = ans === null ? "None" : q.options[ans];
+        
+        const card = document.createElement("div");
+        card.className = "review-card";
+        card.innerHTML = `
+            <h4>Q${idx+1}: ${q.text}</h4>
+            ${q.snippet ? `<div class="snippet">${escapeHtml(q.snippet)}</div>` : ''}
+            <p><strong>Status:</strong> ${statusStr}</p>
+            <p><strong>Your Answer:</strong> ${userAnsStr}</p>
+            <p><strong>Correct Answer:</strong> ${q.options[q.answer]}</p>
+            <p style="background: #f1f5f9; padding: 10px; border-radius: 5px;"><strong>Explanation:</strong> ${q.explanation}</p>
+        `;
+        elements.reviewList.appendChild(card);
+    });
+
+    if (window.MathJax) MathJax.typesetPromise([elements.reviewList]);
+}
+
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// Init
+startTimer();
+renderQuestion();
+</script>
+</body>
+</html>
