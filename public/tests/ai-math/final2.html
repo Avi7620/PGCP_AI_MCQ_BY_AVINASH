@@ -252,18 +252,30 @@
     <script>
         const questions = [
             // --- AI Fundamentals & Theory ---
-            {
-                q: "According to Turing's original paper on the Turing Test (the Imitation Game), what is the primary philosophical implication?",
-                snippet: "def turing_test(interrogator, entity_A, entity_B):\n    # Evaluates indistinguishability",
-                options: [
-                    "A machine must possess biological consciousness to pass.",
-                    "If a machine's linguistic behavior is indistinguishable from a human's, it should be considered 'thinking'.",
-                    "A machine can never simulate human emotion.",
-                    "The machine must solve the Halting Problem to pass."
-                ],
-                correct: 1,
-                theory: "Alan Turing proposed that operational indistinguishability in conversation is a sufficient criterion for intelligence, sidestepping the unanswerable philosophical question of internal 'consciousness'."
-            },
+ {
+        "q": "[Numerical 3 - Eigenvalue Properties] Given a 2x2 matrix A with Trace(A) = 2 and Det(A) = -15, what are the eigenvalues of the matrix A?",
+        "snippet": "λ² - Trace(A)λ + Det(A) = 0",
+        "options": [
+            "λ = 3, λ = -5",
+            "λ = 5, λ = -3",
+            "λ = 2, λ = -15",
+            "λ = 1, λ = 1"
+        ],
+        "correct": 1,
+        "theory": "For a 2x2 matrix, the characteristic equation is λ² - Tr(A)λ + Det(A) = 0. Substituting the values gives λ² - 2λ - 15 = 0. Factoring results in (λ - 5)(λ + 3) = 0, so the eigenvalues are 5 and -3."
+    },
+    {
+        "q": "[Numerical 4 - Linear Independence] If a 3x3 matrix M has eigenvalues λ₁ = 0, λ₂ = 4, and λ₃ = 4, but the dimension of the eigenspace for λ = 4 is only 1, which statement is true?",
+        "snippet": "Algebraic Multiplicity (AM) = 2\nGeometric Multiplicity (GM) = 1",
+        "options": [
+            "The matrix M is diagonalizable.",
+            "The matrix M is invertible (non-singular).",
+            "The matrix M is defective and not diagonalizable.",
+            "The matrix M has three linearly independent eigenvectors."
+        ],
+        "correct": 2,
+        "theory": "A matrix is diagonalizable only if the Geometric Multiplicity (GM) equals the Algebraic Multiplicity (AM) for every eigenvalue. Here, for λ = 4, the AM is 2 but the GM is only 1. Since GM < AM, the matrix is 'defective' and cannot be diagonalized."
+    },
             {
                 q: "In the context of the structure of AI systems, what defines an 'Expert System'?",
                 snippet: "IF (condition_A AND condition_B)\nTHEN action_C",

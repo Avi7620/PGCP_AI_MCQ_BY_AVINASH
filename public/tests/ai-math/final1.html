@@ -141,12 +141,7 @@ const quizData = [
         answer: 1,
         theory: "To check for linear independence, we find the determinant of the matrix formed by these vectors. Det(A) = 3(0 - 63) - 0 + 4(-9 - 0) = -189 - 36 = -225. Since Det &ne; 0, the vectors are linearly independent and span a 3-dimensional affine space."
     },
-    {
-        q: "[Numerical 2 - Vector Subspace] Let X = [0, 1, 3]&#7504; and Y = [2, 4, 0]&#7504;. Let V be the subspace spanned by X, and W be the subspace spanned by Y. What is the intersection of V and W?",
-        options: ["The vector [2, 5, 3]&#7504;", "The plane spanned by both vectors", "Only the zero vector [0, 0, 0]&#7504;", "The vector [1, 2.5, 1.5]&#7504;"],
-        answer: 2,
-        theory: "X and Y are not scalar multiples of each other, meaning they are linearly independent and each spans a 1-dimensional subspace (a line through the origin). The only point where two distinct lines through the origin intersect in a 3D space is the origin itself: the zero vector."
-    },
+   
     {
         q: "[Numerical 3 - Trace] Let A be a 3x3 matrix with known eigenvalues &lambda;&#8321; = 4, &lambda;&#8322; = -2, and &lambda;&#8323; = 5. What is the Trace of Matrix A?",
         options: ["-40", "7", "20", "1.5"],
@@ -186,28 +181,59 @@ const quizData = [
         theory: "A Universal Turing Machine can simulate the logic of any other Turing machine. It reads a description of the machine to be simulated from its tape, proving the concept of general-purpose programmable computers."
     },
     {
-        q: "Which framework directly addresses the 'Social, legal, and ethical implications' by ensuring AI models are fair, interpretable, and maintain privacy?",
-        options: ["Adversarial Search", "Responsible AI", "Combinatorial Optimization", "Emergent Behavior"],
-        answer: 1,
-        theory: "Responsible AI is a governance framework aimed at designing, developing, and deploying AI with good intentions to empower employees and businesses, and fairly impact customers and society."
+        q: "[Matrix Property - Determinant] If det(A) = 0 for an n×n matrix A, then which statement is true?",
+        options: [
+            "A is invertible",
+            "A has full rank",
+            "A is singular",
+            "All eigenvalues are non-zero"
+        ],
+        answer: 2,
+        theory: "If determinant of a square matrix is zero, the matrix is singular and not invertible. Its rank is less than n."
     },
     {
-        q: "Artificial Life systems often demonstrate 'Emergent Behavior'. How is this defined?",
-        options: ["Behavior that is explicitly programmed by a human expert in an IF-THEN rule base.", "Complex, global patterns or behaviors arising from the interaction of simple, local rules without centralized control.", "The ability of an AI to bypass the Turing Test automatically.", "A logic programming paradigm where predicates resolve recursively."],
-        answer: 1,
-        theory: "Emergence occurs when a complex entity possesses properties that its individual parts do not. In AI/Artificial Life (like Conway's Game of Life or swarms), simple local rules lead to complex macroscopic behavior."
+        q: "[Matrix Property - Eigenvalues] If a matrix A has an eigenvalue 0, what can be concluded?",
+        options: [
+            "A is always diagonal",
+            "A is invertible",
+            "A is singular (non-invertible)",
+            "A has full rank"
+        ],
+        answer: 2,
+        theory: "Presence of eigenvalue 0 implies det(A)=0, hence the matrix is singular and not invertible."
     },
     {
-        q: "What are the two core architectural components of classic Expert Systems?",
-        options: ["A Knowledge Base and an Inference Engine.", "A Neural Network and a Backpropagation Optimizer.", "A Database and a SQL querying tool.", "A Generator and a Discriminator."],
-        answer: 0,
-        theory: "Expert systems separate the knowledge about a specific domain (Knowledge Base containing rules/facts) from the logical reasoning mechanism that applies those rules to deduce new information (Inference Engine)."
+        q: "[Matrix Property - Symmetric Matrix] Which property is always true for a real symmetric matrix A?",
+        options: [
+            "All eigenvalues are complex",
+            "Eigenvectors corresponding to distinct eigenvalues are orthogonal",
+            "A is never diagonalizable",
+            "A must have determinant zero"
+        ],
+        answer: 1,
+        theory: "Real symmetric matrices have real eigenvalues and orthogonal eigenvectors for distinct eigenvalues, and are always diagonalizable."
     },
     {
-        q: "When formalizing a problem using State-Space Representation, what constitutes the complete definition of the problem?",
-        options: ["Only the goal state and the heuristic function.", "The initial state, the set of possible actions, the transition model, the goal test, and the path cost function.", "The propositional logic axioms and predicate quantifiers.", "The training dataset and the learning rate."],
+        q: "[Matrix Property - Rank] What is true if a matrix A has rank n (for an n×n matrix)?",
+        options: [
+            "A is singular",
+            "A is invertible",
+            "A has zero determinant",
+            "A has dependent columns"
+        ],
         answer: 1,
-        theory: "A formal state-space search problem requires: an initial state, a set of actions available at any state, a transition model (result of an action), a goal test to check if the state is a solution, and a path cost."
+        theory: "Full rank (rank = n) implies all columns are independent, determinant is non-zero, and matrix is invertible."
+    },
+    {
+        q: "[Matrix Property - Identity Matrix] Which statement is true about identity matrix I?",
+        options: [
+            "It has determinant 0",
+            "It has all eigenvalues equal to 0",
+            "It is the multiplicative identity of matrices",
+            "It is not invertible"
+        ],
+        answer: 2,
+        theory: "Identity matrix I satisfies AI = IA = A for any matrix A, and is always invertible with determinant 1."
     },
     {
         q: "In Adversarial Search (e.g., Chess), what optimization technique safely ignores branches of the search tree that cannot possibly influence the final decision?",
