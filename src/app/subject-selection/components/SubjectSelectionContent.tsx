@@ -25,7 +25,7 @@ const subjects = [
 {
   key: 'subj-ai-math',
   id: 'ai-math',
-  name: 'DAI & Math',
+  name: 'FAI & Math',
   fullName: 'Fundamentals of AI & Mathematics for AI',
   tagline: 'Linear Algebra, Calculus & AI concepts',
   description:

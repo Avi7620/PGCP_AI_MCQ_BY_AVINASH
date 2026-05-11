@@ -183,7 +183,7 @@ const subjectMap: Record<
   "ai-math": {
   id: 'ai-math',
   name: 'ai-math',
-  fullName: 'DAI Mathematics',
+  fullName: 'FAI Mathematics',
   tagline: '',
   icon: Calculator,
   gradient: 'gradient-bg-violet',
