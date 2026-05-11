@@ -1,569 +1,947 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Analytics PGCP-AI Assessment</title>
-    <style>
-        :root {
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --bg: #0f172a;
-            --surface: #1e293b;
-            --text: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-        }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Data Analytics Quiz — PGCP-AI</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;--surface:#13161e;--card:#1a1e28;--border:#252a38;
+  --accent:#4f8ef7;--accent2:#7c5cfc;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;
+  --text:#e8eaf0;--muted:#6b7280;--code-bg:#0a0c12;
+  --font:'Sora',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;font-size:15px;line-height:1.6}
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-        
-        body { background-color: var(--bg); color: var(--text); line-height: 1.6; }
-        
-        .container { max-width: 850px; margin: 2rem auto; padding: 0 1rem; }
-        
-        header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 1.5rem 2rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); border-bottom: 4px solid var(--primary); }
-        
-        h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
-        .subtitle { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem; }
-        
-        .timer { font-size: 1.75rem; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; background: #0b1120; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #334155; }
-        .timer.warning { color: var(--danger); border-color: var(--danger); animation: pulse 1s infinite; }
+/* ─── LAYOUT ─── */
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh;gap:0}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px 16px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.main{padding:32px 40px;max-width:860px}
 
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
+/* ─── SIDEBAR ─── */
+.sidebar-header{text-align:center;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.sidebar-header h2{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.12em;text-transform:uppercase}
+.sidebar-header p{font-size:11px;color:var(--muted);margin-top:4px}
+.timer-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.timer-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.timer-val{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--accent);letter-spacing:.05em}
+.timer-val.warn{color:var(--yellow)}.timer-val.danger{color:var(--red)}
+.progress-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
+.progress-label{font-size:11px;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between}
+.progress-bar{height:6px;background:var(--border);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .3s}
+.q-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.q-btn{aspect-ratio:1;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:9px;font-weight:600;cursor:pointer;transition:all .15s;font-family:var(--font)}
+.q-btn:hover{border-color:var(--accent);color:var(--accent)}
+.q-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.q-btn.answered{background:#1a2540;border-color:var(--accent);color:var(--accent)}
+.q-btn.correct{background:#14291e;border-color:var(--green);color:var(--green)}
+.q-btn.wrong{background:#2a1414;border-color:var(--red);color:var(--red)}
+.q-btn.skipped{background:#1f1a10;border-color:var(--yellow);color:var(--yellow)}
+.legend{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--muted)}
+.legend-row{display:flex;align-items:center;gap:8px}
+.dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
 
-        .card { background: var(--surface); padding: 2.5rem; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); margin-bottom: 2rem; }
-        
-        .progress-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #334155; padding-bottom: 1rem; }
-        .progress-text { font-size: 1rem; color: var(--primary); font-weight: 600; }
-        
-        .question-text { font-size: 1.2rem; font-weight: 500; margin-bottom: 1.5rem; color: #e2e8f0; }
-        
-        pre { background: #0b1120; padding: 1.25rem; border-radius: 8px; overflow-x: auto; margin-bottom: 1.5rem; border: 1px solid #334155; }
-        code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.95rem; color: #a5b4fc; }
+/* ─── SCREENS ─── */
+.screen{display:none}.screen.active{display:block}
 
-        .options-grid { display: grid; gap: 1rem; margin-bottom: 2rem; }
-        
-        .option-label { display: flex; align-items: flex-start; padding: 1.25rem; background: rgba(59, 130, 246, 0.05); border: 2px solid #334155; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
-        .option-label:hover:not(.disabled) { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
-        .option-label.disabled { cursor: not-allowed; opacity: 0.7; }
-        
-        .option-label.correct-reveal { border-color: var(--accent); background: rgba(16, 185, 129, 0.1); }
-        .option-label.wrong-reveal { border-color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+/* ─── START ─── */
+#screen-start{padding:60px 0;text-align:center}
+.start-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));padding:2px 14px;border-radius:99px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:24px}
+#screen-start h1{font-size:36px;font-weight:700;line-height:1.2;margin-bottom:12px}
+#screen-start h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#screen-start p{color:var(--muted);max-width:480px;margin:0 auto 32px}
+.info-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:36px;text-align:left}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
+.info-card .val{font-size:22px;font-weight:700;color:var(--accent);font-family:var(--mono);margin-bottom:4px}
+.info-card .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.btn-start{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;font-family:var(--font);font-size:15px;font-weight:600;padding:14px 40px;border-radius:10px;cursor:pointer;transition:opacity .2s;letter-spacing:.03em}
+.btn-start:hover{opacity:.88}
 
-        input[type="radio"] { margin-right: 1rem; margin-top: 0.25rem; transform: scale(1.3); accent-color: var(--primary); flex-shrink: 0; cursor: inherit; }
+/* ─── QUESTION ─── */
+.q-header{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.q-num{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.q-type-badge{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.badge-theory{background:#1a2540;color:var(--accent)}.badge-snippet{background:#1e1a30;color:#a78bfa}
+.q-text{font-size:16px;font-weight:500;color:var(--text);margin-bottom:20px;line-height:1.7}
+pre.code-block{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:18px 20px;font-family:var(--mono);font-size:13px;overflow-x:auto;margin-bottom:20px;line-height:1.8;color:#c9d1e3}
+pre.code-block .kw{color:#7c5cfc}
+pre.code-block .fn{color:#4f8ef7}
+pre.code-block .str{color:#22c55e}
+pre.code-block .cm{color:#4b5563;font-style:italic}
+pre.code-block .num{color:#f59e0b}
+pre.code-block .cls{color:#e879f9}
+pre.code-block .op{color:#94a3b8}
 
-        /* Instant Feedback Section */
-        #instant-feedback { display: none; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; animation: slideDown 0.3s ease-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .feedback-correct { background: rgba(16, 185, 129, 0.1); border-left: 5px solid var(--accent); }
-        .feedback-wrong { background: rgba(239, 68, 68, 0.1); border-left: 5px solid var(--danger); }
-        
-        .feedback-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .feedback-correct .feedback-title { color: var(--accent); }
-        .feedback-wrong .feedback-title { color: var(--danger); }
-        .feedback-theory { font-size: 0.95rem; color: #cbd5e1; }
+.options{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.opt{display:flex;align-items:flex-start;gap:14px;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:14px 18px;cursor:pointer;transition:all .18s;font-size:14px;line-height:1.5}
+.opt:hover:not(.disabled){border-color:var(--accent);background:#151c2e}
+.opt.selected{border-color:var(--accent);background:#0e1a35}
+.opt.correct{border-color:var(--green);background:#0d2018;cursor:default}
+.opt.wrong{border-color:var(--red);background:#200d0d;cursor:default}
+.opt.disabled{cursor:default;opacity:.7}
+.opt-key{font-family:var(--mono);font-size:12px;font-weight:700;width:22px;flex-shrink:0;margin-top:1px;color:var(--muted)}
+.opt.selected .opt-key{color:var(--accent)}
+.opt.correct .opt-key{color:var(--green)}.opt.wrong .opt-key{color:var(--red)}
+.opt-text{flex:1}
+.feedback{border-radius:10px;padding:14px 18px;font-size:13px;margin-bottom:24px;display:none;line-height:1.6;border:1px solid}
+.feedback.show{display:block}
+.feedback.ok{background:#0d2018;border-color:var(--green);color:#86efac}
+.feedback.err{background:#200d0d;border-color:var(--red);color:#fca5a5}
+.feedback strong{font-weight:600;display:block;margin-bottom:4px}
 
-        .btn-group { display: flex; gap: 1rem; justify-content: space-between; }
-        .btn { background: var(--primary); color: #fff; border: none; padding: 0.875rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; flex: 1; text-align: center; }
-        .btn:hover { background: var(--primary-hover); }
-        .btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
-        .btn-secondary { background: #475569; }
-        .btn-secondary:hover { background: #334155; }
+.nav-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.btn{border:1.5px solid var(--border);background:var(--card);color:var(--text);font-family:var(--font);font-size:13px;font-weight:500;padding:10px 22px;border-radius:8px;cursor:pointer;transition:all .15s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;font-weight:600}
+.btn.primary:hover{opacity:.88}
+.btn:disabled{opacity:.35;cursor:default}
+.skip-btn{margin-left:auto;font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:var(--font);padding:4px 8px}
+.skip-btn:hover{color:var(--yellow)}
 
-        #result-screen { display: none; }
-        .score-display { text-align: center; font-size: 4rem; font-weight: 800; color: var(--primary); margin: 2rem 0; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        
-        .review-item { background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border-left: 4px solid var(--danger); }
-        .review-item.correct { border-left-color: var(--accent); }
-        .theory-box { background: #0b1120; padding: 1rem; border-radius: 8px; margin-top: 1rem; font-size: 0.9rem; border-left: 3px solid var(--primary); color: #cbd5e1;}
-        .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; }
-        .status-badge.correct { background: rgba(16, 185, 129, 0.2); color: var(--accent); }
-        .status-badge.incorrect { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+/* ─── SCORE SCREEN ─── */
+#screen-score{padding:40px 0}
+.score-hero{text-align:center;padding:40px;background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:28px}
+.score-ring{width:130px;height:130px;margin:0 auto 20px;position:relative}
+.score-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.score-ring .bg{fill:none;stroke:var(--border);stroke-width:8}
+.score-ring .fg{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1s ease}
+.score-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;font-family:var(--mono)}
+.score-grade{font-size:14px;color:var(--muted);margin-bottom:8px}
+.score-title{font-size:22px;font-weight:700;margin-bottom:6px}
+.score-sub{font-size:13px;color:var(--muted)}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.stat-val{font-size:24px;font-weight:700;font-family:var(--mono);margin-bottom:4px}
+.stat-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 
-    </style>
+/* ─── REVIEW ─── */
+.review-section h2{font-size:16px;font-weight:600;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.review-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px}
+.review-item.review-correct{border-color:#1e3d28}.review-item.review-wrong{border-color:#3d1e1e}.review-item.review-skip{border-color:#3d3010}
+.review-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.review-qnum{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:600}
+.status-badge{font-size:10px;padding:3px 10px;border-radius:99px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.sb-correct{background:#14291e;color:var(--green)}.sb-wrong{background:#2a1414;color:var(--red)}.sb-skip{background:#1f1a10;color:var(--yellow)}
+.review-q{font-size:14px;font-weight:500;margin-bottom:12px;line-height:1.6}
+.review-opts{display:flex;flex-direction:column;gap:6px}
+.review-opt{font-size:13px;padding:8px 14px;border-radius:7px;border:1px solid var(--border);display:flex;gap:10px}
+.review-opt.r-correct{background:#0d2018;border-color:var(--green);color:#86efac}
+.review-opt.r-wrong{background:#200d0d;border-color:var(--red);color:#fca5a5}
+.review-opt.r-your{border-style:dashed}
+.review-exp{margin-top:10px;padding:10px 14px;background:var(--code-bg);border-radius:7px;font-size:12px;color:#94a3b8;line-height:1.6;border-left:3px solid var(--accent2)}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+@media(max-width:780px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto}
+  .main{padding:20px}
+  .info-cards,.stats-row{grid-template-columns:repeat(2,1fr)}
+  #screen-start{padding:30px 0}
+}
+</style>
 </head>
 <body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Data Analytics</h2>
+      <p>PGCP-AI · ACTS Pune</p>
+    </div>
+    <div class="timer-box" id="timer-box" style="display:none">
+      <div class="timer-label">Time Remaining</div>
+      <div class="timer-val" id="timer-display">60:00</div>
+    </div>
+    <div class="progress-wrap" id="progress-box" style="display:none">
+      <div class="progress-label"><span>Progress</span><span id="prog-text">0 / 40</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <div id="q-grid-wrap" style="display:none">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:600">Questions</div>
+      <div class="q-grid" id="q-grid"></div>
+    </div>
+    <div id="legend-wrap" style="display:none">
+      <div class="legend">
+        <div class="legend-row"><div class="dot" style="background:#1a2540;border:1px solid var(--accent)"></div>Answered</div>
+        <div class="legend-row"><div class="dot" style="background:#14291e;border:1px solid var(--green)"></div>Correct</div>
+        <div class="legend-row"><div class="dot" style="background:#2a1414;border:1px solid var(--red)"></div>Wrong</div>
+        <div class="legend-row"><div class="dot" style="background:#1f1a10;border:1px solid var(--yellow)"></div>Skipped</div>
+        <div class="legend-row"><div class="dot" style="background:var(--card);border:1px solid var(--border)"></div>Not visited</div>
+      </div>
+    </div>
+  </aside>
 
-<div class="container">
-    <header>
-        <div>
-            <h1>Data Analytics Assessment</h1>
-            <div class="subtitle">PGCP-AI Syllabus (1 Hour | 40 Questions)</div>
-        </div>
-        <div class="timer" id="timer">60:00</div>
-    </header>
+  <!-- MAIN -->
+  <main class="main">
 
-    <div id="quiz-screen">
-        <div class="card">
-            <div class="progress-container">
-                <span class="progress-text" id="progress-text">Question 1 / 40</span>
-                <span style="color: var(--text-muted); font-size: 0.9rem;">Hard Mode: Instant Feedback Enabled</span>
-            </div>
-            
-            <div class="question-text" id="question-text"></div>
-            <pre id="code-snippet-container" style="display:none;"><code id="code-snippet"></code></pre>
-            
-            <div class="options-grid" id="options-container"></div>
-
-            <div id="instant-feedback">
-                <div class="feedback-title" id="feedback-title"></div>
-                <div class="feedback-theory" id="feedback-theory"></div>
-            </div>
-
-            <div class="btn-group">
-                <button class="btn btn-secondary" id="prev-btn" onclick="handlePrev()">&#8592; Previous</button>
-                <button class="btn" id="next-btn" onclick="handleNext()">Next Question &#8594;</button>
-            </div>
-        </div>
+    <!-- START -->
+    <div class="screen active" id="screen-start">
+      <div class="start-badge">MCQ Assessment</div>
+      <h1>Data <span>Analytics</span><br/>Proficiency Test</h1>
+      <p>Challenge yourself with 40 hard-level questions — theory concepts and Python code snippets — covering the full PGCP-AI Data Analytics curriculum.</p>
+      <div class="info-cards">
+        <div class="info-card"><div class="val">40</div><div class="lbl">Questions</div></div>
+        <div class="info-card"><div class="val">60<span style="font-size:14px">min</span></div><div class="lbl">Time Limit</div></div>
+        <div class="info-card"><div class="val">1pt</div><div class="lbl">Per Question</div></div>
+      </div>
+      <button class="btn-start" onclick="startQuiz()">Begin Quiz →</button>
     </div>
 
-    <div id="result-screen">
-        <div class="card">
-            <h2 style="text-align: center; color: #fff;">Assessment Complete</h2>
-            <div class="score-display" id="score-display">0 / 40</div>
-            <p style="text-align: center; margin-bottom: 2rem; color: var(--text-muted);">Review your full performance summary below.</p>
-            <div id="review-container"></div>
-            <button class="btn" style="width: 100%; margin-top: 2rem;" onclick="location.reload()">Restart Assessment</button>
-        </div>
+    <!-- QUIZ -->
+    <div class="screen" id="screen-quiz">
+      <div class="q-header">
+        <span class="q-num" id="q-num-label">Q 01 / 40</span>
+        <span class="q-type-badge" id="q-type-badge">Theory</span>
+      </div>
+      <div class="q-text" id="q-text"></div>
+      <pre class="code-block" id="q-code" style="display:none"></pre>
+      <div class="options" id="q-options"></div>
+      <div class="feedback" id="q-feedback"></div>
+      <div class="nav-row">
+        <button class="btn" id="btn-prev" onclick="navigate(-1)" disabled>← Prev</button>
+        <button class="btn primary" id="btn-next" onclick="navigate(1)" style="display:none">Next →</button>
+        <button class="btn primary" id="btn-finish" onclick="finishQuiz()" style="display:none">Finish Quiz</button>
+        <button class="skip-btn" id="btn-skip" onclick="skipQuestion()">Skip →</button>
+      </div>
     </div>
+
+    <!-- SCORE -->
+    <div class="screen" id="screen-score"></div>
+
+  </main>
 </div>
 
 <script>
-// 40 Questions generated strictly from the provided Data Analytics PGCP-AI syllabus.
-const questions = [
-    {
-        q: "In the Data Analytics Life Cycle, during which phase do teams primarily evaluate if they have enough data to build the model, and identify potential risks and mitigation strategies?",
-        options: ["Data Preparation", "Discovery", "Model Planning", "Model Building Implementation"],
-        answer: 1,
-        theory: "In the Discovery phase, the team learns the business domain, frames the problem, assesses resources (including data availability), and identifies risks before moving to data prep."
-    },
-    {
-        q: "What is the expected output of this Pandas snippet when loading semi-structured data without explicit handling?",
-        code: "import pandas as pd\ndata = pd.read_csv('data.txt', sep='|')\n# 'data.txt' contains:\n# id|name|age\n# 1|Alice|25\n# 2|Bob",
-        options: ["Parses successfully with missing values filled as 0.", "Raises a ParserError due to inconsistent column counts.", "Parses successfully, assigning NaN to Bob's age.", "Drops the row containing 'Bob' automatically."],
-        answer: 2,
-        theory: "Pandas `read_csv` handles missing delimiters gracefully by assigning `NaN` to the missing fields in that row, making it robust for imperfect semi-structured data ingestion."
-    },
-    {
-        q: "Analytics goes beyond Reporting. If a dashboard showing monthly sales drops is considered 'Reporting', what characterizes 'Analytics'?",
-        options: ["Aggregating the monthly sales into an annual view.", "Sending automated email alerts when sales drop.", "Applying regression to identify *why* the drop occurred and predicting next month's sales.", "Exporting the dashboard to a PDF for management."],
-        answer: 2,
-        theory: "Reporting answers 'What happened?' (Hindsight). Analytics answers 'Why did it happen?' and 'What will happen?' (Insight and Foresight) using statistical and predictive tools."
-    },
-    {
-        q: "Which Seaborn visualization is most appropriate to explicitly discover the joint distribution and bi-variate relationship between two numerical variables?",
-        code: "import seaborn as sns\n# Which function should replace '???'\nsns.???(data=df, x='salary', y='experience')",
-        options: ["boxplot", "jointplot", "countplot", "barplot"],
-        answer: 1,
-        theory: "The `jointplot` in Seaborn plots the bi-variate relationship (scatter or hex) along with the marginal distributions (histograms/KDEs) on the axes, directly addressing joint and marginal probability concepts."
-    },
-    {
-        q: "When analyzing right-skewed income data, why is the Median considered a better measure of central tendency than the Mean?",
-        options: ["The Median calculation ignores all values below the 25th percentile.", "The Mean is disproportionately pulled toward the long tail of high-income outliers.", "The Median is mathematically equal to the mode in skewed data.", "The Mean cannot be calculated on continuous data."],
-        answer: 1,
-        theory: "In right-skewed data, extreme high values inflate the mean, making it a misleading representation of the 'typical' observation. The median remains robust to outliers."
-    },
-    {
-        q: "What is the difference in calculating variance using Pandas vs NumPy defaults?",
-        code: "import pandas as pd\nimport numpy as np\narr = [1, 2, 3, 4, 5]\nprint(pd.Series(arr).var() == np.var(arr))",
-        options: ["True, they use the exact same formula.", "False, Pandas uses sample variance (ddof=1) while NumPy uses population variance (ddof=0).", "False, Pandas uses population variance while NumPy uses sample variance.", "TypeError: Pandas Series cannot compute variance directly."],
-        answer: 1,
-        theory: "By default, Pandas `var()` uses Delta Degrees of Freedom (ddof) = 1 (Sample Variance), whereas NumPy `np.var()` uses ddof = 0 (Population Variance)."
-    },
-    {
-        q: "A medical test has a 90% true positive rate and a 5% false positive rate. If 1% of the population has the disease, what concept must be applied to find the probability that a person who tests positive actually has the disease?",
-        options: ["The Central Limit Theorem", "Joint Probability", "Bayes' Theorem", "Poisson Distribution"],
-        answer: 2,
-        theory: "Bayes' Theorem updates the prior probability (1% prevalence) with explicit evidence (test results) to calculate the posterior probability of having the disease given a positive test."
-    },
-    {
-        q: "Given a Scipy implementation of Naive Bayes, what does the model fundamentally assume about the dataset's features?",
-        code: "from sklearn.naive_bayes import GaussianNB\nmodel = GaussianNB()\nmodel.fit(X_train, y_train)",
-        options: ["Features are strongly correlated with each other.", "Features are conditionally independent given the class label.", "Features are identically uniformly distributed.", "Features must be categorical, not continuous."],
-        answer: 1,
-        theory: "The 'Naive' in Naive Bayes comes from the strong assumption that all informative attributes (features) are statistically independent of one another given the target class."
-    },
-    {
-        q: "Which probability distribution is most appropriate for modeling the number of fraudulent transactions occurring within a specific 24-hour timeframe?",
-        options: ["Normal Distribution", "Binomial Distribution", "Poisson Distribution", "Continuous Uniform Distribution"],
-        answer: 2,
-        theory: "The Poisson distribution models the probability of a given number of discrete events occurring in a fixed interval of time or space, assuming events occur with a known constant mean rate."
-    },
-    {
-        q: "According to the Central Limit Theorem (CLT), as the sample size increases, the sampling distribution of the sample mean approaches what?",
-        options: ["A Normal Distribution, regardless of the population's original distribution.", "A Binomial Distribution.", "The exact shape of the original population distribution.", "A Uniform Distribution."],
-        answer: 0,
-        theory: "The CLT states that the distribution of sample means approximates a normal distribution as the sample size gets larger, even if the underlying population distribution is skewed or non-normal."
-    },
-    {
-        q: "What does this NumPy snippet generate, assuming 'data' is normally distributed?",
-        code: "mean, std = np.mean(data), np.std(data)\nlower_bound = mean - 3*std\nupper_bound = mean + 3*std\noutliers = data[(data < lower_bound) | (data > upper_bound)]",
-        options: ["A 95% Confidence Interval.", "A Z-score transformation of the entire dataset.", "Identification of outliers using the Empirical Rule (68-95-99.7).", "The Interquartile Range (IQR)."],
-        answer: 2,
-        theory: "Using the Empirical Rule for normal distributions, ~99.7% of data falls within 3 standard deviations of the mean. Data outside this boundary are typically flagged as outliers."
-    },
-    {
-        q: "What is the primary difference between Pearson Correlation and Covariance?",
-        options: ["Covariance indicates both direction and strength, while Pearson only indicates direction.", "Pearson is scale-dependent, while Covariance is dimensionless.", "Pearson is standardized (bounded between -1 and +1), making it easier to interpret strength, while Covariance is scale-dependent.", "They are mathematically identical."],
-        answer: 2,
-        theory: "Covariance indicates the direction of the linear relationship but depends on the units of the variables. Pearson correlation standardizes covariance by dividing it by the product of standard deviations, bounding it between -1 and 1."
-    },
-    {
-        q: "When deciding whether to use a Z-Test or a Chi-Square test, which data profile necessitates the Chi-Square test?",
-        options: ["Comparing the sample mean of continuous data to a population mean when variance is known.", "Testing the goodness-of-fit or independence between two categorical variables.", "Testing for skewness in a continuous normal distribution.", "Evaluating the correlation coefficient of continuous paired data."],
-        answer: 1,
-        theory: "Chi-Square tests evaluate categorical data (e.g., assessing if observed frequencies match expected frequencies), whereas Z-tests are used for sample means of continuous data."
-    },
-    {
-        q: "If a Hypothesis Test yields a p-value of 0.02 and the significance level (alpha) is 0.05, what is the correct analytical conclusion?",
-        options: ["Accept the null hypothesis.", "Fail to reject the null hypothesis.", "Reject the null hypothesis, indicating statistical significance.", "The test is inconclusive due to sampling bias."],
-        answer: 2,
-        theory: "When the p-value is less than or equal to the significance level (alpha), the evidence is strong enough to reject the null hypothesis in favor of the alternative hypothesis."
-    },
-    {
-        q: "In Predictive Modeling, what is the purpose of 'Supervised Segmentation' in algorithms like Decision Trees?",
-        options: ["To randomly divide the dataset into training and testing sets.", "To group unlabeled data into clusters based on distance metrics.", "To partition the data based on informative attributes to maximize purity (e.g., using Entropy) regarding a specific target variable.", "To remove outliers from the continuous feature space."],
-        answer: 2,
-        theory: "Supervised segmentation (like in Trees) systematically splits data using attributes that yield the highest information gain or lowest Gini impurity regarding the known target labels."
-    },
-    {
-        q: "Which analytical paradigm answers the question: 'What is the optimal decision or action to take given the predictions and business constraints?'",
-        options: ["Descriptive Analytics", "Predictive Analytics", "Prescriptive Analytics", "Diagnostic Analytics"],
-        answer: 2,
-        theory: "Prescriptive modeling uses optimization and simulation to recommend actions based on predictive models, moving from 'what will happen' to 'what should we do about it'."
-    },
-    {
-        q: "In Multiple Linear Regression, how do you interpret a slope coefficient of 2.5 for feature X1?",
-        options: ["For every 1 unit increase in the target variable, X1 increases by 2.5 units.", "X1 explains 2.5% of the variance in the target variable.", "Holding all other features constant, a 1 unit increase in X1 results in a 2.5 unit increase in the predicted target.", "The target variable is 2.5 times larger than X1 on average."],
-        answer: 2,
-        theory: "In regression interpretation, a coefficient represents the expected change in the dependent variable for a one-unit change in the independent variable, assuming all other variables are held constant."
-    },
-    {
-        q: "What is a primary benefit of using Monte Carlo Simulation for Risk Analysis?",
-        options: ["It completely eliminates the variance in predictive models.", "It generates a range of possible outcomes and the probability of different losses or gains, rather than relying on a single-point estimate.", "It automatically determines the true null hypothesis.", "It forces nonlinear optimization problems to become linear."],
-        answer: 1,
-        theory: "Simulation helps in understanding uncertainty by running thousands of scenarios with random variables, providing a probabilistic distribution of risks instead of a static average estimate."
-    },
-    {
-        q: "Which technique is fundamentally used to prevent Overfitting during model induction?",
-        code: "from sklearn.model_selection import ???\nscore = ???(model, X, y, cv=5)",
-        options: ["Train on 100% of the data to ensure no data is lost.", "Using Cross-Validation to evaluate the model's generalization on unseen data splits.", "Increasing the complexity of the Decision Tree to map every data point perfectly.", "Using only Pearson correlation for feature selection."],
-        answer: 1,
-        theory: "Holdout evaluation and Cross-Validation (like `cross_val_score`) test the model on data it hasn't trained on, measuring generalization to detect if the model is memorizing noise (overfitting)."
-    },
-    {
-        q: "When evaluating classifiers in Decision Analytics, why is 'Accuracy' alone often misleading for fraud detection?",
-        options: ["Accuracy cannot be calculated for categorical predictions.", "Fraud datasets are highly imbalanced; a naive model predicting 'No Fraud' 100% of the time could still achieve 99% accuracy.", "Accuracy penalizes True Positives too heavily.", "Fraud requires Prescriptive modeling, where accuracy is irrelevant."],
-        answer: 1,
-        theory: "In imbalanced domains, baseline performance can be artificially high. Evaluation frameworks must use metrics like Precision, Recall, or F1-Score to truly measure effectiveness on the minority class."
-    },
-    {
-        q: "What is the primary goal of Factor Analysis in data analytics?",
-        options: ["To predict a continuous target variable.", "To discover unobserved underlying variables (factors) that explain the patterns of correlations within a set of observed variables.", "To test the hypothesis of two sample means.", "To segment data based on decision tree rules."],
-        answer: 1,
-        theory: "Factor Analysis is a dimensionality reduction technique used to identify underlying latent variables that explain the variance and covariance among observed variables."
-    },
-    {
-        q: "In the context of the analytics lifecycle workflow, what makes KNIME unique compared to writing pure Python code?",
-        options: ["It requires compiling code into C++ before execution.", "It is a low-code/no-code visual programming platform where workflows are built by connecting nodes representing data operations.", "It only supports descriptive statistics, not predictive models.", "It cannot handle unstructured data."],
-        answer: 1,
-        theory: "KNIME relies on a graphical interface where users drag, drop, and connect 'nodes' to create data pipelines and analytical workflows, making advanced analytics accessible with less coding."
-    },
-    {
-        q: "What is the result of using `pandas.DataFrame.dropna()` on a dataset with missing values?",
-        code: "import pandas as pd\ndf = pd.DataFrame({'A': [1, np.nan, 3], 'B': [4, 5, np.nan]})\nclean_df = df.dropna()",
-        options: ["Fills NaNs with the column mean.", "Fills NaNs with 0.", "Removes any row that contains at least one NaN value.", "Removes any column that contains at least one NaN value."],
-        answer: 2,
-        theory: "By default, `dropna(axis=0)` drops any row containing one or more missing (NaN) values. While effective, this can severely reduce dataset size if missing data is prevalent."
-    },
-    {
-        q: "Which probability concept measures the likelihood of two specific events happening simultaneously?",
-        options: ["Marginal Probability", "Joint Probability", "Conditional Probability", "Mutually Exclusive Probability"],
-        answer: 1,
-        theory: "Joint probability (P(A and B)) is the probability of two events occurring at the same time. Conditional probability (P(A|B)) is the probability of A occurring *given* B has occurred."
-    },
-    {
-        q: "In Scipy, what function is used to calculate the area under the Normal Distribution curve to the left of a specific z-score (Cumulative Distribution Function)?",
-        code: "import scipy.stats as stats\nprob = stats.norm.???(1.96)",
-        options: ["pdf", "pmf", "cdf", "rvs"],
-        answer: 2,
-        theory: "The Cumulative Distribution Function (`cdf`) returns the probability that a random variable taken from the distribution will be less than or equal to a specific value."
-    },
-    {
-        q: "If a business goal is to minimize the cost of shipping goods from multiple warehouses to multiple stores subject to capacity constraints, what analytical technique applies?",
-        options: ["Linear Optimization", "Z-Test", "Factor Analysis", "Classification Trees"],
-        answer: 0,
-        theory: "Linear Optimization (or Linear Programming) is used to find the best possible outcome (e.g., minimum cost) in a mathematical model whose requirements are represented by linear relationships/constraints."
-    },
-    {
-        q: "What does evaluating a classifier against a 'Baseline' model entail?",
-        options: ["Comparing the model's performance to the theoretical maximum accuracy of 100%.", "Comparing the model against a simple heuristic, such as predicting the majority class, to prove the model actually learned meaningful patterns.", "Running the model on the training data.", "Using a standard deviation of 0."],
-        answer: 1,
-        theory: "A baseline model provides a minimum threshold of performance. If a complex machine learning model cannot beat a simple rule (like 'always guess majority class'), the investment in data/modeling is not justified."
-    },
-    {
-        q: "When dealing with skewed data, how does the Interquartile Range (IQR) help in robust descriptive statistics?",
-        options: ["It transforms the data to a normal distribution.", "It calculates the distance between the mean and median.", "It measures dispersion by calculating the range of the middle 50% of the data, ignoring extreme outliers.", "It forces the variance to equal 1."],
-        answer: 2,
-        theory: "The IQR is the difference between the 75th percentile (Q3) and the 25th percentile (Q1). Because it only looks at the middle 50% of the data, it is a robust measure of dispersion unaffected by extreme outliers."
-    },
-    {
-        q: "In predictive modeling, identifying 'Informative Attributes' often utilizes which metric to evaluate how well an attribute separates the data into target classes?",
-        options: ["Pearson Correlation", "P-value", "Information Gain (Entropy)", "Standard Error"],
-        answer: 2,
-        theory: "In Supervised Segmentation (like Decision Trees), Information Gain measures the reduction in Entropy (uncertainty) achieved by partitioning the data on a specific attribute."
-    },
-    {
-        q: "What constitutes a 'spurious correlation' in data exploration?",
-        options: ["A correlation coefficient exactly equal to 0.", "A mathematical relationship where two variables move together due to coincidence or a hidden third variable, implying no direct causation.", "A correlation calculated on nominal categorical data.", "A negative correlation."],
-        answer: 1,
-        theory: "Spurious correlations occur when two variables appear to be causally related but are actually driven by a hidden confounder or pure coincidence. Correlation does not equal causation."
-    },
-    {
-        q: "How does the 'holdout evaluation' approach validate a model?",
-        options: ["It trains the model on the entire dataset and evaluates the error rate.", "It splits the data into separate training and testing sets, training the model on one and evaluating it on the other (the holdout).", "It holds the model parameters constant while changing the hyperparameters.", "It drops missing values before evaluating."],
-        answer: 1,
-        theory: "Holdout evaluation partitions data to simulate how the model will perform on unseen future data. Testing a model on the data it trained on yields an overly optimistic, biased performance metric."
-    },
-    {
-        q: "What characteristic distinguishes 'Directional Data Analytics'?",
-        options: ["It only applies to linear regression models predicting positive growth.", "It deals with data where observations are angles or directions (e.g., wind direction, time of day on a 24h clock), requiring circular statistics.", "It requires data to be perfectly normally distributed.", "It is another term for forward-stepwise feature selection."],
-        answer: 1,
-        theory: "Directional (or circular) data wraps around (e.g., 359 degrees and 1 degree are close to each other). Standard arithmetic means fail here, requiring specialized analytical techniques."
-    },
-    {
-        q: "Why might an analyst choose to 'cap' outliers instead of removing them entirely?",
-        code: "upper_limit = df['revenue'].quantile(0.99)\ndf['revenue'] = np.where(df['revenue'] > upper_limit, upper_limit, df['revenue'])",
-        options: ["To artificially increase the mean.", "To ensure the dataset size remains consistent while reducing the disproportionate impact of extreme values on regression coefficients.", "Because removing rows is syntactically impossible in Pandas.", "To convert continuous data into categorical bins."],
-        answer: 1,
-        theory: "Capping (or Winsorizing) limits the influence of extreme outliers on the model while preserving the observation (which may contain valid data in other features), preventing sample size reduction."
-    },
-    {
-        q: "In explicitly combining evidence with Bayes Rule, what role does the 'Prior Probability' play?",
-        options: ["It is the final calculated probability after observing the data.", "It is the probability of observing the evidence given the hypothesis is true.", "It represents the initial belief or baseline probability of an event before any new evidence is considered.", "It is the normalizing constant."],
-        answer: 2,
-        theory: "Bayesian reasoning updates beliefs. The Prior Probability is your starting baseline (e.g., historical default rate). As new explicit evidence arrives, it is updated to become the Posterior Probability."
-    },
-    {
-        q: "Which Scikit-Learn function is commonly used to standardize continuous features before applying distance-based models or factor analysis?",
-        code: "from sklearn.preprocessing import ???\nscaler = ???()\nX_scaled = scaler.fit_transform(X)",
-        options: ["LabelEncoder", "StandardScaler", "OneHotEncoder", "SimpleImputer"],
-        answer: 1,
-        theory: "StandardScaler transforms the data such that the mean is 0 and the standard deviation is 1 (Z-score normalization). This is critical for models sensitive to the scale of input features."
-    },
-    {
-        q: "When dashboards fail to answer business questions, what is typically the root cause in the analytics workflow?",
-        options: ["The dashboard is using Seaborn instead of Matplotlib.", "The workflow stopped at Reporting (Descriptive) and did not progress to Analysis/Analytics (Diagnostic/Predictive) to uncover root causes.", "The data is structured rather than unstructured.", "The median was used instead of the mean."],
-        answer: 1,
-        theory: "Dashboards generally provide descriptive reporting ('What'). When 'Why' or 'What next' is asked, analysts must apply statistical modeling, hypothesis testing, and predictive analytics."
-    },
-    {
-        q: "In Data Storytelling, what is a primary danger of a 'Misleading Visualization'?",
-        options: ["Using too many colors.", "Using a non-zero baseline on a bar chart, which visually exaggerates minor differences between categories.", "Displaying a legend on the left side instead of the right.", "Using a line chart for time-series data."],
-        answer: 1,
-        theory: "Truncating the Y-axis (starting it at a value other than 0) in bar charts is a common misleading visualization technique that manipulates the viewer's perception of the magnitude of change."
-    },
-    {
-        q: "What defines an 'Unstructured' data source in the context of the Intelligent Data Analysis workflow?",
-        options: ["Data stored in a strictly defined SQL relational database.", "Data existing in CSV formats.", "Data that lacks a predefined data model or schema, such as free-form text, images, or audio.", "Numerical arrays generated by NumPy."],
-        answer: 2,
-        theory: "Unstructured data does not fit neatly into relational tables. Analyzing it requires advanced techniques (like NLP or Factor Analysis) to extract structured features before traditional modeling."
-    },
-    {
-        q: "During model evaluation, what is the consequence of 'Sampling Bias' in the training dataset?",
-        options: ["The model becomes mathematically identical to the baseline.", "The model will generalize perfectly to all unseen data.", "The model learns patterns specific to the biased sample, leading to inaccurate predictions when deployed on the true population.", "The model requires more features to train."],
-        answer: 2,
-        theory: "If the sample does not represent the population (sampling bias), the model's learned parameters will be skewed. It will fail in deployment because real-world data distributions will differ from the training data."
-    },
-    {
-        q: "What is the primary function of 'Functional Data Analysis' (FDA)?",
-        options: ["Analyzing data that is expressed as discrete, categorical bins.", "Analyzing information on curves or functions over a continuum (like time or space), treating the entire curve as a single observation.", "Translating object-oriented code into functional programming languages.", "Calculating the p-value of a chi-square test."],
-        answer: 1,
-        theory: "Functional Data Analysis deals with data that provides information about curves, shapes, or functions over a continuum, rather than independent scalar data points."
-    }
+const QUESTIONS = [
+  // ── THEORY ──
+  {
+    type:"theory",
+    q:"In the Data Analytics Life Cycle, which stage immediately follows 'Model Building Implementation'?",
+    opts:["Documentation","Quality Assurance","Management Approval","Acceptance and Operation"],
+    ans:1,
+    exp:"After implementing the model, Quality Assurance (QA) is performed to validate the model's correctness, performance, and reliability before documentation and approval."
+  },
+  {
+    type:"theory",
+    q:"Which of the following BEST describes the difference between 'Analysis' and 'Analytics'?",
+    opts:["Analysis uses ML models; Analytics uses SQL","Analysis examines past data to explain what happened; Analytics uses data to predict and prescribe future actions","Analysis is real-time; Analytics is batch","They are synonymous terms in modern data science"],
+    ans:1,
+    exp:"Analysis is retrospective — explaining past events. Analytics is forward-looking — using models and statistics to predict or prescribe future decisions."
+  },
+  {
+    type:"theory",
+    q:"A dataset has a strong positive skew. Which measure of central tendency should be preferred for a fair representation of the 'typical' value?",
+    opts:["Mean","Mode","Median","Coefficient of Variation"],
+    ans:2,
+    exp:"In right-skewed distributions the mean is pulled upward by extreme high values. The median, which is positionally based, is resistant to outliers and better represents the typical observation."
+  },
+  {
+    type:"theory",
+    q:"Bayes' Theorem is expressed as P(A|B) = P(B|A)·P(A) / P(B). In a spam classifier, what does P(A) represent?",
+    opts:["Probability the email contains the word 'offer' given it is spam","Prior probability that any email is spam, before seeing its content","Probability that the email is spam given it contains 'offer'","Marginal probability of the word 'offer' appearing"],
+    ans:1,
+    exp:"P(A) is the prior — the baseline probability of spam before observing any evidence. It is estimated from historical data (e.g., 30% of all emails are spam)."
+  },
+  {
+    type:"theory",
+    q:"The Central Limit Theorem (CLT) states that as sample size increases, the sampling distribution of the sample mean approaches a normal distribution regardless of the population distribution. What is the typical minimum sample size used in practice?",
+    opts:["n ≥ 5","n ≥ 15","n ≥ 30","n ≥ 100"],
+    ans:2,
+    exp:"By convention, n ≥ 30 is the threshold where the CLT approximation is considered reliable for most population distributions."
+  },
+  {
+    type:"theory",
+    q:"In hypothesis testing, the p-value is 0.03 and the significance level α is 0.05. What is the correct conclusion?",
+    opts:["Fail to reject H₀; insufficient evidence","Reject H₀; result is statistically significant","Accept H₀; the null hypothesis is true","The test is inconclusive; repeat with larger sample"],
+    ans:1,
+    exp:"Since p (0.03) < α (0.05), we reject H₀. This means there is statistically significant evidence against the null hypothesis at the 5% significance level."
+  },
+  {
+    type:"theory",
+    q:"A model achieves 98% training accuracy but only 62% test accuracy. This is a classic case of:",
+    opts:["Underfitting","High bias","Overfitting","Data leakage only"],
+    ans:2,
+    exp:"Overfitting occurs when a model memorises training data, capturing noise rather than the true underlying pattern. It performs well on training data but poorly on unseen data."
+  },
+  {
+    type:"theory",
+    q:"Which cross-validation technique is most appropriate when the dataset is very small (e.g., 80 rows) to maximise use of training data?",
+    opts:["Hold-out (80/20 split)","K-Fold with k=5","Leave-One-Out Cross Validation (LOOCV)","Stratified sampling only"],
+    ans:2,
+    exp:"LOOCV uses every single observation as a test set once, maximising training data usage. It is preferred when data is scarce, though it is computationally expensive."
+  },
+  {
+    type:"theory",
+    q:"Pearson Correlation Coefficient r = -0.93 between two variables indicates:",
+    opts:["Weak positive linear relationship","Strong positive linear relationship","Strong negative linear relationship","No linear relationship; may have a non-linear one"],
+    ans:2,
+    exp:"r ranges from -1 to +1. A value of -0.93 indicates a very strong negative linear relationship — as one variable increases, the other strongly decreases."
+  },
+  {
+    type:"theory",
+    q:"In supervised segmentation (decision trees), which criterion is used to select the most informative attribute at each split in a CART tree?",
+    opts:["Entropy only","Information Gain Ratio","Gini Impurity","Chi-Square statistic"],
+    ans:2,
+    exp:"CART (Classification and Regression Trees) uses Gini Impurity as the default splitting criterion. ID3 uses Information Gain; C4.5 uses Gain Ratio."
+  },
+  {
+    type:"theory",
+    q:"Prescriptive analytics differs from predictive analytics primarily because:",
+    opts:["It uses larger datasets","It tells you what WILL happen, not just what might happen","It recommends actions to take to achieve a desired outcome, not just predicts outcomes","It relies only on historical data without ML models"],
+    ans:2,
+    exp:"Predictive analytics forecasts future outcomes. Prescriptive analytics goes further — it recommends specific actions (using optimisation and simulation) to achieve desired outcomes."
+  },
+  {
+    type:"theory",
+    q:"Which probability type is defined as P(A ∩ B) / P(B) — the probability of event A occurring given that B has already occurred?",
+    opts:["Marginal probability","Joint probability","Conditional probability","Posterior probability"],
+    ans:2,
+    exp:"Conditional probability P(A|B) = P(A∩B)/P(B) measures how the probability of A changes once we know B has occurred."
+  },
+  {
+    type:"theory",
+    q:"In regression analysis, a coefficient β₁ = 3.7 for variable 'advertising_spend' means:",
+    opts:["Advertising spend causes a 3.7x increase in revenue","For every 1-unit increase in advertising spend, the predicted outcome increases by 3.7 units, holding all else constant","The variable has 3.7% explanatory power","The correlation between spend and outcome is 3.7"],
+    ans:1,
+    exp:"In linear regression, a coefficient of 3.7 means: holding all other variables constant, a 1-unit increase in the predictor is associated with a 3.7-unit change in the response variable."
+  },
+  {
+    type:"theory",
+    q:"A Chi-Square test is most appropriate when:",
+    opts:["Comparing means of two continuous normal distributions","Testing independence between two categorical variables","Checking if residuals are normally distributed in a regression","Estimating confidence intervals for a proportion"],
+    ans:1,
+    exp:"The Chi-Square test of independence is designed for categorical data — it tests whether two categorical variables are statistically independent in a contingency table."
+  },
+  {
+    type:"theory",
+    q:"Which statement about the Poisson distribution is CORRECT?",
+    opts:["It models the number of successes in a fixed number of independent Bernoulli trials","It is appropriate when events occur independently at a constant average rate in a fixed interval","Its mean and variance are always different","It requires the sample size to be at least 30"],
+    ans:1,
+    exp:"The Poisson distribution models count data — the number of times an event occurs in a fixed time or space interval, when events occur independently at a known constant rate (λ). Notably, mean = variance = λ."
+  },
+  {
+    type:"theory",
+    q:"The Coefficient of Variation (CV) is defined as (Standard Deviation / Mean) × 100. Its PRIMARY advantage over standard deviation alone is:",
+    opts:["It is always larger than standard deviation","It allows comparison of variability across datasets with different units or scales","It is unaffected by outliers","It measures the shape of distribution, not just spread"],
+    ans:1,
+    exp:"CV normalises dispersion relative to the mean, enabling meaningful comparison of variability between datasets measured in different units or at very different scales (e.g., salary vs height)."
+  },
+  {
+    type:"theory",
+    q:"In optimisation modelling, a linear programme has an objective function and constraints. What defines the 'feasible region'?",
+    opts:["The set of all objective function values","The region where all constraints are simultaneously satisfied","The optimal solution point only","The boundary of the convex hull of the data"],
+    ans:1,
+    exp:"The feasible region is the set of all variable combinations that satisfy every constraint simultaneously. The optimal solution is found at a vertex (corner) of this region in linear programming."
+  },
+  {
+    type:"theory",
+    q:"Monte Carlo simulation in risk analysis is best described as:",
+    opts:["A deterministic optimisation technique for finding exact solutions","A method that runs thousands of random samples from probability distributions to model uncertainty and generate a range of possible outcomes","A supervised machine learning algorithm for forecasting","A single-point estimation technique based on averages"],
+    ans:1,
+    exp:"Monte Carlo simulation replaces fixed single-point inputs with probability distributions and runs many iterations to produce a distribution of possible outcomes, quantifying risk and uncertainty."
+  },
+  {
+    type:"theory",
+    q:"Factor Analysis is primarily used to:",
+    opts:["Predict a target variable from multiple features","Reduce many observed variables into fewer underlying latent factors that explain their correlations","Cluster data points into homogeneous groups","Test whether two samples come from the same distribution"],
+    ans:1,
+    exp:"Factor Analysis is a dimensionality reduction technique that identifies latent (unobserved) factors that explain the correlation structure among many observed variables, reducing complexity."
+  },
+  {
+    type:"theory",
+    q:"In KNIME, a 'node' in an analytical workflow represents:",
+    opts:["A single row of data in the dataset","An individual operation or processing step (e.g., read CSV, normalise, train model)","A full machine learning pipeline","A database table connection only"],
+    ans:1,
+    exp:"KNIME is a visual, low-code platform where each node encapsulates one operation — data reading, transformation, modelling, evaluation, etc. Nodes are connected by edges to form a workflow."
+  },
+
+  // ── CODE SNIPPETS ──
+  {
+    type:"snippet",
+    q:"What is the output of the following Pandas code?",
+    code:`<span class="kw">import</span> pandas <span class="kw">as</span> pd
+df <span class="op">=</span> pd.<span class="fn">DataFrame</span>({<span class="str">'score'</span>: [<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>]})
+<span class="fn">print</span>(df[<span class="str">'score'</span>].<span class="fn">describe</span>()[<span class="str">'50%'</span>])`,
+    opts:["20.0","25.0","30.0","35.0"],
+    ans:2,
+    exp:"describe()['50%'] returns the 50th percentile (median). For [10,20,30,40,50] the median is 30.0."
+  },
+  {
+    type:"snippet",
+    q:"What does this code compute?",
+    code:`<span class="kw">import</span> numpy <span class="kw">as</span> np
+data <span class="op">=</span> np.<span class="fn">array</span>([<span class="num">2</span>, <span class="num">4</span>, <span class="num">4</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">9</span>])
+result <span class="op">=</span> np.<span class="fn">std</span>(data, ddof<span class="op">=</span><span class="num">1</span>)
+<span class="fn">print</span>(<span class="fn">round</span>(result, <span class="num">2</span>))`,
+    opts:["1.87","2.0","2.14","4.0"],
+    ans:2,
+    exp:"np.std(data, ddof=1) computes the sample standard deviation (divides by n-1=7). The population variance is 4.0, sample variance = 32/7 ≈ 4.571, std ≈ 2.14."
+  },
+  {
+    type:"snippet",
+    q:"Identify the error/issue in the following Naive Bayes code:",
+    code:`<span class="kw">from</span> sklearn.naive_bayes <span class="kw">import</span> <span class="cls">GaussianNB</span>
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="fn">train_test_split</span>
+
+X <span class="op">=</span> [[<span class="num">1</span>,<span class="num">2</span>],[<span class="num">3</span>,<span class="num">4</span>],[<span class="num">5</span>,<span class="num">6</span>],[<span class="num">7</span>,<span class="num">8</span>]]
+y <span class="op">=</span> [<span class="num">0</span>, <span class="num">1</span>, <span class="num">0</span>, <span class="num">1</span>]
+
+X_train, X_test, y_train, y_test <span class="op">=</span> <span class="fn">train_test_split</span>(
+    X, y, test_size<span class="op">=</span><span class="num">0.5</span>, random_state<span class="op">=</span><span class="num">42</span>)
+
+model <span class="op">=</span> <span class="cls">GaussianNB</span>()
+model.<span class="fn">fit</span>(X_test, y_test)   <span class="cm"># ← line A</span>
+preds <span class="op">=</span> model.<span class="fn">predict</span>(X_train)`,
+    opts:["GaussianNB cannot be used for binary classification","Line A fits on test data instead of training data — data leakage","test_size=0.5 is invalid for this dataset size","predict() should be called before fit()"],
+    ans:1,
+    exp:"Line A calls model.fit(X_test, y_test) — it trains on the test set, causing data leakage. The correct call is model.fit(X_train, y_train) followed by model.predict(X_test)."
+  },
+  {
+    type:"snippet",
+    q:"What will this scipy code verify?",
+    code:`<span class="kw">from</span> scipy <span class="kw">import</span> stats
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+np.random.<span class="fn">seed</span>(<span class="num">42</span>)
+data <span class="op">=</span> np.random.<span class="fn">normal</span>(loc<span class="op">=</span><span class="num">0</span>, scale<span class="op">=</span><span class="num">1</span>, size<span class="op">=</span><span class="num">1000</span>)
+stat, p_val <span class="op">=</span> stats.<span class="fn">normaltest</span>(data)
+<span class="fn">print</span>(<span class="str">f"p-value: </span>{p_val:<span class="num">.4f</span>}<span class="str">"</span>)
+<span class="fn">print</span>(p_val <span class="op">></span> <span class="num">0.05</span>)`,
+    opts:["Whether variance equals 1","Whether the data follows a normal distribution; True means fail to reject normality","Whether mean equals 0","Whether the data has outliers"],
+    ans:1,
+    exp:"scipy.stats.normaltest runs D'Agostino & Pearson's test for normality. p_value > 0.05 means we fail to reject H₀ (normality), i.e., the data is consistent with being normally distributed."
+  },
+  {
+    type:"snippet",
+    q:"What does the following code measure between two columns?",
+    code:`<span class="kw">import</span> pandas <span class="kw">as</span> pd
+df <span class="op">=</span> pd.<span class="fn">DataFrame</span>({
+    <span class="str">'ad_spend'</span>: [<span class="num">100</span>,<span class="num">200</span>,<span class="num">300</span>,<span class="num">400</span>],
+    <span class="str">'sales'</span>: [<span class="num">50</span>,<span class="num">80</span>,<span class="num">130</span>,<span class="num">170</span>]
+})
+cov_matrix <span class="op">=</span> df.<span class="fn">cov</span>()
+<span class="fn">print</span>(cov_matrix.<span class="fn">loc</span>[<span class="str">'ad_spend'</span>, <span class="str">'sales'</span>])`,
+    opts:["Pearson correlation between ad_spend and sales","The covariance between ad_spend and sales","The variance of sales","The mean product of ad_spend and sales"],
+    ans:1,
+    exp:"df.cov() computes the covariance matrix. Accessing off-diagonal element ['ad_spend','sales'] gives the covariance — it measures how the two variables change together (not normalised, unlike correlation)."
+  },
+  {
+    type:"snippet",
+    q:"What is the purpose of the IQR-based outlier removal in this code?",
+    code:`Q1 <span class="op">=</span> df[<span class="str">'value'</span>].<span class="fn">quantile</span>(<span class="num">0.25</span>)
+Q3 <span class="op">=</span> df[<span class="str">'value'</span>].<span class="fn">quantile</span>(<span class="num">0.75</span>)
+IQR <span class="op">=</span> Q3 <span class="op">-</span> Q1
+lower <span class="op">=</span> Q1 <span class="op">-</span> <span class="num">1.5</span> <span class="op">*</span> IQR
+upper <span class="op">=</span> Q3 <span class="op">+</span> <span class="num">1.5</span> <span class="op">*</span> IQR
+df_clean <span class="op">=</span> df[(df[<span class="str">'value'</span>] <span class="op">>=</span> lower) <span class="op">&</span> (df[<span class="str">'value'</span>] <span class="op"><=</span> upper)]`,
+    opts:["It removes values more than 2 standard deviations from the mean","It keeps only values within 1.5× the interquartile range beyond Q1 and Q3, removing extreme outliers","It normalises the column to [0,1]","It replaces outliers with the median"],
+    ans:1,
+    exp:"The Tukey fence rule: any value outside [Q1 − 1.5×IQR, Q3 + 1.5×IQR] is considered an outlier. This code filters them out. Note: it removes outliers, not replaces them."
+  },
+  {
+    type:"snippet",
+    q:"What does this sklearn pipeline do?",
+    code:`<span class="kw">from</span> sklearn.pipeline <span class="kw">import</span> <span class="cls">Pipeline</span>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="cls">StandardScaler</span>
+<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="cls">LogisticRegression</span>
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="fn">cross_val_score</span>
+
+pipe <span class="op">=</span> <span class="cls">Pipeline</span>([
+    (<span class="str">'scaler'</span>, <span class="cls">StandardScaler</span>()),
+    (<span class="str">'clf'</span>, <span class="cls">LogisticRegression</span>())
+])
+scores <span class="op">=</span> <span class="fn">cross_val_score</span>(pipe, X, y, cv<span class="op">=</span><span class="num">5</span>)
+<span class="fn">print</span>(scores.<span class="fn">mean</span>())`,
+    opts:["Applies logistic regression without any scaling","Scales X using training fold statistics only, then evaluates with 5-fold CV — preventing data leakage","Standardises the entire dataset before CV, causing data leakage","Trains 5 separate models on the full dataset"],
+    ans:1,
+    exp:"Pipeline + cross_val_score is the correct pattern. Within each fold, StandardScaler is fit ONLY on training data then applied to test data, preventing leakage of test statistics into training."
+  },
+  {
+    type:"snippet",
+    q:"What does this code demonstrate about the binomial distribution?",
+    code:`<span class="kw">from</span> scipy.stats <span class="kw">import</span> binom
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+n, p <span class="op">=</span> <span class="num">10</span>, <span class="num">0.3</span>
+x <span class="op">=</span> np.<span class="fn">arange</span>(<span class="num">0</span>, <span class="num">11</span>)
+pmf_vals <span class="op">=</span> binom.<span class="fn">pmf</span>(x, n, p)
+<span class="fn">print</span>(<span class="fn">round</span>(binom.<span class="fn">pmf</span>(<span class="num">3</span>, n, p), <span class="num">4</span>))`,
+    opts:["The CDF value at x=3","P(X=3) — the probability of exactly 3 successes in 10 trials with p=0.3","The mean of the binomial distribution","P(X≤3) — cumulative probability"],
+    ans:1,
+    exp:"binom.pmf(3, 10, 0.3) = C(10,3) × 0.3³ × 0.7⁷ ≈ 0.2668. PMF (Probability Mass Function) gives P(X = k), not cumulative probability (which is CDF)."
+  },
+  {
+    type:"snippet",
+    q:"In the following decision tree snippet, what controls overfitting?",
+    code:`<span class="kw">from</span> sklearn.tree <span class="kw">import</span> <span class="cls">DecisionTreeClassifier</span>
+
+model_a <span class="op">=</span> <span class="cls">DecisionTreeClassifier</span>()
+model_b <span class="op">=</span> <span class="cls">DecisionTreeClassifier</span>(
+    max_depth<span class="op">=</span><span class="num">4</span>,
+    min_samples_leaf<span class="op">=</span><span class="num">5</span>,
+    min_samples_split<span class="op">=</span><span class="num">10</span>
+)`,
+    opts:["model_a will generalise better because it has no restrictions","model_b controls overfitting via max_depth, min_samples_leaf and min_samples_split hyperparameters","random_state should be set to control overfitting","Both models are identical in performance"],
+    ans:1,
+    exp:"model_a (no constraints) will grow until pure leaves, likely overfitting. model_b uses regularisation hyperparameters: max_depth limits tree depth, min_samples_leaf/split prevent splits on tiny subsets."
+  },
+  {
+    type:"snippet",
+    q:"What is the correct interpretation of this z-test result?",
+    code:`<span class="kw">from</span> scipy <span class="kw">import</span> stats
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+sample <span class="op">=</span> np.random.<span class="fn">normal</span>(<span class="num">52</span>, <span class="num">5</span>, <span class="num">50</span>)
+pop_mean <span class="op">=</span> <span class="num">50</span>
+pop_std <span class="op">=</span> <span class="num">5</span>
+z <span class="op">=</span> (np.<span class="fn">mean</span>(sample) <span class="op">-</span> pop_mean) <span class="op">/</span> (pop_std <span class="op">/</span> np.<span class="fn">sqrt</span>(<span class="fn">len</span>(sample)))
+p_val <span class="op">=</span> <span class="num">2</span> <span class="op">*</span> (<span class="num">1</span> <span class="op">-</span> stats.norm.<span class="fn">cdf</span>(<span class="fn">abs</span>(z)))
+<span class="fn">print</span>(p_val <span class="op"><</span> <span class="num">0.05</span>)`,
+    opts:["One-tailed Z-test for proportions","Two-tailed Z-test for the sample mean against a known population mean and standard deviation","Chi-square goodness of fit test","T-test with unknown population variance"],
+    ans:1,
+    exp:"This is a two-tailed one-sample Z-test. It tests H₀: μ = 50 using known population std=5. The factor of 2 in p_val makes it two-tailed, testing deviations in both directions."
+  },
+  {
+    type:"snippet",
+    q:"What is the output of this NumPy sampling code?",
+    code:`<span class="kw">import</span> numpy <span class="kw">as</span> np
+np.random.<span class="fn">seed</span>(<span class="num">0</span>)
+population <span class="op">=</span> np.<span class="fn">arange</span>(<span class="num">1</span>, <span class="num">101</span>)
+sample <span class="op">=</span> np.random.<span class="fn">choice</span>(population, size<span class="op">=</span><span class="num">10</span>, replace<span class="op">=</span><span class="kw">False</span>)
+<span class="fn">print</span>(sample.<span class="fn">mean</span>())`,
+    opts:["50.5","Depends on random seed — but with seed(0) it is approximately 53.6","Always exactly 50.5 due to seed","None — the code raises an error"],
+    ans:1,
+    exp:"With np.random.seed(0), np.random.choice samples without replacement from 1..100. The mean of the specific 10 values chosen ≈ 53.6. The seed ensures reproducibility but not a value of 50.5."
+  },
+  {
+    type:"snippet",
+    q:"What concept does this seaborn code primarily visualise?",
+    code:`<span class="kw">import</span> seaborn <span class="kw">as</span> sns
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+tips <span class="op">=</span> sns.<span class="fn">load_dataset</span>(<span class="str">'tips'</span>)
+sns.<span class="fn">boxplot</span>(x<span class="op">=</span><span class="str">'day'</span>, y<span class="op">=</span><span class="str">'total_bill'</span>, data<span class="op">=</span>tips)
+plt.<span class="fn">show</span>()`,
+    opts:["The normal distribution of total_bill","The distribution of total_bill across each day, showing median, IQR, and outliers","The correlation between day and total_bill","A count plot of number of meals per day"],
+    ans:1,
+    exp:"A box plot shows: median (line), IQR (box), whiskers (1.5×IQR), and individual outlier points. Here it shows how total_bill's distribution (spread, centre, outliers) varies across days of the week."
+  },
+  {
+    type:"snippet",
+    q:"What critical issue exists in this regression code?",
+    code:`<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="cls">LinearRegression</span>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="cls">StandardScaler</span>
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="fn">train_test_split</span>
+
+scaler <span class="op">=</span> <span class="cls">StandardScaler</span>()
+X_scaled <span class="op">=</span> scaler.<span class="fn">fit_transform</span>(X)  <span class="cm"># ← fit on full X</span>
+
+X_train, X_test <span class="op">=</span> <span class="fn">train_test_split</span>(X_scaled, test_size<span class="op">=</span><span class="num">0.2</span>)
+model <span class="op">=</span> <span class="cls">LinearRegression</span>().<span class="fn">fit</span>(X_train, y_train)`,
+    opts:["LinearRegression does not support StandardScaler","The scaler is fit on the full dataset before splitting, leaking test set statistics into training","y_train is not defined","train_test_split cannot accept pre-scaled data"],
+    ans:1,
+    exp:"Data leakage: StandardScaler is fit_transform'd on the entire X (including what will become X_test). The correct order is: split first, then fit scaler on X_train only and transform both X_train and X_test."
+  },
+  {
+    type:"snippet",
+    q:"What does this confusion matrix analysis calculate?",
+    code:`<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> confusion_matrix, classification_report
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+y_true <span class="op">=</span> [<span class="num">1</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">0</span>]
+y_pred <span class="op">=</span> [<span class="num">1</span>,<span class="num">0</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">1</span>,<span class="num">0</span>]
+cm <span class="op">=</span> confusion_matrix(y_true, y_pred)
+TP <span class="op">=</span> cm[<span class="num">1</span>,<span class="num">1</span>]; FP <span class="op">=</span> cm[<span class="num">0</span>,<span class="num">1</span>]
+precision <span class="op">=</span> TP <span class="op">/</span> (TP <span class="op">+</span> FP)
+<span class="fn">print</span>(<span class="fn">round</span>(precision, <span class="num">2</span>))`,
+    opts:["Recall = TP / (TP + FN)","Precision = TP / (TP + FP) = 0.75","F1 score of the classifier","Accuracy = correct / total"],
+    ans:1,
+    exp:"The code explicitly computes Precision = TP/(TP+FP). TP=3 (predicted 1, actual 1), FP=1 (predicted 1, actual 0), so precision = 3/4 = 0.75. Precision measures how many positive predictions were actually correct."
+  },
+  {
+    type:"snippet",
+    q:"What statistical concept is demonstrated by this bootstrapping code?",
+    code:`<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+np.random.<span class="fn">seed</span>(<span class="num">42</span>)
+data <span class="op">=</span> np.<span class="fn">array</span>([<span class="num">23</span>,<span class="num">45</span>,<span class="num">12</span>,<span class="num">67</span>,<span class="num">34</span>,<span class="num">89</span>,<span class="num">11</span>,<span class="num">55</span>])
+boot_means <span class="op">=</span> [
+    np.random.<span class="fn">choice</span>(data, size<span class="op">=</span><span class="fn">len</span>(data), replace<span class="op">=</span><span class="kw">True</span>).<span class="fn">mean</span>()
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">10000</span>)
+]
+ci_lower, ci_upper <span class="op">=</span> np.<span class="fn">percentile</span>(boot_means, [<span class="num">2.5</span>, <span class="num">97.5</span>])
+<span class="fn">print</span>(ci_lower, ci_upper)`,
+    opts:["Cross-validation with replacement","Bootstrap confidence interval for the population mean via resampling with replacement","Monte Carlo simulation for risk","Z-interval estimation using CLT"],
+    ans:1,
+    exp:"Bootstrap resampling: draw n samples with replacement 10,000 times, compute the mean each time, then use the 2.5th and 97.5th percentiles of the distribution as the 95% bootstrap confidence interval."
+  },
+  {
+    type:"snippet",
+    q:"What does this Bayes rule code compute in a medical diagnosis context?",
+    code:`<span class="cm"># P(Disease) = 0.01, P(+|Disease) = 0.95, P(+|No Disease) = 0.05</span>
+p_disease <span class="op">=</span> <span class="num">0.01</span>
+p_pos_given_disease <span class="op">=</span> <span class="num">0.95</span>
+p_pos_given_no_disease <span class="op">=</span> <span class="num">0.05</span>
+
+p_no_disease <span class="op">=</span> <span class="num">1</span> <span class="op">-</span> p_disease
+p_positive <span class="op">=</span> (p_pos_given_disease <span class="op">*</span> p_disease <span class="op">+</span>
+               p_pos_given_no_disease <span class="op">*</span> p_no_disease)
+posterior <span class="op">=</span> (p_pos_given_disease <span class="op">*</span> p_disease) <span class="op">/</span> p_positive
+<span class="fn">print</span>(<span class="fn">round</span>(posterior, <span class="num">3</span>))`,
+    opts:["P(positive test) = 0.059","P(Disease | positive test) ≈ 0.161 — the posterior probability of having the disease given a positive result","P(positive | disease) = 0.95","P(No disease | positive) ≈ 0.84"],
+    ans:1,
+    exp:"This applies Bayes' theorem. Despite 95% test sensitivity, the low prior (1% prevalence) makes the posterior only ~16.1%. This illustrates the base rate fallacy — a positive test does NOT mean ~95% chance of disease."
+  },
+  {
+    type:"snippet",
+    q:"What does the following pandas skewness code tell the analyst?",
+    code:`<span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+data <span class="op">=</span> pd.<span class="cls">Series</span>([<span class="num">1</span>,<span class="num">2</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">3</span>,<span class="num">3</span>,<span class="num">100</span>])
+<span class="fn">print</span>(<span class="str">"Skewness:"</span>, <span class="fn">round</span>(data.<span class="fn">skew</span>(), <span class="num">2</span>))
+<span class="fn">print</span>(<span class="str">"Mean:"</span>, data.<span class="fn">mean</span>(), <span class="str">"Median:"</span>, data.<span class="fn">median</span>())`,
+    opts:["The data is symmetric; mean equals median","High positive skewness due to the outlier 100; mean > median, confirming right skew","The data is negatively skewed","Skewness is irrelevant for small datasets"],
+    ans:1,
+    exp:"The value 100 is an extreme outlier pulling the mean up (≈16.3) far above the median (3.0). skew() will be very large positive (right-skewed). This validates why median is preferred for skewed data."
+  },
+  {
+    type:"snippet",
+    q:"What is evaluated by this K-Fold cross-validation snippet?",
+    code:`<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="cls">KFold</span>, <span class="fn">cross_val_score</span>
+<span class="kw">from</span> sklearn.tree <span class="kw">import</span> <span class="cls">DecisionTreeClassifier</span>
+
+kf <span class="op">=</span> <span class="cls">KFold</span>(n_splits<span class="op">=</span><span class="num">5</span>, shuffle<span class="op">=</span><span class="kw">True</span>, random_state<span class="op">=</span><span class="num">42</span>)
+model <span class="op">=</span> <span class="cls">DecisionTreeClassifier</span>(max_depth<span class="op">=</span><span class="num">3</span>)
+scores <span class="op">=</span> <span class="fn">cross_val_score</span>(model, X, y, cv<span class="op">=</span>kf, scoring<span class="op">=</span><span class="str">'accuracy'</span>)
+<span class="fn">print</span>(<span class="str">f"Mean: </span>{scores.<span class="fn">mean</span>():<span class="num">.3f</span>}<span class="str">, Std: </span>{scores.<span class="fn">std</span>():<span class="num">.3f</span>}<span class="str">"</span>)`,
+    opts:["Training accuracy on the full dataset","Generalisation accuracy estimated by averaging accuracy across 5 non-overlapping test folds; std indicates stability","Holdout validation with 20% test split","The decision tree's depth controls accuracy only"],
+    ans:1,
+    exp:"5-Fold CV splits data into 5 folds, trains on 4 and tests on 1 each time. The mean accuracy estimates generalisation performance. Low std indicates consistent performance across folds — a stable model."
+  },
 ];
 
-let currentQ = 0;
-let score = 0;
-let userAnswers = new Array(questions.length).fill(null);
-let hasAnswered = new Array(questions.length).fill(false); // Tracks if the question is locked
-let timerLeft = 3600; // 60 mins
+// ── STATE ──
+let current = 0;
+let answers = new Array(40).fill(null);  // null=unanswered, -1=skipped, 0-3=chosen
+let submitted = new Array(40).fill(false);
 let timerInterval;
+let secondsLeft = 3600;
+let quizActive = false;
 
-const els = {
-    timer: document.getElementById('timer'),
-    quizScreen: document.getElementById('quiz-screen'),
-    resultScreen: document.getElementById('result-screen'),
-    progressText: document.getElementById('progress-text'),
-    questionText: document.getElementById('question-text'),
-    snippetContainer: document.getElementById('code-snippet-container'),
-    snippetCode: document.getElementById('code-snippet'),
-    optionsContainer: document.getElementById('options-container'),
-    prevBtn: document.getElementById('prev-btn'),
-    nextBtn: document.getElementById('next-btn'),
-    feedbackBox: document.getElementById('instant-feedback'),
-    feedbackTitle: document.getElementById('feedback-title'),
-    feedbackTheory: document.getElementById('feedback-theory'),
-    scoreDisplay: document.getElementById('score-display'),
-    reviewContainer: document.getElementById('review-container')
-};
-
-function init() {
-    startTimer();
-    renderQuestion();
+function startQuiz(){
+  document.getElementById('screen-start').classList.remove('active');
+  document.getElementById('screen-quiz').classList.add('active');
+  document.getElementById('timer-box').style.display='';
+  document.getElementById('progress-box').style.display='';
+  document.getElementById('q-grid-wrap').style.display='';
+  document.getElementById('legend-wrap').style.display='';
+  buildQGrid();
+  renderQuestion(0);
+  startTimer();
+  quizActive=true;
 }
 
-function startTimer() {
-    timerInterval = setInterval(() => {
-        timerLeft--;
-        const m = Math.floor(timerLeft / 60).toString().padStart(2, '0');
-        const s = (timerLeft % 60).toString().padStart(2, '0');
-        els.timer.textContent = `${m}:${s}`;
-        
-        if (timerLeft < 300) els.timer.classList.add('warning');
-        if (timerLeft <= 0) finishQuiz();
-    }, 1000);
+function buildQGrid(){
+  const g=document.getElementById('q-grid');
+  g.innerHTML='';
+  for(let i=0;i<40;i++){
+    const b=document.createElement('button');
+    b.className='q-btn';
+    b.textContent=i+1;
+    b.id='qb-'+i;
+    b.onclick=()=>jumpTo(i);
+    g.appendChild(b);
+  }
 }
 
-function renderQuestion() {
-    const q = questions[currentQ];
-    els.progressText.textContent = `Question ${currentQ + 1} / ${questions.length}`;
-    els.questionText.textContent = q.q;
+function updateQGrid(){
+  for(let i=0;i<40;i++){
+    const b=document.getElementById('qb-'+i);
+    if(!b)continue;
+    b.className='q-btn';
+    if(i===current) b.classList.add('active');
+    else if(answers[i]===-1) b.classList.add('skipped');
+    else if(answers[i]!==null) b.classList.add('answered');
+  }
+}
 
-    els.prevBtn.style.visibility = currentQ === 0 ? 'hidden' : 'visible';
-    els.nextBtn.textContent = currentQ === questions.length - 1 ? 'Submit Assessment' : 'Next Question \u2192';
+function renderQuestion(idx){
+  current=idx;
+  const q=QUESTIONS[idx];
 
-    if (q.code) {
-        els.snippetContainer.style.display = 'block';
-        els.snippetCode.textContent = q.code;
+  document.getElementById('q-num-label').textContent=`Q ${String(idx+1).padStart(2,'0')} / 40`;
+  const badge=document.getElementById('q-type-badge');
+  badge.textContent=q.type==='snippet'?'Code Snippet':'Theory';
+  badge.className='q-type-badge '+(q.type==='snippet'?'badge-snippet':'badge-theory');
+
+  document.getElementById('q-text').textContent=q.q;
+
+  const codeEl=document.getElementById('q-code');
+  if(q.code){codeEl.style.display='';codeEl.innerHTML=q.code;}
+  else codeEl.style.display='none';
+
+  const optsEl=document.getElementById('q-options');
+  optsEl.innerHTML='';
+  const keys=['A','B','C','D'];
+  q.opts.forEach((opt,i)=>{
+    const div=document.createElement('div');
+    div.className='opt';
+    div.dataset.idx=i;
+    div.innerHTML=`<span class="opt-key">${keys[i]}</span><span class="opt-text">${opt}</span>`;
+    div.onclick=()=>selectOption(i);
+    optsEl.appendChild(div);
+  });
+
+  // Restore state
+  const fb=document.getElementById('q-feedback');
+  fb.className='feedback';
+  fb.innerHTML='';
+
+  const nextBtn=document.getElementById('btn-next');
+  const finBtn=document.getElementById('btn-finish');
+  const skipBtn=document.getElementById('btn-skip');
+
+  if(submitted[idx]){
+    // Already answered — show result
+    const chosen=answers[idx];
+    const optEls=optsEl.querySelectorAll('.opt');
+    optEls.forEach(o=>o.classList.add('disabled'));
+    if(chosen!==-1){
+      optEls[chosen].classList.add(chosen===q.ans?'correct':'wrong');
+      if(chosen!==q.ans) optEls[q.ans].classList.add('correct');
     } else {
-        els.snippetContainer.style.display = 'none';
+      optEls[q.ans].classList.add('correct');
     }
+    showFeedback(chosen,q);
+    skipBtn.style.display='none';
+  } else {
+    skipBtn.style.display='';
+  }
 
-    els.optionsContainer.innerHTML = '';
-    els.feedbackBox.style.display = 'none';
+  // Nav
+  document.getElementById('btn-prev').disabled=(idx===0);
+  nextBtn.style.display=(idx<39&&submitted[idx])?'':'none';
+  finBtn.style.display=(idx===39&&submitted[idx])?'':'none';
 
-    q.options.forEach((opt, idx) => {
-        const lbl = document.createElement('label');
-        lbl.className = 'option-label';
-        if (hasAnswered[currentQ]) lbl.classList.add('disabled');
-        
-        const inp = document.createElement('input');
-        inp.type = 'radio';
-        inp.name = 'opt';
-        inp.value = idx;
-        
-        if (userAnswers[currentQ] === idx) inp.checked = true;
-        if (hasAnswered[currentQ]) inp.disabled = true;
+  // Progress
+  const done=submitted.filter(Boolean).length;
+  document.getElementById('prog-text').textContent=`${done} / 40`;
+  document.getElementById('prog-fill').style.width=(done/40*100)+'%';
 
-        inp.addEventListener('change', () => selectOption(idx));
-        
-        lbl.appendChild(inp);
-        lbl.appendChild(document.createTextNode(opt));
-        els.optionsContainer.appendChild(lbl);
+  updateQGrid();
+}
+
+function selectOption(i){
+  if(submitted[current])return;
+  const idx=current;
+  const q=QUESTIONS[idx];
+  answers[idx]=i;
+  submitted[idx]=true;
+
+  const optEls=document.querySelectorAll('.opt');
+  optEls.forEach(o=>o.classList.add('disabled'));
+  optEls[i].classList.add(i===q.ans?'correct':'wrong');
+  if(i!==q.ans) optEls[q.ans].classList.add('correct');
+
+  showFeedback(i,q);
+  document.getElementById('btn-skip').style.display='none';
+  if(idx<39) document.getElementById('btn-next').style.display='';
+  else document.getElementById('btn-finish').style.display='';
+
+  const done=submitted.filter(Boolean).length;
+  document.getElementById('prog-text').textContent=`${done} / 40`;
+  document.getElementById('prog-fill').style.width=(done/40*100)+'%';
+  updateQGrid();
+}
+
+function showFeedback(chosen,q){
+  const fb=document.getElementById('q-feedback');
+  const correct=(chosen===q.ans);
+  const keys=['A','B','C','D'];
+  if(chosen===-1){
+    fb.className='feedback show err';
+    fb.innerHTML=`<strong>Skipped</strong>The correct answer was <b>${keys[q.ans]}. ${q.opts[q.ans]}</b><br><br>${q.exp}`;
+  } else if(correct){
+    fb.className='feedback show ok';
+    fb.innerHTML=`<strong>✓ Correct!</strong>${q.exp}`;
+  } else {
+    fb.className='feedback show err';
+    fb.innerHTML=`<strong>✗ Incorrect.</strong>You chose <b>${keys[chosen]}</b>. The correct answer is <b>${keys[q.ans]}. ${q.opts[q.ans]}</b><br><br>${q.exp}`;
+  }
+}
+
+function skipQuestion(){
+  answers[current]=-1;
+  submitted[current]=true;
+  const q=QUESTIONS[current];
+  showFeedback(-1,q);
+  document.getElementById('btn-skip').style.display='none';
+  document.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
+  document.querySelectorAll('.opt')[q.ans].classList.add('correct');
+  if(current<39) document.getElementById('btn-next').style.display='';
+  else document.getElementById('btn-finish').style.display='';
+  const done=submitted.filter(Boolean).length;
+  document.getElementById('prog-text').textContent=`${done} / 40`;
+  document.getElementById('prog-fill').style.width=(done/40*100)+'%';
+  updateQGrid();
+}
+
+function navigate(dir){
+  const next=current+dir;
+  if(next>=0&&next<40) renderQuestion(next);
+}
+
+function jumpTo(idx){
+  renderQuestion(idx);
+}
+
+function finishQuiz(){
+  clearInterval(timerInterval);
+  quizActive=false;
+  showScore();
+}
+
+function startTimer(){
+  timerInterval=setInterval(()=>{
+    secondsLeft--;
+    updateTimerDisplay();
+    if(secondsLeft<=0){clearInterval(timerInterval);finishQuiz();}
+  },1000);
+}
+
+function updateTimerDisplay(){
+  const m=Math.floor(secondsLeft/60).toString().padStart(2,'0');
+  const s=(secondsLeft%60).toString().padStart(2,'0');
+  const el=document.getElementById('timer-display');
+  el.textContent=`${m}:${s}`;
+  el.className='timer-val';
+  if(secondsLeft<=300) el.classList.add('danger');
+  else if(secondsLeft<=600) el.classList.add('warn');
+}
+
+function showScore(){
+  document.getElementById('screen-quiz').classList.remove('active');
+  document.getElementById('screen-score').classList.add('active');
+
+  let correct=0,wrong=0,skipped=0;
+  answers.forEach((a,i)=>{
+    if(a===-1) skipped++;
+    else if(a===QUESTIONS[i].ans) correct++;
+    else if(a!==null) wrong++;
+    else skipped++;
+  });
+
+  const pct=Math.round(correct/40*100);
+  let grade,gradeColor,msg;
+  if(pct>=85){grade='A';gradeColor='var(--green)';msg='Outstanding Performance!';}
+  else if(pct>=70){grade='B';gradeColor='var(--accent)';msg='Good Work!';}
+  else if(pct>=55){grade='C';gradeColor='var(--yellow)';msg='Average — Review Key Topics';}
+  else{grade='D';gradeColor='var(--red)';msg='Needs Improvement';}
+
+  const circumference=2*Math.PI*54;
+  const dashoffset=circumference*(1-pct/100);
+
+  // Update review q-grid colours
+  for(let i=0;i<40;i++){
+    const b=document.getElementById('qb-'+i);
+    if(!b)continue;
+    b.className='q-btn';
+    if(answers[i]===-1||answers[i]===null) b.classList.add('skipped');
+    else if(answers[i]===QUESTIONS[i].ans) b.classList.add('correct');
+    else b.classList.add('wrong');
+    b.onclick=()=>{jumpToReview(i);};
+  }
+
+  const scoreEl=document.getElementById('screen-score');
+  scoreEl.innerHTML=`
+  <h1 style="font-size:28px;font-weight:700;margin-bottom:24px">Quiz Complete</h1>
+  <div class="score-hero">
+    <div class="score-ring">
+      <svg viewBox="0 0 120 120">
+        <circle class="bg" cx="60" cy="60" r="54"/>
+        <circle class="fg" cx="60" cy="60" r="54"
+          stroke="${gradeColor}"
+          stroke-dasharray="${circumference}"
+          stroke-dashoffset="${dashoffset}"
+          id="ring-fg"/>
+      </svg>
+      <div class="score-num" style="color:${gradeColor}">${pct}%</div>
+    </div>
+    <div class="score-grade">Grade: <b style="color:${gradeColor}">${grade}</b></div>
+    <div class="score-title">${msg}</div>
+    <div class="score-sub">You scored ${correct} out of 40 questions correctly</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-val" style="color:var(--green)">${correct}</div><div class="stat-lbl">Correct</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--red)">${wrong}</div><div class="stat-lbl">Wrong</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--yellow)">${skipped}</div><div class="stat-lbl">Skipped</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--accent)">${3600-secondsLeft}s</div><div class="stat-lbl">Time Used</div></div>
+  </div>
+  <div style="margin-bottom:28px">
+    <button class="btn primary" onclick="showReview()" style="margin-right:12px">Review Answers →</button>
+    <button class="btn" onclick="location.reload()">Retake Quiz</button>
+  </div>
+  `;
+}
+
+function showReview(){
+  const scoreEl=document.getElementById('screen-score');
+  const keys=['A','B','C','D'];
+
+  let html=`<h1 style="font-size:28px;font-weight:700;margin-bottom:6px">Answer Review</h1>
+  <p style="color:var(--muted);margin-bottom:28px;font-size:13px">Green = correct · Red = your wrong answer · Yellow = skipped</p>`;
+
+  QUESTIONS.forEach((q,i)=>{
+    const chosen=answers[i];
+    const isCorrect=(chosen===q.ans);
+    const isSkip=(chosen===-1||chosen===null);
+    let cls=isSkip?'review-skip':isCorrect?'review-correct':'review-wrong';
+    let statusHtml=isSkip?'<span class="status-badge sb-skip">Skipped</span>':
+      isCorrect?'<span class="status-badge sb-correct">Correct</span>':
+      '<span class="status-badge sb-wrong">Wrong</span>';
+
+    let optsHtml='';
+    q.opts.forEach((opt,j)=>{
+      let ocls='review-opt';
+      if(j===q.ans) ocls+=' r-correct';
+      else if(j===chosen&&!isCorrect&&!isSkip) ocls+=' r-wrong';
+      if(j===chosen&&!isSkip) ocls+=' r-your';
+      optsHtml+=`<div class="${ocls}"><span style="font-weight:700;min-width:20px">${keys[j]}</span>${opt}</div>`;
     });
 
-    if (hasAnswered[currentQ]) {
-        showFeedback(userAnswers[currentQ]);
-        els.nextBtn.disabled = false;
-    } else {
-        els.nextBtn.disabled = true;
-    }
+    let codeHtml='';
+    if(q.code) codeHtml=`<pre class="code-block" style="margin:10px 0">${q.code}</pre>`;
+
+    html+=`<div class="review-item ${cls}" id="rev-${i}">
+      <div class="review-header">
+        <span class="review-qnum">Q${i+1}</span>
+        <span class="q-type-badge ${q.type==='snippet'?'badge-snippet':'badge-theory'}">${q.type==='snippet'?'Code Snippet':'Theory'}</span>
+        ${statusHtml}
+        ${!isCorrect&&!isSkip?`<span style="font-size:11px;color:var(--muted)">Your answer: ${keys[chosen]}</span>`:''}
+      </div>
+      <div class="review-q">${q.q}</div>
+      ${codeHtml}
+      <div class="review-opts">${optsHtml}</div>
+      <div class="review-exp">${q.exp}</div>
+    </div>`;
+  });
+
+  scoreEl.innerHTML=`<div style="margin-bottom:20px;display:flex;gap:12px;align-items:center">
+    <button class="btn" onclick="showScore()">← Back to Score</button>
+    <button class="btn" onclick="location.reload()">Retake Quiz</button>
+  </div>${html}`;
 }
 
-function selectOption(idx) {
-    if (hasAnswered[currentQ]) return; // Locked
-    
-    userAnswers[currentQ] = idx;
-    hasAnswered[currentQ] = true;
-    els.nextBtn.disabled = false;
-    
-    // Disable all inputs immediately
-    const labels = els.optionsContainer.querySelectorAll('.option-label');
-    labels.forEach(lbl => {
-        lbl.classList.add('disabled');
-        lbl.querySelector('input').disabled = true;
-    });
-
-    showFeedback(idx);
+function jumpToReview(idx){
+  // During review, scroll to item
+  const el=document.getElementById('rev-'+idx);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
 }
-
-function showFeedback(selectedIdx) {
-    const q = questions[currentQ];
-    const isCorrect = selectedIdx === q.answer;
-    const labels = els.optionsContainer.querySelectorAll('.option-label');
-
-    // Visual styles for labels
-    labels[q.answer].classList.add('correct-reveal');
-    if (!isCorrect && selectedIdx !== null) {
-        labels[selectedIdx].classList.add('wrong-reveal');
-    }
-
-    // Show Feedback Box
-    els.feedbackBox.style.display = 'block';
-    els.feedbackBox.className = isCorrect ? 'feedback-correct' : 'feedback-wrong';
-    
-    els.feedbackTitle.textContent = isCorrect ? '✓ Correct' : '✗ Incorrect';
-    els.feedbackTheory.innerHTML = `<strong>Explanation:</strong> ${q.theory}`;
-}
-
-function handleNext() {
-    if (currentQ < questions.length - 1) {
-        currentQ++;
-        renderQuestion();
-    } else {
-        finishQuiz();
-    }
-}
-
-function handlePrev() {
-    if (currentQ > 0) {
-        currentQ--;
-        renderQuestion();
-    }
-}
-
-function finishQuiz() {
-    clearInterval(timerInterval);
-    els.quizScreen.style.display = 'none';
-    els.resultScreen.style.display = 'block';
-    
-    score = userAnswers.reduce((tot, ans, i) => tot + (ans === questions[i].answer ? 1 : 0), 0);
-    els.scoreDisplay.textContent = `${score} / ${questions.length}`;
-
-    buildReview();
-}
-
-function buildReview() {
-    els.reviewContainer.innerHTML = '';
-    questions.forEach((q, i) => {
-        const uAns = userAnswers[i];
-        const isC = uAns === q.answer;
-        
-        const div = document.createElement('div');
-        div.className = `review-item ${isC ? 'correct' : ''}`;
-        
-        let html = `<span class="status-badge ${isC ? 'correct' : 'incorrect'}">${isC ? 'Correct' : 'Incorrect'}</span>`;
-        html += `<div style="font-size:1.1rem; font-weight:600; margin-bottom:1rem;">${i + 1}. ${q.q}</div>`;
-        if (q.code) html += `<pre><code>${q.code}</code></pre>`;
-        
-        html += `<div style="margin-bottom:0.5rem; color:#94a3b8;"><strong>Your Answer:</strong> ${uAns !== null ? q.options[uAns] : '<em>None</em>'}</div>`;
-        html += `<div style="margin-bottom:1rem; color:var(--accent);"><strong>Correct Answer:</strong> ${q.options[q.answer]}</div>`;
-        html += `<div class="theory-box"><strong>Theory:</strong> ${q.theory}</div>`;
-        
-        div.innerHTML = html;
-        els.reviewContainer.appendChild(div);
-    });
-}
-
-init();
 </script>
 </body>
 </html>
