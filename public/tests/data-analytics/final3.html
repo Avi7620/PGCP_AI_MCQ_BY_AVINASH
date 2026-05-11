@@ -158,13 +158,18 @@
 
 <script>
     const questions = [
-        {
-            text: "During which phase of the Data Analytics Lifecycle do you assess whether you have the necessary resources, data, and compute power to execute the project?",
-            snippet: "",
-            options: ["Data Preparation", "Discovery", "Model Planning", "Acceptance and Operation"],
-            correct: 1,
-            explanation: "Discovery is the first phase where the team learns the business domain, assesses resources, frames the business problem, and formulates initial hypotheses."
-        },
+ {
+    text: " Let A be a 3×3 real matrix with eigenvalues λ₁, λ₂, λ₃. If A satisfies the characteristic polynomial λ³ - 6λ² + 11λ - 6 = 0, and one eigenvalue is 1, what is the trace of A and remaining eigenvalues?",
+    snippet: "",
+    options: [
+        "Trace = 6, eigenvalues = 1, 2, 3",
+        "Trace = 11, eigenvalues = 1, 2, 3",
+        "Trace = 6, eigenvalues = 1, 1, 4",
+        "Trace = 3, eigenvalues = 0, 1, 2"
+    ],
+    correct: 0,
+    explanation: "The characteristic polynomial λ³ - 6λ² + 11λ - 6 factors as (λ - 1)(λ - 2)(λ - 3), so eigenvalues are 1, 2, 3. The trace of a matrix equals the sum of its eigenvalues, so Trace = 1 + 2 + 3 = 6."
+},
         {
             text: "Analyze the following Pandas snippet. What will be the output format of `result`?",
             snippet: "import pandas as pd\ndf = pd.DataFrame({'A': ['foo', 'bar', 'foo'], 'B': [1, 2, 3]})\nresult = df.groupby('A').agg(['mean', 'sum'])",
