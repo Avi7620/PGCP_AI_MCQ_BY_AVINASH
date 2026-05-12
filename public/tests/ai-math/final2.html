@@ -183,7 +183,7 @@
         <h2>AI & Math Assessment</h2>
         <div class="timer-score">
             <span id="timer">60:00</span>
-            <span id="score-display">Score: 0 / 46</span>
+            <span id="score-display">Score: 0 / 32</span>
         </div>
     </header>
 
@@ -801,6 +801,9 @@
         buildNavGrid();
         loadQuestion(0);
         startTimer();
+        
+        // Ensure max score shows correctly initially based on array length
+        UI.scoreDisplay.innerText = `Score: 0 / ${questions.length}`;
     }
 
     function buildNavGrid() {
@@ -821,7 +824,7 @@
             if (i === currentIndex) buttons[i].classList.add('active');
 
             if (userAnswers[i] !== null) {
-                if (userAnswers[i] === questions[i].answer) {
+                if (userAnswers[i] === questions[i].correct) {
                     buttons[i].classList.add('answered-correct');
                 } else {
                     buttons[i].classList.add('answered-incorrect');
@@ -855,8 +858,8 @@
             
             if (isAnswered) {
                 btn.disabled = true;
-                if (i === qData.answer) btn.classList.add('correct');
-                if (i === userAnswers[index] && i !== qData.answer) btn.classList.add('incorrect');
+                if (i === qData.correct) btn.classList.add('correct');
+                if (i === userAnswers[index] && i !== qData.correct) btn.classList.add('incorrect');
             } else {
                 btn.onclick = () => selectOption(i);
             }
@@ -879,13 +882,13 @@
         const buttons = UI.optionsContainer.children;
         for (let i = 0; i < buttons.length; i++) {
             buttons[i].disabled = true;
-            if (i === qData.answer) buttons[i].classList.add('correct');
-            if (i === selectedIndex && i !== qData.answer) buttons[i].classList.add('incorrect');
+            if (i === qData.correct) buttons[i].classList.add('correct');
+            if (i === selectedIndex && i !== qData.correct) buttons[i].classList.add('incorrect');
         }
 
-        if (selectedIndex === qData.answer) {
+        if (selectedIndex === qData.correct) {
             score++;
-            UI.scoreDisplay.innerText = `Score: ${score} / 46`;
+            UI.scoreDisplay.innerText = `Score: ${score} / ${questions.length}`;
         }
 
         showFeedback(currentIndex);
@@ -897,10 +900,10 @@
         const userChoice = userAnswers[index];
         
         UI.feedbackBox.style.display = 'block';
-        UI.feedbackCorrect.innerHTML = qData.options[qData.answer];
+        UI.feedbackCorrect.innerHTML = qData.options[qData.correct];
         UI.feedbackTheory.innerHTML = qData.theory;
 
-        if (userChoice === qData.answer) {
+        if (userChoice === qData.correct) {
             UI.feedbackBox.style.borderLeftColor = 'var(--correct)';
             UI.feedbackStatus.innerText = '✅ Correct!';
             UI.feedbackStatus.style.color = 'var(--correct)';
@@ -940,7 +943,7 @@
         clearInterval(timerInterval);
         UI.quizContainer.style.display = 'none';
         UI.reviewScreen.style.display = 'block';
-        UI.finalScoreText.innerText = `Final Score: ${score} out of 46`;
+        UI.finalScoreText.innerText = `Final Score: ${score} out of ${questions.length}`;
         buildReviewScreen();
     }
 
@@ -948,7 +951,7 @@
         UI.reviewList.innerHTML = '';
         questions.forEach((q, i) => {
             const userAns = userAnswers[i];
-            const isCorrect = userAns === q.answer;
+            const isCorrect = userAns === q.correct;
             
             let statusClass = 'unanswered';
             let statusText = 'Unanswered';
@@ -966,7 +969,7 @@
                 <div style="margin-bottom: 10px;"><strong>Q${i + 1}. ${q.q}</strong></div>
                 ${snippetHtml}
                 ${userGivenAnsHtml}
-                <p><strong>Correct Answer:</strong> ${q.options[q.answer]}</p>
+                <p><strong>Correct Answer:</strong> ${q.options[q.correct]}</p>
                 <div style="background: #f1f5f9; padding: 10px; border-radius: 4px; font-size: 0.9em;">
                     <strong>Theory:</strong> ${q.theory}
                 </div>
