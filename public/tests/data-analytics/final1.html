@@ -360,269 +360,217 @@ const QUESTIONS = [
     exp:"KNIME is a visual, low-code platform where each node encapsulates one operation — data reading, transformation, modelling, evaluation, etc. Nodes are connected by edges to form a workflow."
   },
 
-  // ── CODE SNIPPETS ──
+// ── THEORY MCQs ──
   {
-    type:"snippet",
-    q:"What is the output of the following Pandas code?",
-    code:`<span class="kw">import</span> pandas <span class="kw">as</span> pd
-df <span class="op">=</span> pd.<span class="fn">DataFrame</span>({<span class="str">'score'</span>: [<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>, <span class="num">40</span>, <span class="num">50</span>]})
-<span class="fn">print</span>(df[<span class="str">'score'</span>].<span class="fn">describe</span>()[<span class="str">'50%'</span>])`,
-    opts:["20.0","25.0","30.0","35.0"],
+    type:"theory",
+    q:"What does the median represent in a dataset?",
+    opts:["The most frequently occurring value","The arithmetic average of all values","The middle value when data is sorted — half the values lie above and half below","The range between Q1 and Q3"],
     ans:2,
-    exp:"describe()['50%'] returns the 50th percentile (median). For [10,20,30,40,50] the median is 30.0."
+    exp:"The median is the 50th percentile. For odd-count data it is the middle value; for even-count it is the average of the two middle values. Unlike the mean, it is unaffected by extreme outliers."
   },
   {
-    type:"snippet",
-    q:"What does this code compute?",
-    code:`<span class="kw">import</span> numpy <span class="kw">as</span> np
-data <span class="op">=</span> np.<span class="fn">array</span>([<span class="num">2</span>, <span class="num">4</span>, <span class="num">4</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">9</span>])
-result <span class="op">=</span> np.<span class="fn">std</span>(data, ddof<span class="op">=</span><span class="num">1</span>)
-<span class="fn">print</span>(<span class="fn">round</span>(result, <span class="num">2</span>))`,
-    opts:["1.87","2.0","2.14","4.0"],
-    ans:2,
-    exp:"np.std(data, ddof=1) computes the sample standard deviation (divides by n-1=7). The population variance is 4.0, sample variance = 32/7 ≈ 4.571, std ≈ 2.14."
+    type:"theory",
+    q:"What is the key difference between population standard deviation and sample standard deviation?",
+    opts:["Population std divides by n; sample std divides by n−1 (Bessel's correction) to produce an unbiased estimate","They are identical formulas","Sample std always produces a smaller number","Population std is only used when n > 100"],
+    ans:0,
+    exp:"Sample std uses n−1 (Bessel's correction) because the sample mean is itself estimated from the data, consuming one degree of freedom. This makes the sample variance an unbiased estimator of the population variance."
   },
   {
-    type:"snippet",
-    q:"Identify the error/issue in the following Naive Bayes code:",
-    code:`<span class="kw">from</span> sklearn.naive_bayes <span class="kw">import</span> <span class="cls">GaussianNB</span>
-<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="fn">train_test_split</span>
-
-X <span class="op">=</span> [[<span class="num">1</span>,<span class="num">2</span>],[<span class="num">3</span>,<span class="num">4</span>],[<span class="num">5</span>,<span class="num">6</span>],[<span class="num">7</span>,<span class="num">8</span>]]
-y <span class="op">=</span> [<span class="num">0</span>, <span class="num">1</span>, <span class="num">0</span>, <span class="num">1</span>]
-
-X_train, X_test, y_train, y_test <span class="op">=</span> <span class="fn">train_test_split</span>(
-    X, y, test_size<span class="op">=</span><span class="num">0.5</span>, random_state<span class="op">=</span><span class="num">42</span>)
-
-model <span class="op">=</span> <span class="cls">GaussianNB</span>()
-model.<span class="fn">fit</span>(X_test, y_test)   <span class="cm"># ← line A</span>
-preds <span class="op">=</span> model.<span class="fn">predict</span>(X_train)`,
-    opts:["GaussianNB cannot be used for binary classification","Line A fits on test data instead of training data — data leakage","test_size=0.5 is invalid for this dataset size","predict() should be called before fit()"],
+    type:"theory",
+    q:"What is data leakage in machine learning?",
+    opts:["When the training dataset is too small","When information from outside the training set (e.g. from test data) influences model training, producing over-optimistic evaluation","When a model has too many parameters","When data is not normalised before training"],
     ans:1,
-    exp:"Line A calls model.fit(X_test, y_test) — it trains on the test set, causing data leakage. The correct call is model.fit(X_train, y_train) followed by model.predict(X_test)."
+    exp:"Data leakage causes a model to appear better during evaluation than it will be in production. Common sources: fitting scalers on the full dataset before splitting, including future information in features, or accidentally training on test data."
   },
   {
-    type:"snippet",
-    q:"What will this scipy code verify?",
-    code:`<span class="kw">from</span> scipy <span class="kw">import</span> stats
-<span class="kw">import</span> numpy <span class="kw">as</span> np
-
-np.random.<span class="fn">seed</span>(<span class="num">42</span>)
-data <span class="op">=</span> np.random.<span class="fn">normal</span>(loc<span class="op">=</span><span class="num">0</span>, scale<span class="op">=</span><span class="num">1</span>, size<span class="op">=</span><span class="num">1000</span>)
-stat, p_val <span class="op">=</span> stats.<span class="fn">normaltest</span>(data)
-<span class="fn">print</span>(<span class="str">f"p-value: </span>{p_val:<span class="num">.4f</span>}<span class="str">"</span>)
-<span class="fn">print</span>(p_val <span class="op">></span> <span class="num">0.05</span>)`,
-    opts:["Whether variance equals 1","Whether the data follows a normal distribution; True means fail to reject normality","Whether mean equals 0","Whether the data has outliers"],
+    type:"theory",
+    q:"Which best describes what covariance measures?",
+    opts:["The strength of a linear relationship on a scale from −1 to 1","The direction and magnitude of the joint variability of two variables — but not normalised by their individual spreads","The proportion of variance in Y explained by X","Whether two variables are statistically independent"],
     ans:1,
-    exp:"scipy.stats.normaltest runs D'Agostino & Pearson's test for normality. p_value > 0.05 means we fail to reject H₀ (normality), i.e., the data is consistent with being normally distributed."
+    exp:"Covariance measures how two variables move together. Positive covariance means they tend to increase together. However, its magnitude depends on the units of measurement, making it hard to compare across datasets. Correlation normalises covariance by the product of the two standard deviations."
   },
   {
-    type:"snippet",
-    q:"What does the following code measure between two columns?",
-    code:`<span class="kw">import</span> pandas <span class="kw">as</span> pd
-df <span class="op">=</span> pd.<span class="fn">DataFrame</span>({
-    <span class="str">'ad_spend'</span>: [<span class="num">100</span>,<span class="num">200</span>,<span class="num">300</span>,<span class="num">400</span>],
-    <span class="str">'sales'</span>: [<span class="num">50</span>,<span class="num">80</span>,<span class="num">130</span>,<span class="num">170</span>]
-})
-cov_matrix <span class="op">=</span> df.<span class="fn">cov</span>()
-<span class="fn">print</span>(cov_matrix.<span class="fn">loc</span>[<span class="str">'ad_spend'</span>, <span class="str">'sales'</span>])`,
-    opts:["Pearson correlation between ad_spend and sales","The covariance between ad_spend and sales","The variance of sales","The mean product of ad_spend and sales"],
+    type:"theory",
+    q:"What is the Interquartile Range (IQR)?",
+    opts:["The range from minimum to maximum","The difference between the 75th and 25th percentiles, representing the middle 50% of data","The standard deviation divided by the mean","Two times the median"],
     ans:1,
-    exp:"df.cov() computes the covariance matrix. Accessing off-diagonal element ['ad_spend','sales'] gives the covariance — it measures how the two variables change together (not normalised, unlike correlation)."
+    exp:"IQR = Q3 − Q1. It describes the spread of the central 50% of the data and is robust to outliers. The Tukey fence rule uses 1.5×IQR beyond Q1 and Q3 as the boundary for outlier detection."
   },
   {
-    type:"snippet",
-    q:"What is the purpose of the IQR-based outlier removal in this code?",
-    code:`Q1 <span class="op">=</span> df[<span class="str">'value'</span>].<span class="fn">quantile</span>(<span class="num">0.25</span>)
-Q3 <span class="op">=</span> df[<span class="str">'value'</span>].<span class="fn">quantile</span>(<span class="num">0.75</span>)
-IQR <span class="op">=</span> Q3 <span class="op">-</span> Q1
-lower <span class="op">=</span> Q1 <span class="op">-</span> <span class="num">1.5</span> <span class="op">*</span> IQR
-upper <span class="op">=</span> Q3 <span class="op">+</span> <span class="num">1.5</span> <span class="op">*</span> IQR
-df_clean <span class="op">=</span> df[(df[<span class="str">'value'</span>] <span class="op">>=</span> lower) <span class="op">&</span> (df[<span class="str">'value'</span>] <span class="op"><=</span> upper)]`,
-    opts:["It removes values more than 2 standard deviations from the mean","It keeps only values within 1.5× the interquartile range beyond Q1 and Q3, removing extreme outliers","It normalises the column to [0,1]","It replaces outliers with the median"],
+    type:"theory",
+    q:"What does a scikit-learn Pipeline primarily prevent?",
+    opts:["Overfitting by automatically regularising models","Data leakage by ensuring preprocessing steps are fit only on training folds during cross-validation","Underfitting by stacking multiple models","Slow training by caching intermediate results"],
     ans:1,
-    exp:"The Tukey fence rule: any value outside [Q1 − 1.5×IQR, Q3 + 1.5×IQR] is considered an outlier. This code filters them out. Note: it removes outliers, not replaces them."
+    exp:"When cross-validation is run on a Pipeline, each fold fits the preprocessing step (e.g. StandardScaler) only on that fold's training data. Without a Pipeline, scaling the whole dataset first leaks test-fold statistics into training — a form of data leakage."
   },
   {
-    type:"snippet",
-    q:"What does this sklearn pipeline do?",
-    code:`<span class="kw">from</span> sklearn.pipeline <span class="kw">import</span> <span class="cls">Pipeline</span>
-<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="cls">StandardScaler</span>
-<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="cls">LogisticRegression</span>
-<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="fn">cross_val_score</span>
-
-pipe <span class="op">=</span> <span class="cls">Pipeline</span>([
-    (<span class="str">'scaler'</span>, <span class="cls">StandardScaler</span>()),
-    (<span class="str">'clf'</span>, <span class="cls">LogisticRegression</span>())
-])
-scores <span class="op">=</span> <span class="fn">cross_val_score</span>(pipe, X, y, cv<span class="op">=</span><span class="num">5</span>)
-<span class="fn">print</span>(scores.<span class="fn">mean</span>())`,
-    opts:["Applies logistic regression without any scaling","Scales X using training fold statistics only, then evaluates with 5-fold CV — preventing data leakage","Standardises the entire dataset before CV, causing data leakage","Trains 5 separate models on the full dataset"],
-    ans:1,
-    exp:"Pipeline + cross_val_score is the correct pattern. Within each fold, StandardScaler is fit ONLY on training data then applied to test data, preventing leakage of test statistics into training."
+    type:"theory",
+    q:"In Binomial(n, p), what do n and p represent?",
+    opts:["n = number of trials, p = probability of success on each independent trial","n = sample size, p = p-value of the test","n = number of features, p = regularisation penalty","n = number of outcomes, p = population proportion"],
+    ans:0,
+    exp:"The binomial distribution models the number of successes k in n independent Bernoulli trials each with success probability p. Its PMF is P(X=k) = C(n,k) × pᵏ × (1−p)^(n−k). Mean = np, variance = np(1−p)."
   },
   {
-    type:"snippet",
-    q:"What does this code demonstrate about the binomial distribution?",
-    code:`<span class="kw">from</span> scipy.stats <span class="kw">import</span> binom
-<span class="kw">import</span> numpy <span class="kw">as</span> np
-
-n, p <span class="op">=</span> <span class="num">10</span>, <span class="num">0.3</span>
-x <span class="op">=</span> np.<span class="fn">arange</span>(<span class="num">0</span>, <span class="num">11</span>)
-pmf_vals <span class="op">=</span> binom.<span class="fn">pmf</span>(x, n, p)
-<span class="fn">print</span>(<span class="fn">round</span>(binom.<span class="fn">pmf</span>(<span class="num">3</span>, n, p), <span class="num">4</span>))`,
-    opts:["The CDF value at x=3","P(X=3) — the probability of exactly 3 successes in 10 trials with p=0.3","The mean of the binomial distribution","P(X≤3) — cumulative probability"],
+    type:"theory",
+    q:"What is overfitting in a decision tree and how is it controlled?",
+    opts:["Overfitting means the tree has too few splits; fixed by removing features","Overfitting occurs when the tree memorises training data and fails to generalise; controlled by limiting depth, minimum samples per leaf/split, or pruning","Overfitting only affects linear models","Overfitting is prevented by using more training data exclusively"],
     ans:1,
-    exp:"binom.pmf(3, 10, 0.3) = C(10,3) × 0.3³ × 0.7⁷ ≈ 0.2668. PMF (Probability Mass Function) gives P(X = k), not cumulative probability (which is CDF)."
+    exp:"An unconstrained decision tree grows until each leaf is pure, effectively memorising the training set. Regularisation hyperparameters like max_depth, min_samples_leaf, and min_samples_split restrict tree growth, forcing the model to capture only patterns that generalise."
   },
   {
-    type:"snippet",
-    q:"In the following decision tree snippet, what controls overfitting?",
-    code:`<span class="kw">from</span> sklearn.tree <span class="kw">import</span> <span class="cls">DecisionTreeClassifier</span>
-
-model_a <span class="op">=</span> <span class="cls">DecisionTreeClassifier</span>()
-model_b <span class="op">=</span> <span class="cls">DecisionTreeClassifier</span>(
-    max_depth<span class="op">=</span><span class="num">4</span>,
-    min_samples_leaf<span class="op">=</span><span class="num">5</span>,
-    min_samples_split<span class="op">=</span><span class="num">10</span>
-)`,
-    opts:["model_a will generalise better because it has no restrictions","model_b controls overfitting via max_depth, min_samples_leaf and min_samples_split hyperparameters","random_state should be set to control overfitting","Both models are identical in performance"],
+    type:"theory",
+    q:"What does a p-value represent in hypothesis testing?",
+    opts:["The probability that the null hypothesis is true","The probability of observing a test statistic as extreme as the one obtained, assuming the null hypothesis is true","The probability that the alternative hypothesis is true","The significance level chosen by the analyst"],
     ans:1,
-    exp:"model_a (no constraints) will grow until pure leaves, likely overfitting. model_b uses regularisation hyperparameters: max_depth limits tree depth, min_samples_leaf/split prevent splits on tiny subsets."
+    exp:"The p-value is P(data as extreme as observed | H₀ is true). A small p-value suggests the observed data is unlikely under H₀, providing evidence against it. It does NOT measure the probability that H₀ is true."
   },
   {
-    type:"snippet",
-    q:"What is the correct interpretation of this z-test result?",
-    code:`<span class="kw">from</span> scipy <span class="kw">import</span> stats
-<span class="kw">import</span> numpy <span class="kw">as</span> np
-
-sample <span class="op">=</span> np.random.<span class="fn">normal</span>(<span class="num">52</span>, <span class="num">5</span>, <span class="num">50</span>)
-pop_mean <span class="op">=</span> <span class="num">50</span>
-pop_std <span class="op">=</span> <span class="num">5</span>
-z <span class="op">=</span> (np.<span class="fn">mean</span>(sample) <span class="op">-</span> pop_mean) <span class="op">/</span> (pop_std <span class="op">/</span> np.<span class="fn">sqrt</span>(<span class="fn">len</span>(sample)))
-p_val <span class="op">=</span> <span class="num">2</span> <span class="op">*</span> (<span class="num">1</span> <span class="op">-</span> stats.norm.<span class="fn">cdf</span>(<span class="fn">abs</span>(z)))
-<span class="fn">print</span>(p_val <span class="op"><</span> <span class="num">0.05</span>)`,
-    opts:["One-tailed Z-test for proportions","Two-tailed Z-test for the sample mean against a known population mean and standard deviation","Chi-square goodness of fit test","T-test with unknown population variance"],
+    type:"theory",
+    q:"What is the difference between a one-tailed and a two-tailed hypothesis test?",
+    opts:["One-tailed tests are used for larger samples; two-tailed for small samples","A two-tailed test checks for deviation in both directions (μ ≠ μ₀); a one-tailed test checks for deviation in a specific direction only (μ > μ₀ or μ < μ₀)","Two-tailed tests always give smaller p-values","One-tailed tests require the population standard deviation to be known"],
     ans:1,
-    exp:"This is a two-tailed one-sample Z-test. It tests H₀: μ = 50 using known population std=5. The factor of 2 in p_val makes it two-tailed, testing deviations in both directions."
+    exp:"A two-tailed test multiplies the one-tailed p-value by 2 to account for effects in either direction. Choose one-tailed only when the direction of the effect is specified a priori — it provides more power in that direction but misses effects in the opposite direction."
   },
   {
-    type:"snippet",
-    q:"What is the output of this NumPy sampling code?",
-    code:`<span class="kw">import</span> numpy <span class="kw">as</span> np
-np.random.<span class="fn">seed</span>(<span class="num">0</span>)
-population <span class="op">=</span> np.<span class="fn">arange</span>(<span class="num">1</span>, <span class="num">101</span>)
-sample <span class="op">=</span> np.random.<span class="fn">choice</span>(population, size<span class="op">=</span><span class="num">10</span>, replace<span class="op">=</span><span class="kw">False</span>)
-<span class="fn">print</span>(sample.<span class="fn">mean</span>())`,
-    opts:["50.5","Depends on random seed — but with seed(0) it is approximately 53.6","Always exactly 50.5 due to seed","None — the code raises an error"],
+    type:"theory",
+    q:"Why is the median preferred over the mean for skewed distributions?",
+    opts:["The median is always easier to compute","The mean is affected by extreme values (outliers), pulling it toward the tail; the median is resistant to outliers and better represents the centre of a skewed distribution","The mean is undefined for continuous data","The median equals the mode in all skewed distributions"],
     ans:1,
-    exp:"With np.random.seed(0), np.random.choice samples without replacement from 1..100. The mean of the specific 10 values chosen ≈ 53.6. The seed ensures reproducibility but not a value of 50.5."
+    exp:"In right-skewed distributions (e.g. income, house prices), a few very large values inflate the mean well above where most data lies. The median splits the distribution at the 50th percentile, making it a more robust measure of central tendency in such cases."
   },
   {
-    type:"snippet",
-    q:"What concept does this seaborn code primarily visualise?",
-    code:`<span class="kw">import</span> seaborn <span class="kw">as</span> sns
-<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
-tips <span class="op">=</span> sns.<span class="fn">load_dataset</span>(<span class="str">'tips'</span>)
-sns.<span class="fn">boxplot</span>(x<span class="op">=</span><span class="str">'day'</span>, y<span class="op">=</span><span class="str">'total_bill'</span>, data<span class="op">=</span>tips)
-plt.<span class="fn">show</span>()`,
-    opts:["The normal distribution of total_bill","The distribution of total_bill across each day, showing median, IQR, and outliers","The correlation between day and total_bill","A count plot of number of meals per day"],
+    type:"theory",
+    q:"What is 5-fold cross-validation and why is it preferred over a single train-test split?",
+    opts:["It trains one model 5 times with different random seeds","The data is split into 5 folds; each fold serves as the test set exactly once while the model trains on the remaining 4; the mean of 5 scores gives a more stable generalisation estimate","It evaluates the model on 5 different metrics simultaneously","It is only applicable to decision trees"],
     ans:1,
-    exp:"A box plot shows: median (line), IQR (box), whiskers (1.5×IQR), and individual outlier points. Here it shows how total_bill's distribution (spread, centre, outliers) varies across days of the week."
+    exp:"A single split is noisy — performance depends on which observations happen to land in the test set. K-fold CV uses all data for both training and evaluation (in separate folds), reducing variance in the performance estimate. The std across folds quantifies model stability."
   },
   {
-    type:"snippet",
-    q:"What critical issue exists in this regression code?",
-    code:`<span class="kw">from</span> sklearn.linear_model <span class="kw">import</span> <span class="cls">LinearRegression</span>
-<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> <span class="cls">StandardScaler</span>
-<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="fn">train_test_split</span>
-
-scaler <span class="op">=</span> <span class="cls">StandardScaler</span>()
-X_scaled <span class="op">=</span> scaler.<span class="fn">fit_transform</span>(X)  <span class="cm"># ← fit on full X</span>
-
-X_train, X_test <span class="op">=</span> <span class="fn">train_test_split</span>(X_scaled, test_size<span class="op">=</span><span class="num">0.2</span>)
-model <span class="op">=</span> <span class="cls">LinearRegression</span>().<span class="fn">fit</span>(X_train, y_train)`,
-    opts:["LinearRegression does not support StandardScaler","The scaler is fit on the full dataset before splitting, leaking test set statistics into training","y_train is not defined","train_test_split cannot accept pre-scaled data"],
+    type:"theory",
+    q:"What does precision measure in binary classification?",
+    opts:["The fraction of actual positives that were correctly identified","Of all instances predicted as positive, the fraction that are truly positive: TP / (TP + FP)","The overall accuracy of the model","The fraction of negatives correctly identified"],
     ans:1,
-    exp:"Data leakage: StandardScaler is fit_transform'd on the entire X (including what will become X_test). The correct order is: split first, then fit scaler on X_train only and transform both X_train and X_test."
+    exp:"Precision answers: 'When the model predicts positive, how often is it right?' It is the positive predictive value. High precision is critical when false positives are costly (e.g. spam filtering). Contrast with recall = TP / (TP + FN), which measures how many actual positives were caught."
   },
   {
-    type:"snippet",
-    q:"What does this confusion matrix analysis calculate?",
-    code:`<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> confusion_matrix, classification_report
-<span class="kw">import</span> numpy <span class="kw">as</span> np
-
-y_true <span class="op">=</span> [<span class="num">1</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">0</span>]
-y_pred <span class="op">=</span> [<span class="num">1</span>,<span class="num">0</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">0</span>,<span class="num">1</span>,<span class="num">1</span>,<span class="num">0</span>]
-cm <span class="op">=</span> confusion_matrix(y_true, y_pred)
-TP <span class="op">=</span> cm[<span class="num">1</span>,<span class="num">1</span>]; FP <span class="op">=</span> cm[<span class="num">0</span>,<span class="num">1</span>]
-precision <span class="op">=</span> TP <span class="op">/</span> (TP <span class="op">+</span> FP)
-<span class="fn">print</span>(<span class="fn">round</span>(precision, <span class="num">2</span>))`,
-    opts:["Recall = TP / (TP + FN)","Precision = TP / (TP + FP) = 0.75","F1 score of the classifier","Accuracy = correct / total"],
+    type:"theory",
+    q:"What is bootstrapping used for in statistics?",
+    opts:["Increasing the size of a small dataset by duplicating rows","Estimating the sampling distribution of a statistic by repeatedly resampling with replacement from observed data, enabling confidence intervals without analytical formulas","Training ensemble models in sequence","Testing for normality of a distribution"],
     ans:1,
-    exp:"The code explicitly computes Precision = TP/(TP+FP). TP=3 (predicted 1, actual 1), FP=1 (predicted 1, actual 0), so precision = 3/4 = 0.75. Precision measures how many positive predictions were actually correct."
+    exp:"Bootstrapping is a non-parametric resampling method. By drawing many bootstrap samples (with replacement), computing the statistic each time, and examining the resulting distribution, we approximate the sampling distribution of any statistic — even complex ones with no closed-form formula."
   },
   {
-    type:"snippet",
-    q:"What statistical concept is demonstrated by this bootstrapping code?",
-    code:`<span class="kw">import</span> numpy <span class="kw">as</span> np
-
-np.random.<span class="fn">seed</span>(<span class="num">42</span>)
-data <span class="op">=</span> np.<span class="fn">array</span>([<span class="num">23</span>,<span class="num">45</span>,<span class="num">12</span>,<span class="num">67</span>,<span class="num">34</span>,<span class="num">89</span>,<span class="num">11</span>,<span class="num">55</span>])
-boot_means <span class="op">=</span> [
-    np.random.<span class="fn">choice</span>(data, size<span class="op">=</span><span class="fn">len</span>(data), replace<span class="op">=</span><span class="kw">True</span>).<span class="fn">mean</span>()
-    <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">10000</span>)
-]
-ci_lower, ci_upper <span class="op">=</span> np.<span class="fn">percentile</span>(boot_means, [<span class="num">2.5</span>, <span class="num">97.5</span>])
-<span class="fn">print</span>(ci_lower, ci_upper)`,
-    opts:["Cross-validation with replacement","Bootstrap confidence interval for the population mean via resampling with replacement","Monte Carlo simulation for risk","Z-interval estimation using CLT"],
+    type:"theory",
+    q:"What does Bayes' theorem allow us to do?",
+    opts:["Compute the probability of the union of two events","Update a prior probability given new evidence, computing the posterior: P(H|E) = P(E|H) × P(H) / P(E)","Test whether two variables are independent","Compute expected value from a probability distribution"],
     ans:1,
-    exp:"Bootstrap resampling: draw n samples with replacement 10,000 times, compute the mean each time, then use the 2.5th and 97.5th percentiles of the distribution as the 95% bootstrap confidence interval."
+    exp:"Bayes' theorem formalises rational belief updating. The posterior P(H|E) combines the prior P(H) with the likelihood P(E|H). This explains the base rate fallacy: a very sensitive test for a rare disease still yields a low posterior because the low prior overwhelms the high likelihood ratio."
   },
   {
-    type:"snippet",
-    q:"What does this Bayes rule code compute in a medical diagnosis context?",
-    code:`<span class="cm"># P(Disease) = 0.01, P(+|Disease) = 0.95, P(+|No Disease) = 0.05</span>
-p_disease <span class="op">=</span> <span class="num">0.01</span>
-p_pos_given_disease <span class="op">=</span> <span class="num">0.95</span>
-p_pos_given_no_disease <span class="op">=</span> <span class="num">0.05</span>
-
-p_no_disease <span class="op">=</span> <span class="num">1</span> <span class="op">-</span> p_disease
-p_positive <span class="op">=</span> (p_pos_given_disease <span class="op">*</span> p_disease <span class="op">+</span>
-               p_pos_given_no_disease <span class="op">*</span> p_no_disease)
-posterior <span class="op">=</span> (p_pos_given_disease <span class="op">*</span> p_disease) <span class="op">/</span> p_positive
-<span class="fn">print</span>(<span class="fn">round</span>(posterior, <span class="num">3</span>))`,
-    opts:["P(positive test) = 0.059","P(Disease | positive test) ≈ 0.161 — the posterior probability of having the disease given a positive result","P(positive | disease) = 0.95","P(No disease | positive) ≈ 0.84"],
+    type:"theory",
+    q:"What does positive skewness indicate about a distribution?",
+    opts:["The distribution has a long left tail and most data is concentrated on the right","The distribution has a long right tail; extreme high values pull the mean above the median","The data is symmetric around the mean","Standard deviation is larger than the mean"],
     ans:1,
-    exp:"This applies Bayes' theorem. Despite 95% test sensitivity, the low prior (1% prevalence) makes the posterior only ~16.1%. This illustrates the base rate fallacy — a positive test does NOT mean ~95% chance of disease."
+    exp:"In a positively (right) skewed distribution: mode < median < mean. The tail extends to the right due to a few large values. Examples include income, wealth, and response time data. Negative skew is the mirror: long left tail, mean < median."
   },
   {
-    type:"snippet",
-    q:"What does the following pandas skewness code tell the analyst?",
-    code:`<span class="kw">import</span> pandas <span class="kw">as</span> pd
-<span class="kw">import</span> numpy <span class="kw">as</span> np
-
-data <span class="op">=</span> pd.<span class="cls">Series</span>([<span class="num">1</span>,<span class="num">2</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">3</span>,<span class="num">3</span>,<span class="num">100</span>])
-<span class="fn">print</span>(<span class="str">"Skewness:"</span>, <span class="fn">round</span>(data.<span class="fn">skew</span>(), <span class="num">2</span>))
-<span class="fn">print</span>(<span class="str">"Mean:"</span>, data.<span class="fn">mean</span>(), <span class="str">"Median:"</span>, data.<span class="fn">median</span>())`,
-    opts:["The data is symmetric; mean equals median","High positive skewness due to the outlier 100; mean > median, confirming right skew","The data is negatively skewed","Skewness is irrelevant for small datasets"],
+    type:"theory",
+    q:"What is the purpose of StandardScaler in preprocessing?",
+    opts:["It rescales all values to the range [0, 1]","It transforms each feature to have zero mean and unit variance, making features comparable in magnitude — important for distance-based and gradient-based algorithms","It removes outliers from the dataset","It encodes categorical variables as numbers"],
     ans:1,
-    exp:"The value 100 is an extreme outlier pulling the mean up (≈16.3) far above the median (3.0). skew() will be very large positive (right-skewed). This validates why median is preferred for skewed data."
+    exp:"StandardScaler computes z = (x − μ) / σ for each feature using the training set's mean and std. This prevents features with large numerical ranges from dominating those with smaller ranges. Critical for logistic regression, SVM, KNN, PCA, and neural networks. Not needed for tree-based models."
   },
   {
-    type:"snippet",
-    q:"What is evaluated by this K-Fold cross-validation snippet?",
-    code:`<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> <span class="cls">KFold</span>, <span class="fn">cross_val_score</span>
-<span class="kw">from</span> sklearn.tree <span class="kw">import</span> <span class="cls">DecisionTreeClassifier</span>
-
-kf <span class="op">=</span> <span class="cls">KFold</span>(n_splits<span class="op">=</span><span class="num">5</span>, shuffle<span class="op">=</span><span class="kw">True</span>, random_state<span class="op">=</span><span class="num">42</span>)
-model <span class="op">=</span> <span class="cls">DecisionTreeClassifier</span>(max_depth<span class="op">=</span><span class="num">3</span>)
-scores <span class="op">=</span> <span class="fn">cross_val_score</span>(model, X, y, cv<span class="op">=</span>kf, scoring<span class="op">=</span><span class="str">'accuracy'</span>)
-<span class="fn">print</span>(<span class="str">f"Mean: </span>{scores.<span class="fn">mean</span>():<span class="num">.3f</span>}<span class="str">, Std: </span>{scores.<span class="fn">std</span>():<span class="num">.3f</span>}<span class="str">"</span>)`,
-    opts:["Training accuracy on the full dataset","Generalisation accuracy estimated by averaging accuracy across 5 non-overlapping test folds; std indicates stability","Holdout validation with 20% test split","The decision tree's depth controls accuracy only"],
+    type:"theory",
+    q:"What is the null hypothesis (H₀) and what does 'failing to reject' it mean?",
+    opts:["H₀ is always the hypothesis that there is a significant difference; rejecting it confirms the effect","H₀ is the default assumption of no effect or no difference; failing to reject it means we lack sufficient evidence to conclude otherwise — not that H₀ is proven true","H₀ must always state that the mean equals zero","Failing to reject H₀ means the experiment was invalid"],
     ans:1,
-    exp:"5-Fold CV splits data into 5 folds, trains on 4 and tests on 1 each time. The mean accuracy estimates generalisation performance. Low std indicates consistent performance across folds — a stable model."
+    exp:"The null hypothesis represents the status quo (e.g. H₀: μ₁ = μ₂). 'Failing to reject H₀' is not the same as accepting it — we simply don't have enough evidence. This is analogous to a 'not guilty' verdict, not a 'proven innocent' verdict."
   },
+  {
+    type:"theory",
+    q:"What is the difference between PMF and CDF for a discrete distribution?",
+    opts:["PMF gives P(X ≤ k); CDF gives P(X = k)","PMF gives P(X = k), the probability of exactly one specific outcome; CDF gives P(X ≤ k), the cumulative probability up to and including k","PMF is used for continuous distributions; CDF for discrete","They are equivalent for symmetric distributions"],
+    ans:1,
+    exp:"PMF (Probability Mass Function) gives the probability of a specific discrete outcome. CDF (Cumulative Distribution Function) sums all PMF values up to k. Example in Binomial(10, 0.3): PMF(3) = P(X=3) ≈ 0.267; CDF(3) = P(X≤3) ≈ 0.650."
+  },
+  {
+    type:"theory",
+    q:"What does a confusion matrix show and what are TP, FP, FN, TN?",
+    opts:["It shows training loss over epochs","A table of counts: TP = predicted positive & actually positive; FP = predicted positive & actually negative; FN = predicted negative & actually positive; TN = predicted negative & actually negative","It shows the correlation between predicted and actual values","It is only used for multi-class problems"],
+    ans:1,
+    exp:"The confusion matrix is a 2×2 table for binary classifiers. From it: Accuracy = (TP+TN)/total; Precision = TP/(TP+FP); Recall = TP/(TP+FN); F1 = 2×P×R/(P+R). It reveals class-specific errors that accuracy alone hides."
+  },
+  {
+    type:"theory",
+    q:"What does the Central Limit Theorem (CLT) state?",
+    opts:["The mean of a population is always normally distributed","Regardless of the population distribution, the sampling distribution of the sample mean approaches a normal distribution as sample size increases","CLT states that all statistics converge to zero as n → ∞","CLT only applies to populations that are already normally distributed"],
+    ans:1,
+    exp:"The CLT is foundational to inferential statistics. For sufficiently large n (often n ≥ 30 as a rule of thumb), x̄ ~ N(μ, σ²/n) regardless of the underlying population's shape. This justifies using Z-tests and t-tests even when the population is not normal."
+  },
+  {
+    type:"theory",
+    q:"What is the difference between descriptive and inferential statistics?",
+    opts:["Descriptive statistics involve prediction; inferential statistics describe data","Descriptive statistics summarise and describe a dataset (mean, std, charts); inferential statistics use sample data to make inferences about a broader population with quantified uncertainty","They are synonymous terms","Inferential statistics can only be applied to normally distributed data"],
+    ans:1,
+    exp:"Descriptive stats describe what is in the data (e.g. mean = 45, std = 12, histogram). Inferential stats use that sample to draw conclusions about the population (e.g. hypothesis tests, confidence intervals, regression coefficients with p-values)."
+  },
+  {
+    type:"theory",
+    q:"What is the bias-variance tradeoff?",
+    opts:["It refers to the tradeoff between training speed and model accuracy","High bias = underfitting (model too simple, misses patterns); high variance = overfitting (model too sensitive to training noise). Minimising total error requires balancing both","Bias only affects linear models; variance only affects tree models","Bias and variance always move in the same direction"],
+    ans:1,
+    exp:"Total error ≈ Bias² + Variance + Irreducible noise. A high-bias model underfits — it makes strong assumptions and misses real patterns. A high-variance model overfits — it learns noise in training data. Regularisation, more data, and complexity control manage this tradeoff."
+  },
+  {
+    type:"theory",
+    q:"What is the difference between correlation and covariance?",
+    opts:["Correlation and covariance are identical","Correlation is covariance normalised by the product of the two variables' standard deviations, giving a unitless value in [−1, 1] that measures linear association strength and direction","Correlation measures non-linear relationships; covariance measures linear ones","Correlation is always positive; covariance can be negative"],
+    ans:1,
+    exp:"Pearson correlation r = Cov(X,Y) / (σ_X × σ_Y). Values near ±1 indicate strong linear relationships; near 0 indicates weak linear association. Normalising removes the effect of units and scale, making correlations comparable across different variable pairs."
+  },
+  {
+    type:"theory",
+    q:"What is the correct order of operations to avoid data leakage when scaling features?",
+    opts:["Fit and transform the scaler on the full dataset, then split into train and test","Split data first (train/test), then fit the scaler only on X_train and use transform (not fit_transform) on X_test","Scale only the test set","Split, then fit and transform separately on train and test sets independently"],
+    ans:1,
+    exp:"The scaler must learn statistics (mean, std) from training data only. Applying fit_transform to the entire dataset before splitting leaks test-set statistics into training. At inference time you also only have transform available — mirroring this same correct pattern."
+  },
+  {
+    type:"theory",
+    q:"What does the normaltest function in scipy.stats test for?",
+    opts:["Whether the variance of a sample equals 1","Whether a sample is consistent with being drawn from a normal distribution; a high p-value (> 0.05) means we fail to reject normality","Whether the sample mean equals zero","Whether there are significant outliers in the data"],
+    ans:1,
+    exp:"scipy.stats.normaltest runs D'Agostino & Pearson's test, which combines skewness and kurtosis tests. H₀: the data is normally distributed. p > 0.05 means we fail to reject H₀. Failing to reject normality is NOT proof of normality — just insufficient evidence against it."
+  },
+  {
+    type:"theory",
+    q:"What is a box plot and what five statistics does it display?",
+    opts:["A bar chart showing counts per category","A plot showing minimum, Q1, median (Q2), Q3, and maximum (or whiskers at 1.5×IQR), with individual points for outliers beyond the whiskers","A scatter plot of two continuous variables","A histogram with equal-width bins"],
+    ans:1,
+    exp:"A box plot (box-and-whisker plot) summarises a distribution: the box spans Q1 to Q3 (IQR), the line inside is the median, the whiskers extend to Q1 − 1.5×IQR and Q3 + 1.5×IQR, and individual points beyond the whiskers are outliers."
+  },
+  {
+    type:"theory",
+    q:"What does recall (sensitivity) measure in a binary classifier?",
+    opts:["Of all predicted positives, how many are actually positive","Of all actual positives in the dataset, how many were correctly identified by the model: TP / (TP + FN)","The overall fraction of correct predictions","How often the model predicts the negative class correctly"],
+    ans:1,
+    exp:"Recall = TP / (TP + FN). It answers: 'Of all real positives, how many did the model catch?' High recall is critical when missing a positive is costly (e.g. cancer screening — a missed diagnosis is a false negative). Precision and recall trade off against each other."
+  },
+  {
+    type:"theory",
+    q:"What is the base rate fallacy in Bayesian reasoning?",
+    opts:["Using a prior probability that is too high","Ignoring the prior probability (prevalence) of an event when evaluating test results, causing over-estimation of posterior probability — a positive result does not imply near-certain disease if prevalence is very low","Applying Bayes' theorem to non-independent events","Confusing P(A|B) with P(B|A)"],
+    ans:1,
+    exp:"Even with 95% test sensitivity, if disease prevalence is 1%, a positive test yields only ~16% posterior probability of actually having the disease. Most positives are false positives. Ignoring the low prior (base rate) leads to vastly inflated estimates of the posterior probability."
+  },
+  {
+    type:"theory",
+    q:"What does np.random.seed() do and why is it used?",
+    opts:["It limits the range of random numbers generated","It initialises the random number generator to a fixed state, ensuring reproducibility — the same 'random' sequence is produced every time the code is run with the same seed","It makes random numbers more uniformly distributed","It prevents duplicate values in random samples"],
+    ans:1,
+    exp:"Pseudo-random number generators are deterministic algorithms — the same seed always produces the same sequence. Setting a seed is essential in data science for reproducible train/test splits, model initialisation, and sampling experiments, so results can be verified and shared."
+  }
 ];
 
 // ── STATE ──
