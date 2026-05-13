@@ -263,7 +263,7 @@
         <div id="review-container"></div>
     </div>
 
-    <script>
+ <script>
         const questions = [
     {
         q: "Which of the following best describes the 'Curse of Dimensionality' in the context of K-Nearest Neighbors (KNN)?",
@@ -744,9 +744,9 @@
             const q = questions[currentQuestionIndex];
             progressEl.textContent = `Question ${currentQuestionIndex + 1} / ${questions.length}`;
             
+            // REMOVED the <pre><code>... snippet line entirely because there are no code snippets in this dataset
             let html = `
                 <div class="question-text">${currentQuestionIndex + 1}. ${q.q}</div>
-                <pre><code>${q.snippet.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
                 <div class="options">
             `;
 
@@ -863,10 +863,10 @@
                 const userAnsText = userAns !== null ? q.options[userAns].replace(/</g, "&lt;").replace(/>/g, "&gt;") : "<em>Unanswered</em>";
                 const correctAnsText = q.options[q.correct].replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
+                // REMOVED the <pre><code>... snippet line here as well
                 reviewHtml += `
                     <div class="review-item ${statusClass}">
                         <strong>Q${index + 1}: ${q.q}</strong>
-                        <pre><code>${q.snippet.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
                         <p><strong>Your Answer:</strong> <span style="color: ${isCorrect ? 'var(--success)' : (userAns===null ? 'var(--warning)' : 'var(--danger)')}">${userAnsText}</span></p>
                         ${!isCorrect ? `<p><strong>Correct Answer:</strong> <span style="color: var(--success)">${correctAnsText}</span></p>` : ''}
                         <div class="review-theory">
