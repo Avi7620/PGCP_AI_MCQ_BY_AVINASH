@@ -265,403 +265,447 @@
 
     <script>
         const questions = [
-            {
-                q: "What is the result of using Pandas `merge` with `how='outer'` and `indicator=True`?",
-                snippet: "import pandas as pd\ndf1 = pd.DataFrame({'id': [1, 2], 'val_x': ['A', 'B']})\ndf2 = pd.DataFrame({'id': [2, 3], 'val_y': ['C', 'D']})\nres = pd.merge(df1, df2, on='id', how='outer', indicator=True)\nprint(res['_merge'].iloc[0])",
-                options: ["left_only", "right_only", "both", "TypeError"],
-                correct: 0,
-                theory: "The `indicator=True` parameter adds a column `_merge` specifying the source of each row. For `id=1`, it only exists in `df1` (left DataFrame). Thus, the indicator for the first row is 'left_only'. This is a critical step in the Data Preparation lifecycle to identify missing cross-references."
-            },
-            {
-                q: "How does NumPy handle array broadcasting with differing shapes?",
-                snippet: "import numpy as np\na = np.ones((3, 1))\nb = np.ones((1, 4))\nprint((a + b).shape)",
-                options: ["(3, 1)", "(1, 4)", "(3, 4)", "ValueError"],
-                correct: 2,
-                theory: "NumPy broadcasts arrays to compatible shapes. The column array `a` (3x1) is replicated 4 times across columns, and the row array `b` (1x4) is replicated 3 times down rows. The resulting shape is the maximum of the dimensions: (3, 4)."
-            },
-            {
-                q: "What does the `stratify` parameter ensure in Sklearn's `train_test_split`?",
-                snippet: "from sklearn.model_selection import train_test_split\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y)",
-                options: [
-                    "It splits the data strictly based on temporal order.",
-                    "It ensures the train and test sets have the same proportion of class labels as the original dataset.",
-                    "It normalizes the features (X) using standard deviation.",
-                    "It randomizes the data based on the 'y' array values."
-                ],
-                correct: 1,
-                theory: "Stratification ensures that the distribution of the target variable (`y`) is preserved across both the training and testing sets. This is vital in predictive modeling when dealing with imbalanced classification datasets."
-            },
-            {
-                q: "Identify the correct descriptive statistic output for pandas `describe()` on categorical data:",
-                snippet: "import pandas as pd\ns = pd.Series(['apple', 'banana', 'apple', 'orange'])\nprint(s.describe()['top'])",
-                options: ["apple", "2", "3", "banana"],
-                correct: 0,
-                theory: "For object/categorical data, `describe()` returns count, unique, top, and freq. 'top' is the most frequently occurring categorical value (the mode). Since 'apple' appears twice, it is the top value."
-            },
-            {
-                q: "What is the expected behavior of `bfill()` on missing data if the first row is NaN?",
-                snippet: "import pandas as pd\nimport numpy as np\ns = pd.Series([np.nan, 2, np.nan, 4])\nprint(s.bfill()[0])",
-                options: ["NaN", "2.0", "0.0", "TypeError"],
-                correct: 1,
-                theory: "Backward fill (`bfill()`) propagates the next valid observation backward to fill gaps. The first valid observation after index 0 is at index 1 (value 2.0). Therefore, the NaN at index 0 becomes 2.0."
-            },
-            {
-                q: "When visualizing two numerical variables with vastly different scales on the same Matplotlib plot, which function is most appropriate?",
-                snippet: "fig, ax1 = plt.subplots()\nax2 = _____ # What goes here?\nax1.plot(time, GDP)\nax2.plot(time, population)",
-                options: ["ax1.twinx()", "plt.subplot(1, 2, 2)", "ax1.secondary_yaxis()", "ax1.add_axes()"],
-                correct: 0,
-                theory: "`twinx()` creates a new Axes object with an invisible x-axis and an independent y-axis positioned on the right. This is essential for preventing misleading visualizations when scales differ (e.g., millions vs percentages)."
-            },
-            {
-                q: "Which Seaborn visualization intrinsically combines a boxplot with a Kernel Density Estimation (KDE)?",
-                snippet: "import seaborn as sns\n# sns.____(x='day', y='total_bill', data=tips)",
-                options: ["boxplot", "stripplot", "violinplot", "swarmplot"],
-                correct: 2,
-                theory: "A `violinplot` shows the distribution of quantitative data across several levels of one (or more) categorical variables. It features a miniature boxplot inside and a rotated KDE on the outside, providing a deeper understanding of underlying distributions."
-            },
-            {
-                q: "What statistical principle does 'Anscombe's Quartet' primarily demonstrate?",
-                snippet: "# Datasets I, II, III, and IV have identical means and variances.\n# Yet, plotting them reveals completely different relationships.",
-                options: [
-                    "The Central Limit Theorem applies only to normally distributed data.",
-                    "Summary statistics can be highly misleading; visualization is crucial for exploring data.",
-                    "Linear regression is immune to outliers in small datasets.",
-                    "Correlation implies causation in uniform distributions."
-                ],
-                correct: 1,
-                theory: "Anscombe's Quartet consists of four datasets that have nearly identical descriptive statistics (mean, variance, correlation, regression line), yet appear entirely different when graphed. It underscores the necessity of Data Visualization before Model Planning."
-            },
-            {
-                q: "How do Pandas and NumPy calculate variance differently by default?",
-                snippet: "import pandas as pd, numpy as np\narr = [1, 2, 3, 4, 5]\nprint(np.var(arr) == pd.Series(arr).var())",
-                options: ["True", "False", "Error", "Depends on data type"],
-                correct: 1,
-                theory: "NumPy calculates population variance by default (Delta Degrees of Freedom, `ddof=0`), dividing by N. Pandas calculates sample variance by default (`ddof=1`), dividing by N-1. Hence, the outputs are slightly different unless you explicitly align the `ddof` parameters."
-            },
-            {
-                q: "In a heavily right-skewed income dataset, which central tendency relationship is generally true?",
-                snippet: "mean_income = df['income'].mean()\nmedian_income = df['income'].median()",
-                options: ["Mean < Median", "Mean = Median", "Mean > Median", "Cannot be determined"],
-                correct: 2,
-                theory: "In right-skewed (positive skew) data, large outlier values pull the mean towards the right tail. The median, being resistant to outliers, stays closer to the bulk of the data. Thus, the Mean is typically greater than the Median."
-            },
-            {
-                q: "Calculate the upper bound for outliers using the Interquartile Range (IQR) method:",
-                snippet: "Q1 = 25\nQ3 = 75\n# What is the standard upper bound formula?",
-                options: ["Q3 + 1.5 * (Q3 - Q1)", "Q3 + 2.0 * Q1", "Q1 + 1.5 * (Q3 + Q1)", "Q3 * 1.5"],
-                correct: 0,
-                theory: "The IQR is Q3 - Q1 (75 - 25 = 50). The standard threshold to detect outliers is 1.5 times the IQR above the third quartile (Q3 + 1.5*IQR) and below the first quartile (Q1 - 1.5*IQR)."
-            },
-            {
-                q: "Identify the result of applying Bayes' Theorem given the parameters:",
-                snippet: "P(A) = 0.01   # Probability of Disease\nP(B|A) = 0.90 # True Positive Rate\nP(B|~A) = 0.05 # False Positive Rate\n# Calculate P(A|B)",
-                options: ["0.900", "0.010", "Approx 0.154", "Approx 0.950"],
-                correct: 2,
-                theory: "Bayes Theorem: P(A|B) = [P(B|A)*P(A)] / P(B).\nP(B) = P(B|A)P(A) + P(B|~A)P(~A) = (0.90*0.01) + (0.05*0.99) = 0.009 + 0.0495 = 0.0585.\nP(A|B) = 0.009 / 0.0585 ≈ 0.1538. This explains the 'base rate fallacy' in medical diagnosis."
-            },
-            {
-                q: "What defines two events A and B as 'independent' in probability?",
-                snippet: "P(A) = 0.4\nP(B) = 0.5\nP(A ∩ B) = ?",
-                options: ["P(A ∩ B) = P(A) + P(B)", "P(A ∩ B) = 0", "P(A ∩ B) = P(A) * P(B) = 0.2", "P(A ∩ B) = P(A|B)"],
-                correct: 2,
-                theory: "Two events are independent if the occurrence of one does not affect the occurrence of the other. Mathematically, their joint probability equals the product of their marginal probabilities: P(A ∩ B) = P(A) * P(B)."
-            },
-            {
-                q: "Which SciPy function provides the cumulative probability up to a specific z-score in a Normal Distribution?",
-                snippet: "from scipy.stats import norm\nz = 1.96\n# probability = norm._____(z)",
-                options: ["norm.pdf", "norm.pmf", "norm.cdf", "norm.ppf"],
-                correct: 2,
-                theory: "CDF (Cumulative Distribution Function) returns the probability that a random variable taken from a standard normal distribution will be less than or equal to `z`. At z=1.96, the CDF is approx 0.975."
-            },
-            {
-                q: "When should you use the Poisson distribution instead of the Binomial distribution?",
-                snippet: "import scipy.stats as stats\n# Model selection phase",
-                options: [
-                    "When analyzing continuous spatial data.",
-                    "When predicting the number of events over a fixed continuous interval of time or space.",
-                    "When evaluating exact binary (Success/Fail) outcomes with a fixed number of trials 'n'.",
-                    "When standard deviation equals zero."
-                ],
-                correct: 1,
-                theory: "The Poisson distribution models the number of events occurring in a fixed interval of time or space, assuming these events happen with a known constant mean rate and independently. Binomial requires a fixed discrete number of trials."
-            },
-            {
-                q: "What is the core premise of the Central Limit Theorem (CLT)?",
-                snippet: "# Regardless of the underlying population distribution:\nsample_means = [np.mean(np.random.choice(data, 30)) for _ in range(1000)]",
-                options: [
-                    "All random variables inherently follow a normal distribution.",
-                    "The mean of the samples will exactly equal the population median.",
-                    "The distribution of sample means approaches a normal distribution as sample size gets larger.",
-                    "Variance decreases to zero as sample size approaches infinity."
-                ],
-                correct: 2,
-                theory: "The CLT states that the sampling distribution of the sample mean will be approximately normally distributed, regardless of the population's distribution, provided the sample size is sufficiently large (usually n > 30)."
-            },
-            {
-                q: "Interpret the output of a covariance matrix between Variable X and Y:",
-                snippet: "cov_matrix = np.cov(X, Y)\n# [[ 2.0, -1.5],\n#  [-1.5,  3.0]]",
-                options: [
-                    "X and Y have a perfectly linear inverse relationship.",
-                    "X and Y tend to move in opposite directions.",
-                    "X and Y are completely independent.",
-                    "The variance of X is 3.0."
-                ],
-                correct: 1,
-                theory: "The diagonal values (2.0, 3.0) represent the variances of X and Y. The off-diagonal values (-1.5) represent the covariance. A negative covariance indicates an inverse directional relationship: when X increases, Y tends to decrease."
-            },
-            {
-                q: "Why might Spearman correlation be preferred over Pearson correlation?",
-                snippet: "from scipy.stats import spearmanr, pearsonr\n# X = [1, 2, 3, 4, 100]\n# Y = [2, 4, 6, 8, 200]",
-                options: [
-                    "Spearman evaluates monotonic relationships and is robust to outliers.",
-                    "Spearman assumes normally distributed, continuous data.",
-                    "Spearman is computationally much faster for matrices.",
-                    "Pearson cannot calculate inverse correlations."
-                ],
-                correct: 0,
-                theory: "Pearson measures linear relationships and is highly sensitive to outliers. Spearman assesses monotonic relationships by comparing the *ranks* of the data rather than raw values, making it robust against extreme outliers."
-            },
-            {
-                q: "What parameter in `scipy.stats.ttest_ind` specifies Welch's T-test instead of Student's T-test?",
-                snippet: "from scipy.stats import ttest_ind\nt_stat, p_val = ttest_ind(group1, group2, ______)",
-                options: ["alternative='two-sided'", "equal_var=False", "nan_policy='omit'", "paired=True"],
-                correct: 1,
-                theory: "Setting `equal_var=False` triggers Welch's t-test, which does not assume the two populations have equal variances. This is safer and more robust for real-world analytical problems compared to Student's t-test."
-            },
-            {
-                q: "In a Chi-Square test of independence, what does the p-value indicate if it is 0.01 (alpha = 0.05)?",
-                snippet: "from scipy.stats import chi2_contingency\nchi2, p, dof, expected = chi2_contingency(observed_table)",
-                options: [
-                    "Accept the null hypothesis; the categorical variables are independent.",
-                    "Reject the null hypothesis; there is a significant association between the variables.",
-                    "The test failed due to insufficient degrees of freedom.",
-                    "There is a 1% chance the alternative hypothesis is true."
-                ],
-                correct: 1,
-                theory: "The Null Hypothesis for a Chi-Square test is that the variables are independent. Since p (0.01) < alpha (0.05), we reject the null hypothesis and conclude there is statistically significant evidence of an association."
-            },
-            {
-                q: "In the context of hypothesis testing in Medical Diagnosis, what represents a Type II Error?",
-                snippet: "H0: The patient is healthy (no disease).\nH1: The patient has the disease.",
-                options: [
-                    "Diagnosing a healthy person as sick (False Positive).",
-                    "Failing to diagnose a sick person (False Negative).",
-                    "Correctly identifying a sick person (True Positive).",
-                    "Rejecting H0 when H0 is false."
-                ],
-                correct: 1,
-                theory: "A Type II error occurs when you fail to reject a false null hypothesis. Here, H0 is 'Healthy'. If H0 is false (they are sick), but we fail to reject H0 (we say they are healthy), it's a False Negative."
-            },
-            {
-                q: "Which type of analytics answers the question: 'What should we do about it?'",
-                snippet: "# 1. Descriptive -> What happened?\n# 2. Predictive -> What will happen?\n# 3. __________ -> What should we do?",
-                options: ["Diagnostic Analytics", "Prescriptive Analytics", "Cognitive Analytics", "Reporting Analytics"],
-                correct: 1,
-                theory: "Prescriptive Analytics leverages optimization and simulation algorithms to advise on possible outcomes and recommend actions to maximize a business goal."
-            },
-            {
-                q: "How does a Decision Tree algorithm primarily choose the best attribute to split data?",
-                snippet: "from sklearn.tree import DecisionTreeClassifier\nclf = DecisionTreeClassifier(criterion='entropy')",
-                options: [
-                    "By maximizing the p-value of a Chi-Square test at each node.",
-                    "By finding the split that maximizes Information Gain (reduces Entropy/Gini).",
-                    "By calculating the Euclidean distance between categorical variables.",
-                    "By applying Gradient Descent to weights."
-                ],
-                correct: 1,
-                theory: "Decision trees segment data progressively by choosing splits that result in the highest Information Gain (i.e., making the resulting child nodes as pure/homogeneous as possible, minimizing entropy or Gini impurity)."
-            },
-            {
-                q: "What is the consequence of setting `min_samples_split=2` and no `max_depth` in a Decision Tree?",
-                snippet: "clf = DecisionTreeClassifier(min_samples_split=2, max_depth=None)\nclf.fit(X_train, y_train)",
-                options: [
-                    "High bias, resulting in underfitting.",
-                    "The model will likely memorize the training data, leading to extreme overfitting.",
-                    "The tree will only have one root and two leaves.",
-                    "It will cause a continuous loop."
-                ],
-                correct: 1,
-                theory: "Without pruning constraints (`max_depth=None`, `min_samples_split=2`), the tree will continue to expand until every leaf is perfectly pure. This memorizes noise in the training data, achieving 100% training accuracy but poor generalization (overfitting)."
-            },
-            {
-                q: "In Multiple Linear Regression, how do you interpret a coefficient of 2.5 for feature X1?",
-                snippet: "from sklearn.linear_model import LinearRegression\n# y = 1.0 + 2.5*X1 - 0.8*X2",
-                options: [
-                    "For every 1 unit increase in X1, y increases by 2.5 units, holding all other variables constant.",
-                    "X1 is 2.5 times more important than X2.",
-                    "X1 causes y to increase by 2.5%.",
-                    "The correlation between X1 and y is exactly 2.5."
-                ],
-                correct: 0,
-                theory: "In regression analysis, coefficients represent the average change in the dependent variable (y) for a one-unit change in the predictor variable, assuming all other independent variables remain constant."
-            },
-            {
-                q: "What does Logistic Regression use to map predicted values to probabilities between 0 and 1?",
-                snippet: "from sklearn.linear_model import LogisticRegression\nmodel = LogisticRegression()\n# y_pred_prob = model.predict_proba(X_test)",
-                options: ["Softmax function (exclusively)", "Sigmoid function", "ReLU activation", "Tanh function"],
-                correct: 1,
-                theory: "Logistic Regression applies the Sigmoid function (Logistic function), $f(x) = \\frac{1}{1 + e^{-x}}$, to transform a linear combination of inputs into a probability curve constrained between 0 and 1."
-            },
-            {
-                q: "What is the primary purpose of K-Fold Cross Validation?",
-                snippet: "from sklearn.model_selection import cross_val_score, KFold\nkf = KFold(n_splits=5)\nscores = cross_val_score(model, X, y, cv=kf)",
-                options: [
-                    "To increase the processing speed of model training.",
-                    "To evaluate model generalization by training and testing on different overlapping subsets.",
-                    "To automatically drop irrelevant features from the dataset.",
-                    "To handle missing data iteratively."
-                ],
-                correct: 1,
-                theory: "Cross-validation is a technique to assess how the results of a statistical analysis will generalize to an independent dataset. It splits data into 'K' folds, iteratively training on K-1 folds and validating on the remaining fold, avoiding overfitting."
-            },
-            {
-                q: "If your model has 98% Training Accuracy but 62% Testing Accuracy, what is the diagnosis?",
-                snippet: "print(f'Train Score: {model.score(X_train, y_train)}')\nprint(f'Test Score: {model.score(X_test, y_test)}')",
-                options: ["Underfitting (High Bias)", "Overfitting (High Variance)", "Perfectly calibrated", "Data leakage"],
-                correct: 1,
-                theory: "A massive gap between training accuracy (high) and test accuracy (low) is the classic symptom of Overfitting. The model has learned the noise and specific details of the training set rather than generalized underlying patterns."
-            },
-            {
-                q: "In an imbalanced dataset (e.g., 99% non-fraud, 1% fraud), why is Accuracy a misleading evaluation metric?",
-                snippet: "from sklearn.metrics import accuracy_score\ny_true = [0]*99 + [1]*1\ny_pred = [0]*100 # Model predicts NO fraud every time\nprint(accuracy_score(y_true, y_pred)) # Outputs 0.99",
-                options: [
-                    "Because precision and recall are mathematically identical to accuracy.",
-                    "Because a naive model predicting only the majority class achieves 99% accuracy but fails its business objective.",
-                    "Because accuracy cannot calculate continuous probabilities.",
-                    "Because the data needs to be scaled first."
-                ],
-                correct: 1,
-                theory: "Accuracy merely measures total correct predictions. In highly skewed data, simply guessing the dominant class yields high accuracy while completely missing the minority class (the actual goal, like detecting fraud). Precision, Recall, and F1-score are required."
-            },
-            {
-                q: "How is the F1-Score calculated?",
-                snippet: "from sklearn.metrics import f1_score\n# F1 balances the trade-off between False Positives and False Negatives.",
-                options: [
-                    "Arithmetic mean of Precision and Recall",
-                    "Precision divided by Recall",
-                    "Harmonic mean of Precision and Recall: 2 * (Precision * Recall) / (Precision + Recall)",
-                    "Area Under the ROC Curve"
-                ],
-                correct: 2,
-                theory: "The F1 score is the harmonic mean of precision and recall. It severely punishes extreme values; if either Precision or Recall is low, the F1 score will drop significantly, making it ideal for evaluating uneven models."
-            },
-            {
-                q: "What does the ROC-AUC score measure in binary classification?",
-                snippet: "from sklearn.metrics import roc_auc_score\nauc = roc_auc_score(y_test, y_pred_proba)",
-                options: [
-                    "The model's ability to discriminate between the positive and negative classes.",
-                    "The exact percentage of True Positives.",
-                    "The ratio of variance explained by the model.",
-                    "The loss of the neural network during training."
-                ],
-                correct: 0,
-                theory: "Area Under the Receiver Operating Characteristic Curve (ROC-AUC) plots True Positive Rate vs False Positive Rate. A score of 0.5 is random guessing; 1.0 is perfect class separation capability."
-            },
-            {
-                q: "What is the primary difference between Factor Analysis (FA) and Principal Component Analysis (PCA)?",
-                snippet: "from sklearn.decomposition import FactorAnalysis, PCA",
-                options: [
-                    "FA only works with categorical data, PCA only works with numerical.",
-                    "PCA is used to identify unobservable latent variables; FA just compresses data.",
-                    "PCA maximizes total variance to reduce dimensionality; FA models the underlying unobservable (latent) factors causing the correlation.",
-                    "There is no mathematical difference; they are aliases."
-                ],
-                correct: 2,
-                theory: "PCA is a linear combination of variables to maximize variance (pure dimensionality reduction). Factor Analysis assumes that observed variables are caused by underlying latent factors and unique error variances."
-            },
-            {
-                q: "In KNIME Analytics Platform, how is the data analytics pipeline primarily constructed?",
-                snippet: "# KNIME is a low-code analytics platform.",
-                options: [
-                    "By writing purely Python and R scripts in a console.",
-                    "By connecting graphical 'Nodes' representing data access, transformation, modeling, and visualization into a workflow.",
-                    "By compiling C++ binaries for each model.",
-                    "By using only pre-trained LLMs to interpret CSVs."
-                ],
-                correct: 1,
-                theory: "KNIME operates on a visual programming paradigm. Users drag, drop, and connect 'Nodes' (which encapsulate distinct functions like row filtering, decision tree learning, etc.) to create reproducible data workflows."
-            },
-            {
-                q: "Why is Feature Scaling (Standardization/Normalization) critical before using K-Nearest Neighbors (KNN)?",
-                snippet: "from sklearn.preprocessing import StandardScaler\nfrom sklearn.neighbors import KNeighborsClassifier",
-                options: [
-                    "To satisfy the normal distribution assumption of KNN.",
-                    "Because KNN relies on distance metrics (like Euclidean); variables with larger scales will mathematically dominate the distance calculation.",
-                    "To reduce the number of features.",
-                    "To prevent the algorithm from returning negative neighbors."
-                ],
-                correct: 1,
-                theory: "KNN classifies a point based on the 'closest' points. If Age ranges from 20-60 and Salary ranges from 50,000-100,000, the raw Euclidean distance will be almost entirely determined by Salary unless the features are scaled to a common range."
-            },
-            {
-                q: "What 'naive' assumption gives the Naive Bayes classifier its name?",
-                snippet: "from sklearn.naive_bayes import GaussianNB\nnb = GaussianNB()",
-                options: [
-                    "It assumes all data is normally distributed.",
-                    "It assumes all features are conditionally independent given the class label.",
-                    "It assumes the dataset contains no missing values.",
-                    "It assumes probabilities are always greater than zero."
-                ],
-                correct: 1,
-                theory: "The Naive Bayes algorithm calculates probabilities by applying Bayes' theorem with the 'naive' assumption that the presence of a particular feature in a class is entirely unrelated to the presence of any other feature."
-            },
-            {
-                q: "When using SciPy's `linprog` for Linear Optimization, how do you handle maximization if the function only minimizes?",
-                snippet: "from scipy.optimize import linprog\n# Objective function to MAXIMIZE: Z = 3x + 5y\nc = [3, 5] ",
-                options: [
-                    "Pass a special max=True flag.",
-                    "Multiply the objective coefficients `c` by -1.",
-                    "Use non-linear optimization instead.",
-                    "Square the constraints."
-                ],
-                correct: 1,
-                theory: "Optimization algorithms in scipy (`linprog`) are designed to minimize an objective function. To maximize Z, you minimize the negative of the function: minimize -Z = -3x - 5y."
-            },
-            {
-                q: "Which technique is most effective for Data Preparation when dealing with high-cardinality nominal categorical variables in a tree-based model?",
-                snippet: "# The 'City' column has 500 unique string values.",
-                options: ["One-Hot Encoding", "Label Encoding", "Target Encoding", "Dropping the column immediately"],
-                correct: 2,
-                theory: "One-Hot Encoding 500 cities creates 500 sparse columns, devastating performance and memory. Label encoding implies an incorrect ordinal relationship. Target Encoding replaces the category with the mean of the target variable, making it highly effective for high-cardinality nominal data."
-            },
-            {
-                q: "In Risk Analysis Simulation, what is a 'Monte Carlo' simulation primarily used for?",
-                snippet: "import numpy as np\n# Running 10,000 iterations to predict profit",
-                options: [
-                    "To encrypt sensitive data before deployment.",
-                    "To evaluate the probability of different outcomes in a process that cannot easily be predicted due to the intervention of random variables.",
-                    "To cluster text documents by topic.",
-                    "To optimize SQL queries in data warehouses."
-                ],
-                correct: 1,
-                theory: "Monte Carlo simulations model the probability of different outcomes by running thousands of iterations using random sampling from probability distributions, providing a risk-assessment range rather than a single-point estimate."
-            },
-            {
-                q: "What defines 'Spurious Correlation' in data analytics?",
-                snippet: "correlation_coefficient = 0.95\n# Variable X: Ice cream sales\n# Variable Y: Shark attacks",
-                options: [
-                    "A correlation coefficient less than 0.",
-                    "A mathematical relationship in which two or more events or variables are associated but not causally related, often due to a hidden third factor.",
-                    "A perfect correlation of 1.0.",
-                    "A correlation caused exclusively by rounding errors."
-                ],
-                correct: 1,
-                theory: "Spurious correlations occur when two variables appear highly correlated but have no direct causal link. Usually, a confounding variable (e.g., Summer/Heat causes both higher ice cream sales and more people at the beach) is the actual cause. Correlation ≠ Causation."
-            },
-            {
-                q: "During 'Model planning' and 'Model building', what is the holdout method?",
-                snippet: "# Validation strategy setup",
-                options: [
-                    "Holding all numerical variables constant to observe categorical effects.",
-                    "Pausing the analytics lifecycle until management approval.",
-                    "Splitting the data into distinct, non-overlapping training and testing sets to evaluate unseen generalization.",
-                    "Removing outliers before fitting the model."
-                ],
-                correct: 2,
-                theory: "The Holdout evaluation splits data into sets (typically Train/Test/Validation). Models are trained on one set and evaluated on the 'holdout' set to verify that the model generalizes properly to new, unseen data, directly addressing overfitting."
-            }
-        ];
-
+    {
+        q: "Which of the following best describes the 'Curse of Dimensionality' in the context of K-Nearest Neighbors (KNN)?",
+        options: [
+            "As dimensions increase, the computational time decreases exponentially.",
+            "As dimensions increase, the distance between any two points becomes almost identical, making 'nearest' neighbors meaningless.",
+            "As dimensions increase, the algorithm automatically drops less important features.",
+            "As dimensions increase, the model becomes too biased and underfits the data."
+        ],
+        correct: 1,
+        theory: "In high-dimensional spaces, the volume of the space increases so fast that the available data becomes sparse. This sparsity means that the mathematical difference between the closest point and the farthest point approaches zero, rendering distance metrics like Euclidean distance ineffective."
+    },
+    {
+        q: "What is the primary theoretical advantage of using Stratified K-Fold Cross Validation over standard K-Fold?",
+        options: [
+            "It runs significantly faster by skipping redundant folds.",
+            "It ensures that each fold contains the exact same number of overall samples.",
+            "It ensures that the distribution of the target class is preserved equally across all folds.",
+            "It automatically standardizes the features during the splitting process."
+        ],
+        correct: 2,
+        theory: "Stratification forces each fold to have the same proportion of class labels as the original dataset. This is crucial for imbalanced datasets, preventing a scenario where a training or testing fold lacks representation of a minority class."
+    },
+    {
+        q: "In Support Vector Machines (SVM), what is the theoretical purpose of the 'Kernel Trick'?",
+        options: [
+            "To implicitly map data into a higher-dimensional space where it becomes linearly separable without explicitly calculating the transformation.",
+            "To reduce the dimensionality of the dataset before applying the linear boundary.",
+            "To automatically remove extreme outliers from the support vectors.",
+            "To convert continuous regression targets into categorical class labels."
+        ],
+        correct: 0,
+        theory: "The kernel trick allows SVMs to solve non-linear classification problems. It calculates the dot products of data points in a high-dimensional feature space without ever actually transforming the data into that space, saving massive computational resources."
+    },
+    {
+        q: "What is the core theoretical assumption of the Naive Bayes classifier regarding its input features?",
+        options: [
+            "All features must follow a uniform distribution.",
+            "All features are perfectly correlated with each other.",
+            "All features are conditionally independent of each other given the class label.",
+            "All features must be scaled to a range between 0 and 1."
+        ],
+        correct: 2,
+        theory: "Naive Bayes applies Bayes' theorem with the 'naive' assumption that the presence of one feature does not affect the presence of another, given the target class. Even though this assumption is rarely true in real life, the algorithm still performs surprisingly well on tasks like text classification."
+    },
+    {
+        q: "In the context of Principal Component Analysis (PCA), what do the Eigenvalues theoretically represent?",
+        options: [
+            "The coordinates of the original data points in the new space.",
+            "The amount of variance explained by their corresponding Principal Component (Eigenvector).",
+            "The correlation coefficient between the first and second dimensions.",
+            "The margin of error for the dimensionality reduction."
+        ],
+        correct: 1,
+        theory: "In PCA, the covariance matrix is decomposed into eigenvectors and eigenvalues. The eigenvector determines the direction of the new feature axis (the principal component), and the eigenvalue represents the magnitude (variance) of the data along that new axis."
+    },
+    {
+        q: "What is the theoretical distinction between Missing Completely at Random (MCAR) and Missing Not at Random (MNAR)?",
+        options: [
+            "MCAR means the missingness is related to another variable, while MNAR means it is completely random.",
+            "MCAR means the probability of missing data is independent of any values, while MNAR means the missingness is related to the unobserved value itself.",
+            "MCAR data can only be dropped, while MNAR data can be imputed.",
+            "There is no theoretical difference; both require mean imputation."
+        ],
+        correct: 1,
+        theory: "If data is MCAR, the missing values are random and dropping them doesn't bias the dataset. If data is MNAR, the fact that it is missing is related to the value it should have been (e.g., wealthy people refusing to disclose high incomes). MNAR introduces severe bias if ignored."
+    },
+    {
+        q: "Why is 'Log Loss' (Cross-Entropy) theoretically preferred over 'Mean Squared Error' (MSE) for training Logistic Regression models?",
+        options: [
+            "MSE is computationally too heavy for binary targets.",
+            "Log Loss strongly penalizes confident but incorrect predictions, whereas MSE creates a non-convex loss surface for probabilities, risking local minima.",
+            "Log Loss automatically converts probabilities into absolute classes.",
+            "MSE cannot be differentiated by gradient descent."
+        ],
+        correct: 1,
+        theory: "Because Logistic Regression uses a sigmoid activation function, applying MSE results in a non-convex error surface with multiple local minima where gradient descent can get stuck. Log Loss guarantees a strictly convex loss surface, ensuring gradient descent finds the global minimum."
+    },
+    {
+        q: "What does the 'Learning Rate' parameter theoretically control in Gradient Descent?",
+        options: [
+            "The number of epochs the model will train for.",
+            "The size of the steps taken toward the minimum of the loss function during weight updates.",
+            "The percentage of data used in each mini-batch.",
+            "The ratio of L1 to L2 regularization applied to the weights."
+        ],
+        correct: 1,
+        theory: "The learning rate scales the gradient before it is subtracted from the current weights. A learning rate that is too small makes training painfully slow, while one that is too large can cause the algorithm to continuously overshoot the minimum and diverge."
+    },
+    {
+        q: "In Natural Language Processing (NLP), what is the primary theoretical flaw of the Bag-of-Words (BoW) model?",
+        options: [
+            "It cannot handle documents longer than 500 words.",
+            "It ignores the order of words, completely losing grammatical structure and semantic context.",
+            "It requires all text to be translated into a single language first.",
+            "It uses massive amounts of RAM compared to word embeddings."
+        ],
+        correct: 1,
+        theory: "Bag-of-Words represents text simply as a frequency count of words. It does not capture sequence, meaning 'The dog bit the man' and 'The man bit the dog' have the exact same mathematical representation."
+    },
+    {
+        q: "What is the theoretical purpose of the 'Activation Function' in an Artificial Neural Network?",
+        options: [
+            "To initialize the random weights of the network.",
+            "To introduce non-linearity into the network, allowing it to learn complex, non-linear patterns.",
+            "To pool multiple outputs into a single scalar value.",
+            "To prevent the network from overfitting the training data."
+        ],
+        correct: 1,
+        theory: "Without an activation function (like ReLU or Sigmoid), a neural network is just a series of linear matrix multiplications. No matter how many layers it has, a purely linear network can only ever solve linear problems. Activation functions enable the learning of complex shapes and boundaries."
+    },
+    {
+        q: "What phenomenon is the 'Vanishing Gradient Problem' theoretically referring to in Deep Learning?",
+        options: [
+            "When the loss function reaches zero and training stops prematurely.",
+            "When gradients become infinitely large, causing the model weights to explode to NaN.",
+            "When gradients become so small during backpropagation that the weights of the earliest layers barely update, stalling the learning process.",
+            "When the learning rate decays too quickly during training."
+        ],
+        correct: 2,
+        theory: "In deep networks (especially those using Sigmoid or Tanh activations), the gradient of the loss is multiplied by values less than 1 during backpropagation. Through many layers, this gradient shrinks exponentially, preventing the initial layers from learning meaningful features."
+    },
+    {
+        q: "In clustering, what is the theoretical difference between K-Means and DBSCAN?",
+        options: [
+            "K-Means requires you to specify the number of clusters (K) in advance, while DBSCAN automatically discovers clusters based on data density.",
+            "K-Means works well with non-globular shapes, while DBSCAN only handles spherical clusters.",
+            "K-Means is robust to outliers, while DBSCAN forces every point into a cluster.",
+            "There is no difference; they are variations of the same algorithm."
+        ],
+        correct: 0,
+        theory: "K-Means groups data into 'K' spherical clusters and forces every point (even outliers) into a cluster. DBSCAN groups points that are closely packed together (high density), can discover arbitrarily shaped clusters, and explicitly identifies sparse points as 'noise' or outliers."
+    },
+    {
+        q: "What theoretical advantage does the XGBoost algorithm have over a standard Random Forest?",
+        options: [
+            "XGBoost builds trees in parallel, making it fundamentally faster than a sequential Random Forest.",
+            "XGBoost trees are deeper and therefore have lower variance.",
+            "XGBoost optimizes an objective function using gradient descent to correct the residual errors of previous trees, reducing bias more effectively.",
+            "XGBoost does not require hyperparameter tuning."
+        ],
+        correct: 2,
+        theory: "Random Forests build trees independently and average them to reduce variance. XGBoost is a Gradient Boosting machine that builds trees sequentially; each new tree learns from the mistakes (residuals) of the entire ensemble before it, actively driving down the model's bias."
+    },
+    {
+        q: "In statistical hypothesis testing, what is the theoretical definition of statistical 'Power'?",
+        options: [
+            "The probability of rejecting the null hypothesis when it is actually true (Type I error).",
+            "The probability of correctly rejecting the null hypothesis when the alternative hypothesis is true (True Positive Rate).",
+            "The strict threshold (alpha) set before the experiment begins.",
+            "The probability that the sample mean equals the population mean."
+        ],
+        correct: 1,
+        theory: "Statistical Power (1 - Beta) is the likelihood that a test will detect an effect if there is an effect to be detected. High power means you have a low probability of making a Type II error (False Negative)."
+    },
+    {
+        q: "When comparing L1 (Lasso) and L2 (Ridge) regularization, what geometric theoretical property allows L1 to perform feature selection?",
+        options: [
+            "The L1 penalty constraint forms a diamond shape, making it highly probable that the gradient descent loss function will intersect it exactly at an axis (setting coefficients to zero).",
+            "The L1 penalty uses squared terms, which forces smaller weights to zero faster than L2.",
+            "L1 completely ignores correlation between features, dropping them randomly.",
+            "L1 regularization adds features to the model sequentially."
+        ],
+        correct: 0,
+        theory: "In a 2D space, the L2 constraint is a circle, while the L1 constraint is a diamond with sharp corners on the axes. The optimal solution (where the error contour hits the constraint) is highly likely to occur on a corner in L1, which means one or more feature weights become exactly zero."
+    },
+    {
+        q: "What is the primary theoretical difference between 'Generative' and 'Discriminative' models?",
+        options: [
+            "Generative models predict a continuous target, Discriminative models predict a discrete target.",
+            "Discriminative models learn the boundary between classes, Generative models learn the actual distribution of individual classes.",
+            "Generative models cannot be used for classification.",
+            "Discriminative models are unsupervised, Generative models are supervised."
+        ],
+        correct: 1,
+        theory: "A Discriminative model (like Logistic Regression) focuses only on drawing the best line to separate dogs and cats. A Generative model (like Naive Bayes or GANs) tries to learn what a dog looks like and what a cat looks like independently, allowing it to generate new data points."
+    },
+    {
+        q: "What does the 'Gini Impurity' theoretically measure in a Classification Decision Tree?",
+        options: [
+            "The continuous numerical variance of the target variable.",
+            "The probability of incorrectly classifying a randomly chosen element if it were randomly labeled according to the distribution of labels in the subset.",
+            "The absolute depth of the tree from root to leaf.",
+            "The computational time required to make a split."
+        ],
+        correct: 1,
+        theory: "Gini Impurity is a measurement of the likelihood of an incorrect classification of a new instance if it was randomly classified according to the distribution of classes in the node. A perfectly pure node (all samples belong to one class) has a Gini impurity of 0."
+    },
+    {
+        q: "How does the 'SMOTE' (Synthetic Minority Over-sampling Technique) algorithm theoretically handle class imbalance?",
+        options: [
+            "By duplicating the existing minority class samples randomly.",
+            "By randomly deleting samples from the majority class until it matches the minority class.",
+            "By generating new, synthetic minority examples by interpolating between existing minority samples in the feature space.",
+            "By changing the loss function to heavily penalize majority class predictions."
+        ],
+        correct: 2,
+        theory: "Unlike simple random oversampling which just creates exact copies of data, SMOTE creates synthetic data points. It does this by drawing lines between existing minority points in the high-dimensional feature space and creating new points along those lines."
+    },
+    {
+        q: "What is the theoretical implication of setting a very small 'k' value (e.g., k=1) in the K-Nearest Neighbors algorithm?",
+        options: [
+            "The model becomes highly biased, ignoring local fluctuations.",
+            "The model creates a highly complex, jagged decision boundary, leading to low bias and high variance (overfitting).",
+            "The model will perfectly generalize to all unseen data.",
+            "The algorithm will automatically switch to a linear regression approach."
+        ],
+        correct: 1,
+        theory: "If K=1, the model predicts the class of the single closest point. This means it memorizes the training data perfectly (0 bias on training), but the decision boundary becomes incredibly sensitive to noise and outliers, resulting in high variance and poor generalization."
+    },
+    {
+        q: "In A/B Testing, what is a theoretical 'Type I Error'?",
+        options: [
+            "Concluding there is a significant difference between version A and B when there actually isn't (False Positive).",
+            "Failing to notice a difference between version A and B when one actually exists (False Negative).",
+            "Setting the sample size too small to achieve statistical significance.",
+            "Having unequal traffic distribution between version A and version B."
+        ],
+        correct: 0,
+        theory: "A Type I error occurs when you reject the null hypothesis (which states there is no difference) when it is true. In A/B testing, this means launching a 'winning' feature that is actually just a statistical fluke."
+    },
+    {
+        q: "What theoretical advantage does the ReLU (Rectified Linear Unit) activation function offer over the Sigmoid function in deep neural networks?",
+        options: [
+            "ReLU smoothly maps all inputs to probabilities between 0 and 1.",
+            "ReLU suffers less from the vanishing gradient problem because its derivative for positive inputs is exactly 1.",
+            "ReLU ensures that the network never outputs exactly zero.",
+            "ReLU automatically centers the data around zero, accelerating gradient descent."
+        ],
+        correct: 1,
+        theory: "The Sigmoid function 'squashes' inputs into a small range, making gradients very close to zero at the extremes (vanishing gradients). ReLU outputs the input directly if positive, giving a constant gradient of 1, allowing errors to propagate successfully through very deep layers."
+    },
+    {
+        q: "What is the theoretical purpose of 'Batch Normalization' during the training of neural networks?",
+        options: [
+            "To normalize the initial weights to standard Gaussian distributions.",
+            "To reduce Internal Covariate Shift by standardizing the inputs of intermediate layers, allowing for higher learning rates and faster convergence.",
+            "To convert all categorical data into normalized numerical batches.",
+            "To automatically drop out random neurons to prevent overfitting."
+        ],
+        correct: 1,
+        theory: "As a network trains, the distribution of inputs to inner layers constantly changes as prior layer weights update (Internal Covariate Shift). Batch Norm normalizes these intermediate inputs to have a mean of 0 and variance of 1, stabilizing and accelerating the training process."
+    },
+    {
+        q: "In Time Series analysis, what does it theoretically mean for data to be 'Stationary'?",
+        options: [
+            "The data points do not change their absolute value over time.",
+            "The statistical properties of the series, such as mean, variance, and autocorrelation, are constant over time.",
+            "The time series consists exclusively of random noise.",
+            "The data exhibits a clear upward or downward linear trend."
+        ],
+        correct: 1,
+        theory: "Stationarity is a core assumption in models like ARIMA. A stationary series has no predictable patterns in the long term (no trend, no seasonality). If the mean and variance change over time, the mathematical rules governing the data are shifting, making future predictions unreliable without transformations."
+    },
+    {
+        q: "What is the theoretical function of the 'Softmax' layer at the end of a neural network?",
+        options: [
+            "To normalize the output vector into a probability distribution where all values sum to 1.",
+            "To convert the continuous output into absolute binary classes (0 or 1).",
+            "To heavily penalize the largest output value to prevent overconfidence.",
+            "To calculate the final loss error to be backpropagated."
+        ],
+        correct: 0,
+        theory: "Softmax takes an array of raw numerical scores (logits) and applies an exponential function, normalizing them so that every element falls between 0 and 1, and the entire array sums to exactly 1.0. This allows the outputs to be interpreted as mutually exclusive probabilities."
+    },
+    {
+        q: "Why is 'Cosine Similarity' theoretically preferred over 'Euclidean Distance' when comparing the similarity of text documents (TF-IDF vectors)?",
+        options: [
+            "Cosine similarity is faster to compute on sparse matrices.",
+            "Cosine similarity measures the angle between vectors, ignoring magnitude. This means a short article and a long article on the exact same topic will be considered highly similar, whereas Euclidean distance would consider them far apart.",
+            "Cosine similarity automatically removes stop words from the vectors.",
+            "Euclidean distance cannot be applied to high-dimensional spaces."
+        ],
+        correct: 1,
+        theory: "In text analysis, document length varies drastically. Euclidean distance is highly sensitive to the magnitude (length) of the vectors. Cosine similarity only measures the directional angle; if two documents have the same proportional word frequencies, their angle is 0, regardless of document length."
+    },
+    {
+        q: "In the context of evaluating a classification model, what is the theoretical difference between the ROC Curve and the Precision-Recall (PR) Curve?",
+        options: [
+            "ROC evaluates multi-class problems; PR evaluates binary problems.",
+            "ROC curves plot Sensitivity vs Specificity; PR curves plot Sensitivity vs Positive Predictive Value, making PR curves vastly superior for severely imbalanced datasets.",
+            "There is no mathematical difference; PR is just an inverted ROC curve.",
+            "ROC curves require unscaled data; PR curves require standardized data."
+        ],
+        correct: 1,
+        theory: "The ROC curve plots True Positive Rate vs False Positive Rate. In a highly imbalanced dataset with many 'Negatives', a massive number of True Negatives keeps the FPR very low, creating an overly optimistic ROC curve. The PR curve ignores True Negatives, focusing strictly on the rare positive class."
+    },
+    {
+        q: "What is the primary theoretical goal of an 'Autoencoder' neural network?",
+        options: [
+            "To generate entirely new text descriptions from images.",
+            "To learn a compressed, lower-dimensional representation of the input data and then accurately reconstruct the original input from that compression.",
+            "To automatically adjust hyperparameters without human intervention.",
+            "To classify images into 1000 distinct categories."
+        ],
+        correct: 1,
+        theory: "Autoencoders are unsupervised architectures consisting of an encoder (which compresses data into a bottleneck latent space) and a decoder (which tries to recreate the input). By forcing the data through the bottleneck, the network learns the most essential, non-linear features of the data."
+    },
+    {
+        q: "When evaluating a Regression model, what does the R-squared (Coefficient of Determination) theoretically tell you?",
+        options: [
+            "The absolute average error of the predictions in the original units.",
+            "The probability that the linear relationship is due to chance.",
+            "The proportion of the variance in the dependent variable that is predictable from the independent variables.",
+            "The ratio of the slope to the intercept in the regression equation."
+        ],
+        correct: 2,
+        theory: "R-squared is a relative metric between 0 and 1. An R-squared of 0.80 means that 80% of the variance (the fluctuations) in the target variable can be mathematically explained by the input features in your model."
+    },
+    {
+        q: "What is the theoretical mechanism of 'Dropout' regularization in training Neural Networks?",
+        options: [
+            "It drops the oldest data points from the training set to prevent memory leaks.",
+            "It randomly sets a fraction of input units to 0 at each update during training time, forcing the network to learn redundant representations and preventing complex co-adaptations.",
+            "It completely removes the layers with the lowest gradients at the end of training.",
+            "It stops the training process early if the validation loss increases."
+        ],
+        correct: 1,
+        theory: "Dropout is a powerful regularization technique. By randomly 'turning off' neurons during a training pass, the network cannot rely on any single neuron or specific pathway to make predictions. This forces the entire network to learn robust, generalized features."
+    },
+    {
+        q: "In Convolutional Neural Networks (CNNs), what is the theoretical purpose of a 'Pooling' layer?",
+        options: [
+            "To increase the spatial dimensions of the image to recover lost details.",
+            "To perform backpropagation on the filters.",
+            "To aggressively reduce the spatial size of the representation, reducing the number of parameters and computation while achieving spatial translation invariance.",
+            "To convert the 2D image matrices into a 1D vector for the output layer."
+        ],
+        correct: 2,
+        theory: "Pooling layers (like Max Pooling) slide a window over the feature map and extract only the most prominent signal (the maximum value). This shrinks the image dimensions, reduces memory footprint, and makes the network insensitive to exact pixel locations (translation invariance)."
+    },
+    {
+        q: "What is the theoretical definition of 'Multicollinearity' in Multiple Linear Regression?",
+        options: [
+            "When the target variable is highly correlated with the input variables.",
+            "When the residuals (errors) of the model are not normally distributed.",
+            "When two or more independent variables are highly correlated with each other, making it difficult to isolate the individual effect of each feature on the target.",
+            "When the independent variables have completely different scales and units."
+        ],
+        correct: 2,
+        theory: "Multicollinearity occurs when independent predictors are correlated. Mathematically, this causes the variance of the regression coefficients to inflate, meaning the model's assigned weights become highly unstable and interpretation of feature importance becomes unreliable."
+    },
+    {
+        q: "What theoretical advantage does the 'Word2Vec' model provide over TF-IDF in Natural Language Processing?",
+        options: [
+            "Word2Vec explicitly maps words to dense vector spaces where mathematical distances represent semantic relationships and context, unlike the sparse, isolated counts of TF-IDF.",
+            "Word2Vec guarantees zero spelling errors in the output.",
+            "Word2Vec is entirely mathematically unsupervised and does not require training data.",
+            "Word2Vec compresses entire books into a single integer."
+        ],
+        correct: 0,
+        theory: "TF-IDF counts frequencies, resulting in sparse arrays where similar words (like 'king' and 'monarch') have no mathematical relationship. Word2Vec trains a neural network to predict surrounding words, creating dense embeddings where semantic relationships can be calculated (e.g., King - Man + Woman = Queen)."
+    },
+    {
+        q: "In Reinforcement Learning, what is the theoretical tradeoff between 'Exploration' and 'Exploitation'?",
+        options: [
+            "The choice between using supervised or unsupervised algorithms.",
+            "The choice between analyzing the training data or analyzing the test data.",
+            "The choice between trying new, unknown actions to potentially find better rewards (Exploration) versus using known actions that have yielded high rewards in the past (Exploitation).",
+            "The tradeoff between allocating more RAM or more CPU to the agent."
+        ],
+        correct: 2,
+        theory: "An RL agent must balance its strategy. If it only exploits, it might get stuck in a local optimum (a sub-optimal but safe strategy). If it only explores, it wastes time on bad decisions and never maximizes its overall score."
+    },
+    {
+        q: "What is the theoretical function of the 'C' parameter in a Support Vector Machine?",
+        options: [
+            "It determines the number of clusters the data will be split into.",
+            "It controls the margin width and the penalty for misclassified training points. A small C creates a wider margin with more violations (soft margin); a large C creates a strict margin to perfectly classify points (hard margin).",
+            "It dictates the degree of the polynomial kernel.",
+            "It scales the data to have a standard deviation of exactly C."
+        ],
+        correct: 1,
+        theory: "The C parameter acts as an inverse regularization strength. A high C strictly penalizes errors on the training data, leading to a complex boundary (risk of overfitting). A low C allows more margin violations, prioritizing a smoother, wider generalization boundary."
+    },
+    {
+        q: "In statistical distributions, what does 'Kurtosis' theoretically measure?",
+        options: [
+            "The asymmetry or 'lean' of the distribution to the left or right.",
+            "The exact location of the population median.",
+            "The 'tailedness' of the distribution, indicating the presence and severity of extreme outliers compared to a normal distribution.",
+            "The standard deviation normalized by the mean."
+        ],
+        correct: 2,
+        theory: "While Skewness measures the lean of the data, Kurtosis measures the weight of the tails. High kurtosis (leptokurtic) means the dataset has heavier tails and a sharper peak, indicating a higher probability of extreme, rare outlier events."
+    },
+    {
+        q: "What is the primary theoretical purpose of an 'Ensemble' method in machine learning?",
+        options: [
+            "To reduce dimensionality by dropping the least important features.",
+            "To combine the predictions of multiple baseline models to produce a single, superior model with better generalization and robustness than any individual component.",
+            "To speed up the training phase by splitting tasks across multiple CPUs.",
+            "To cluster data points before applying a classification algorithm."
+        ],
+        correct: 1,
+        theory: "Ensemble learning leverages the 'wisdom of the crowd.' By combining multiple models (like in Random Forests or Boosting), the ensemble smooths out the individual biases and errors of the base learners, resulting in a highly accurate and stable final prediction."
+    },
+    {
+        q: "What is the theoretical meaning of a 'Markov Property' in stochastic processes?",
+        options: [
+            "The probability of future states depends exclusively on the current state, and not on the sequence of events that preceded it.",
+            "All possible states in a system must have an equal probability of occurring.",
+            "The system must eventually return to its initial starting state.",
+            "The process must be entirely deterministic with no randomness."
+        ],
+        correct: 0,
+        theory: "The Markov Property asserts that the future is independent of the past, given the present. This 'memoryless' assumption drastically simplifies the mathematics in models like Hidden Markov Models (HMMs) and Markov Decision Processes (MDPs) used in Reinforcement Learning."
+    },
+    {
+        q: "In gradient boosting algorithms, what are the 'residuals' theoretically referring to?",
+        options: [
+            "The data points that are dropped during cross-validation.",
+            "The difference between the actual observed target values and the predictions made by the current ensemble of trees.",
+            "The memory left over after the algorithm finishes running.",
+            "The hyperparameters that remain untuned."
+        ],
+        correct: 1,
+        theory: "In Gradient Boosting, each subsequent tree is not trying to predict the actual target variable (y). Instead, it tries to predict the residual error (y - y_hat) left behind by the preceding trees. By continually predicting and subtracting the errors, the model minimizes the total loss."
+    },
+    {
+        q: "What theoretical problem does 'Early Stopping' solve in deep learning training?",
+        options: [
+            "It solves the vanishing gradient problem by truncating backpropagation.",
+            "It prevents the optimizer from converging on a local minimum.",
+            "It mitigates overfitting by halting the training process as soon as the loss on a held-out validation set begins to increase, despite the training loss continuing to decrease.",
+            "It reduces the size of the neural network architecture dynamically."
+        ],
+        correct: 2,
+        theory: "During training, a model will continuously memorize the training data (training loss goes down). Eventually, it starts memorizing noise, which causes its performance on unseen data to get worse (validation loss goes up). Early stopping detects this inflection point and stops training to lock in the optimal weights."
+    },
+    {
+        q: "What is the theoretical definition of the 'Fbeta-Measure' (e.g., F2-Score), and how does it differ from the standard F1-Score?",
+        options: [
+            "The Fbeta-measure strictly calculates accuracy, whereas F1 calculates precision.",
+            "The Fbeta-measure adds an adjustable parameter 'beta' to the harmonic mean of precision and recall, allowing you to mathematically weigh recall as more or less important than precision.",
+            "The Fbeta-measure is strictly used for multi-class classification.",
+            "The Fbeta-measure does not require the calculation of False Positives."
+        ],
+        correct: 1,
+        theory: "The standard F1-score treats Precision and Recall equally. The Fbeta-score allows domain experts to adjust the balance. For example, an F2-score weights Recall twice as heavily as Precision, which is essential in fields like fraud detection or disease screening."
+    }
+];
         let currentQuestionIndex = 0;
         let userAnswers = new Array(questions.length).fill(null);
         let timeLeft = 60 * 60; // 60 minutes in seconds
